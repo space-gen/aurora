@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Kaggle credentials (never commit)
+.kaggle/
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
