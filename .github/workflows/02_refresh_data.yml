@@ -29,7 +29,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests huggingface_hub
+        run: pip install requests huggingface_hub datasets
 
       - name: Pull new URLs
         env:
