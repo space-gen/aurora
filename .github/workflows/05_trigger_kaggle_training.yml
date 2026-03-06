@@ -1,0 +1,53 @@
+name: "05 · Trigger Kaggle Training"
+
+on:
+  workflow_run:
+    workflows: ["04 · Sync Annotation Templates"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  trigger-training:
+    name: Upload dataset and trigger Kaggle training kernel
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install kaggle
+
+      - name: Prepare and push Kaggle dataset
+        env:
+          # KAGGLE_USERNAME and KAGGLE_KEY are written to ~/.kaggle/kaggle.json
+          # by prepare_kaggle_dataset.py.
+          # Set these secrets under Settings → Secrets and variables → Actions.
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: python scripts/prepare_kaggle_dataset.py
+
+      - name: Trigger Kaggle training kernel
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          # Write credentials so the kaggle CLI can authenticate.
+          mkdir -p ~/.kaggle
+          echo '{"username":"'"$KAGGLE_USERNAME"'","key":"'"$KAGGLE_KEY"'"}' \
+            > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+          kaggle kernels push \
+            --path .github/kaggle/training_kernel_metadata.json \
+            || echo "Kernel push attempted — check Kaggle for run status."

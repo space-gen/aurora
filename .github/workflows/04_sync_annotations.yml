@@ -1,0 +1,47 @@
+name: "04 · Sync Annotation Templates"
+
+on:
+  workflow_run:
+    workflows: ["03 · Merge Annotations"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  sync-annotations:
+    name: Copy task templates into annotations/
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync annotation templates from data_processing/
+        run: |
+          # Copy task files from data_processing/ into annotations/ as blank
+          # annotation templates.  The user_label field is intentionally absent
+          # so users fill it when submitting GitHub Issues.
+          for src in data_processing/task_*.json; do
+            [ -f "$src" ] || continue
+            dest="annotations/$(basename "$src")"
+            cp "$src" "$dest"
+          done
+          echo "Annotation templates synced."
+
+      - name: Commit synced annotation templates
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add annotations/
+          if git diff --cached --quiet; then
+            echo "No annotation template changes to commit."
+          else
+            git commit -m "chore(pipeline): sync annotation templates from data_processing/ [skip ci]"
+            git push
+          fi

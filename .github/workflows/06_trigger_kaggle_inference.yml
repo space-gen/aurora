@@ -1,0 +1,48 @@
+name: "06 · Trigger Kaggle Inference"
+
+on:
+  workflow_run:
+    workflows: ["05 · Trigger Kaggle Training"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  trigger-inference:
+    name: Trigger Kaggle daily inference kernel
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Kaggle CLI
+        run: pip install kaggle
+
+      - name: Trigger inference kernel
+        env:
+          # KAGGLE_USERNAME and KAGGLE_KEY authenticate the Kaggle API call.
+          # The inference kernel itself uses a GH_TOKEN Kaggle Secret to push
+          # predictions.json back to this GitHub repository.
+          # Set these secrets under Settings → Secrets and variables → Actions.
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p ~/.kaggle
+          echo '{"username":"'"$KAGGLE_USERNAME"'","key":"'"$KAGGLE_KEY"'"}' \
+            > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+          # Trigger the inference kernel.  The kernel will:
+          #   1. Pull the latest model from HuggingFace (using its own HF_TOKEN secret).
+          #   2. Run inference over the solarhub-helios-dataset URLs.
+          #   3. Produce predictions.json and push it back to GitHub.
+          kaggle kernels push \
+            --path .github/kaggle/inference_kernel_metadata.json \
+            || echo "Kernel push attempted — check Kaggle for run status."

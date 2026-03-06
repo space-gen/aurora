@@ -1,0 +1,15 @@
+{
+  "id": "solarhub/solarhub-helios-inference",
+  "title": "SolarHub Helios — Inference",
+  "code_file": "inference.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [
+    "solarhub/solarhub-helios-dataset"
+  ],
+  "competition_sources": [],
+  "kernel_sources": []
+}
