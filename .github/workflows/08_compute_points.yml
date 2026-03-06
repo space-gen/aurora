@@ -1,0 +1,44 @@
+name: "08 · Compute User Points"
+
+on:
+  workflow_run:
+    workflows: ["07 · Import Predictions"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  compute-points:
+    name: Score annotations against ML predictions
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compute user points
+        # compute_points.py reads only local files; no external API secrets needed.
+        run: python scripts/compute_points.py
+
+      - name: Commit updated points
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data_processing/
+          if git diff --cached --quiet; then
+            echo "No point changes to commit."
+          else
+            git commit -m "chore(pipeline): update user points in task files [skip ci]"
+            git push
+          fi

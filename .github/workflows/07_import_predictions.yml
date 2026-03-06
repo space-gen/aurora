@@ -1,0 +1,52 @@
+name: "07 · Import Predictions"
+
+on:
+  workflow_run:
+    workflows: ["06 · Trigger Kaggle Inference"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  import-predictions:
+    name: Download Kaggle predictions and update task files
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install kaggle
+
+      - name: Import Kaggle predictions
+        env:
+          # KAGGLE_USERNAME and KAGGLE_KEY are used to download the kernel
+          # output (predictions.json) via the Kaggle API.
+          # Set these secrets under Settings → Secrets and variables → Actions.
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: python scripts/import_kaggle_predictions.py
+
+      - name: Commit updated task files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data_processing/
+          if git diff --cached --quiet; then
+            echo "No prediction changes to commit."
+          else
+            git commit -m "chore(pipeline): import ML predictions into task files [skip ci]"
+            git push
+          fi

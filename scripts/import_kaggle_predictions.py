@@ -1,0 +1,178 @@
+"""
+import_kaggle_predictions.py
+============================
+Pipeline Stage 7 — Import Kaggle Predictions
+
+Download the predictions.json output from the Kaggle inference kernel and
+write the ``ml_prediction`` and ``confidence`` values back into the
+corresponding task files in data_processing/.
+
+Environment variables (populated from GitHub Actions secrets):
+  KAGGLE_USERNAME — Kaggle account username (required).
+  KAGGLE_KEY      — Kaggle API key (required).
+
+Usage:
+    python scripts/import_kaggle_predictions.py
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import sys
+import tempfile
+from pathlib import Path
+from typing import Any
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+log = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
+
+# Kaggle kernel that produces predictions.json as an output file.
+KAGGLE_INFERENCE_KERNEL = "solarhub/solarhub-helios-inference"
+
+# Name of the output file produced by the Kaggle inference kernel.
+PREDICTIONS_FILENAME = "predictions.json"
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _configure_kaggle_credentials() -> None:
+    """
+    Write KAGGLE_USERNAME and KAGGLE_KEY from environment variables to
+    ~/.kaggle/kaggle.json so the kaggle-api client can authenticate.
+    """
+    username = os.environ.get("KAGGLE_USERNAME", "")
+    key = os.environ.get("KAGGLE_KEY", "")
+    missing = [name for name, val in (("KAGGLE_USERNAME", username), ("KAGGLE_KEY", key)) if not val]
+    if missing:
+        log.error(
+            "Missing required environment variable(s): %s. "
+            "Add them as GitHub Actions secrets.",
+            ", ".join(missing),
+        )
+        sys.exit(1)
+
+    kaggle_dir = Path.home() / ".kaggle"
+    kaggle_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    creds_path = kaggle_dir / "kaggle.json"
+    creds_path.write_text(
+        json.dumps({"username": username, "key": key}),
+        encoding="utf-8",
+    )
+    creds_path.chmod(0o600)
+    log.info("Kaggle credentials configured from environment secrets.")
+
+
+def _download_predictions(tmp_dir: str) -> Path:
+    """
+    Pull the latest predictions.json output file from the Kaggle inference
+    kernel into *tmp_dir* and return its path.
+    """
+    try:
+        from kaggle.api.kaggle_api_extended import KaggleApiExtended  # type: ignore[import]
+    except ImportError as exc:
+        log.error("kaggle package not installed: %s. Run: pip install kaggle", exc)
+        sys.exit(1)
+
+    api = KaggleApiExtended()
+    api.authenticate()
+
+    log.info("Downloading kernel output '%s' from %s.", PREDICTIONS_FILENAME, KAGGLE_INFERENCE_KERNEL)
+    api.kernels_output(KAGGLE_INFERENCE_KERNEL, path=tmp_dir)
+
+    predictions_path = Path(tmp_dir) / PREDICTIONS_FILENAME
+    if not predictions_path.exists():
+        log.error(
+            "Expected output file '%s' not found in kernel output. "
+            "Ensure the inference kernel produces this file.",
+            PREDICTIONS_FILENAME,
+        )
+        sys.exit(1)
+
+    log.info("Downloaded predictions to %s.", predictions_path)
+    return predictions_path
+
+
+def _load_predictions(predictions_path: Path) -> dict[str, dict[str, Any]]:
+    """
+    Parse predictions.json.  Expected format — a JSON object keyed by URL:
+
+    {
+      "https://solar-data-source/img.jpg": {
+        "ml_prediction": "active_region",
+        "confidence": 0.92
+      },
+      ...
+    }
+    """
+    raw = json.loads(predictions_path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        log.error("predictions.json must be a JSON object keyed by URL.")
+        sys.exit(1)
+    log.info("Loaded predictions for %d URL(s).", len(raw))
+    return raw
+
+
+def _apply_predictions(predictions: dict[str, dict[str, Any]]) -> int:
+    """
+    For each task file in data_processing/, update ml_prediction and
+    confidence from *predictions*.  Returns the number of files updated.
+    """
+    updated = 0
+    for task_path in sorted(DATA_PROCESSING_DIR.glob("*.json")):
+        try:
+            task = json.loads(task_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            log.warning("Skipping unreadable task file %s: %s", task_path.name, exc)
+            continue
+
+        url = task.get("url")
+        if not url or url not in predictions:
+            continue
+
+        pred = predictions[url]
+        task["ml_prediction"] = pred.get("ml_prediction")
+        task["confidence"] = pred.get("confidence")
+        task_path.write_text(json.dumps(task, indent=2), encoding="utf-8")
+        updated += 1
+        log.debug("Updated prediction for %s", url)
+
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    _configure_kaggle_credentials()
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        predictions_path = _download_predictions(tmp_dir)
+        predictions = _load_predictions(predictions_path)
+
+    updated = _apply_predictions(predictions)
+    log.info("Stage 7 complete. %d task file(s) updated with ML predictions.", updated)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:  # pylint: disable=broad-except
+        log.exception("Unexpected error in import_kaggle_predictions: %s", exc)
+        sys.exit(1)

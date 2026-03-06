@@ -1,0 +1,50 @@
+name: "03 · Merge Annotations"
+
+on:
+  workflow_run:
+    workflows: ["02 · Refresh Data"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  merge-annotations:
+    name: Push annotations to HuggingFace
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install datasets huggingface_hub
+
+      - name: Merge annotations to HuggingFace
+        env:
+          # HF_TOKEN must have write access to solarhub/helios-annotations.
+          # Set this secret under Settings → Secrets and variables → Actions.
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/merge_annotations_to_hf.py
+
+      - name: Commit cleared annotation files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add annotations/
+          if git diff --cached --quiet; then
+            echo "No annotation files changed."
+          else
+            git commit -m "chore(pipeline): annotations merged to HuggingFace [skip ci]"
+            git push
+          fi
