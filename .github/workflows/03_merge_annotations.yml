@@ -32,7 +32,7 @@ jobs:
 
       - name: Merge annotations to HuggingFace
         env:
-          # HF_TOKEN must have write access to solarhub/helios-annotations.
+          # HF_TOKEN must have write access to spacegen/helios-annotations.
           # Set this secret under Settings → Secrets and variables → Actions.
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python scripts/merge_annotations_to_hf.py

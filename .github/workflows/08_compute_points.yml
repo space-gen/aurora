@@ -1,4 +1,4 @@
-name: "08 · Compute User Points"
+name: "08 · Evaluate Model Accuracy"
 
 on:
   workflow_run:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  compute-points:
-    name: Score annotations against ML predictions
+  evaluate-accuracy:
+    name: Evaluate model accuracy against user annotations
     runs-on: ubuntu-latest
     if: >
       github.event_name == 'workflow_dispatch' ||
@@ -27,18 +27,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Compute user points
+      - name: Evaluate model accuracy
         # compute_points.py reads only local files; no external API secrets needed.
         run: python scripts/compute_points.py
 
-      - name: Commit updated points
+      - name: Commit model accuracy report
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data_processing/
           if git diff --cached --quiet; then
-            echo "No point changes to commit."
+            echo "No accuracy changes to commit."
           else
-            git commit -m "chore(pipeline): update user points in task files [skip ci]"
+            git commit -m "chore(pipeline): update model accuracy report [skip ci]"
             git push
           fi

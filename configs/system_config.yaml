@@ -13,8 +13,8 @@ workflow:
 huggingface:
   # HuggingFace repository / dataset identifiers.
   # The actual API token is supplied at runtime via the HF_TOKEN secret.
-  dataset_repo: solarhub/helios-annotations
-  model_repo: solarhub/helios-model
+  dataset_repo: spacegen/helios-annotations
+  model_repo: spacegen/helios-model
   # Name of the GitHub Actions secret that holds the HF write token.
   token_secret: HF_TOKEN
 
@@ -33,6 +33,9 @@ data:
     - solar_flare
     - magnetogram
     - coronal_hole
+    - prominence
+    - active_region
+    - cme
   source_apis:
     - name: NASA SDAC
       base_url: https://umbra.nascom.nasa.gov/
@@ -40,6 +43,12 @@ data:
       base_url: https://lasco-www.nrl.navy.mil/
     - name: SDO HMI
       base_url: https://jsoc.stanford.edu/
+    - name: NSO
+      base_url: https://www.nso.edu/
+    - name: SolarMonitor
+      base_url: https://www.solarmonitor.org/
+    - name: NASA CDAW
+      base_url: https://cdaw.gsfc.nasa.gov/
 
 annotations:
   merge_strategy: append

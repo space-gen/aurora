@@ -1,19 +1,15 @@
 """
 compute_points.py
 =================
-Pipeline Stage 8 — Compute User Points
+Pipeline Stage 8 — Evaluate Model Accuracy
 
-Compare user annotations (from annotations/) with the ML predictions stored
-in the data_processing/ task files.  Award points based on how closely the
-user label agrees with the model's prediction weighted by its confidence.
+Compare ML predictions stored in data_processing/ task files against the
+user annotations in annotations/ to measure how accurately the model labels
+solar observations.
 
-Point-awarding rules:
-  • Exact label match + high confidence (>= 0.80) → POINTS_HIGH
-  • Exact label match + medium confidence (0.50–0.79) → POINTS_MEDIUM
-  • Exact label match + low confidence (< 0.50) → POINTS_LOW
-  • No match → 0 points
-
-Results are written back into the task files' ``points`` field.
+Accuracy is computed globally and broken down by task type.  Results are
+written to ``data_processing/model_accuracy.json`` so that subsequent stages
+(and the frontend) can surface model-quality information.
 
 No external API keys are required for this stage.
 
@@ -26,6 +22,7 @@ from __future__ import annotations
 import json
 import logging
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -44,11 +41,7 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
-
-# Point values awarded for a correct user label at each confidence tier.
-POINTS_HIGH = 10
-POINTS_MEDIUM = 5
-POINTS_LOW = 2
+ACCURACY_OUTPUT_FILE = DATA_PROCESSING_DIR / "model_accuracy.json"
 
 
 # ---------------------------------------------------------------------------
@@ -63,6 +56,8 @@ def _load_task_index() -> dict[str, dict[str, Any]]:
     """
     index: dict[str, dict[str, Any]] = {}
     for path in sorted(DATA_PROCESSING_DIR.glob("*.json")):
+        if path.name == ACCURACY_OUTPUT_FILE.name:
+            continue
         try:
             task = json.loads(path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError) as exc:
@@ -93,59 +88,76 @@ def _load_annotations() -> list[dict[str, Any]]:
     return records
 
 
-def _award_points(ml_prediction: str, confidence: float, user_label: str) -> int:
-    """
-    Return the number of points the user earns for *user_label* against
-    *ml_prediction* at *confidence*.
-    """
-    if user_label.lower() != ml_prediction.lower():
-        return 0
-    if confidence >= 0.80:
-        return POINTS_HIGH
-    if confidence >= 0.50:
-        return POINTS_MEDIUM
-    return POINTS_LOW
+def _is_correct_prediction(ml_prediction: str, user_label: str) -> bool:
+    """Return True when the model prediction matches the user annotation label."""
+    return user_label.lower() == ml_prediction.lower()
 
 
-def _compute_and_update(
+def _compute_accuracy(
     annotations: list[dict[str, Any]],
     task_index: dict[str, dict[str, Any]],
-) -> int:
+) -> dict[str, Any]:
     """
-    Iterate over annotations, compute points, and update task files.
-    Returns the total number of task files updated.
+    Compare each annotation against its corresponding ML prediction.
+
+    Returns an accuracy report dict containing:
+      - timestamp: ISO-8601 UTC timestamp of this evaluation run
+      - total_compared: number of annotation/prediction pairs evaluated
+      - correct: number of pairs where prediction matches annotation
+      - accuracy: overall accuracy as a float in [0, 1]
+      - per_task_type: per-task-type breakdown of the same metrics
     """
-    updated = 0
+    total = 0
+    correct = 0
+    per_type: dict[str, dict[str, int]] = {}
+
     for ann in annotations:
         url = ann["url"]
         if url not in task_index:
             log.debug("No task found for annotation URL %s — skipping.", url)
             continue
 
-        entry = task_index[url]
-        task: dict[str, Any] = entry["task"]
-        task_path: Path = entry["path"]
-
+        task: dict[str, Any] = task_index[url]["task"]
         ml_prediction: str = task.get("ml_prediction", "")
-        confidence: float = float(task.get("confidence") or 0.0)
         user_label: str = ann.get("user_label", "")
+        task_type: str = task.get("task_type", "unknown")
 
-        points = _award_points(ml_prediction, confidence, user_label)
-        # Reset points before setting to avoid double-counting on pipeline re-runs.
-        task["points"] = points
+        match = _is_correct_prediction(ml_prediction, user_label)
+        total += 1
+        if match:
+            correct += 1
 
-        task_path.write_text(json.dumps(task, indent=2), encoding="utf-8")
-        updated += 1
+        bucket = per_type.setdefault(task_type, {"total": 0, "correct": 0})
+        bucket["total"] += 1
+        if match:
+            bucket["correct"] += 1
+
         log.info(
-            "URL=%s  user_label=%s  ml_prediction=%s  confidence=%.2f  points_awarded=%d",
+            "URL=%s  task_type=%s  user_label=%s  ml_prediction=%s  correct=%s",
             url,
+            task_type,
             user_label,
             ml_prediction,
-            confidence,
-            points,
+            match,
         )
 
-    return updated
+    overall_accuracy = correct / total if total > 0 else 0.0
+    per_task_type = {
+        ttype: {
+            "total": counts["total"],
+            "correct": counts["correct"],
+            "accuracy": counts["correct"] / counts["total"] if counts["total"] > 0 else 0.0,
+        }
+        for ttype, counts in sorted(per_type.items())
+    }
+
+    return {
+        "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "total_compared": total,
+        "correct": correct,
+        "accuracy": overall_accuracy,
+        "per_task_type": per_task_type,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -155,16 +167,27 @@ def _compute_and_update(
 def main() -> None:
     task_index = _load_task_index()
     if not task_index:
-        log.info("No tasks with ML predictions available. Skipping point computation.")
+        log.info("No tasks with ML predictions available. Skipping accuracy evaluation.")
         return
 
     annotations = _load_annotations()
     if not annotations:
-        log.info("No annotations found. Skipping point computation.")
+        log.info("No annotations found. Skipping accuracy evaluation.")
         return
 
-    updated = _compute_and_update(annotations, task_index)
-    log.info("Stage 8 complete. Points updated in %d task file(s).", updated)
+    report = _compute_accuracy(annotations, task_index)
+
+    DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
+    ACCURACY_OUTPUT_FILE.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+    log.info(
+        "Stage 8 complete. Model accuracy: %.1f%% (%d/%d). "
+        "Report written to %s.",
+        report["accuracy"] * 100,
+        report["correct"],
+        report["total_compared"],
+        ACCURACY_OUTPUT_FILE.name,
+    )
 
 
 if __name__ == "__main__":

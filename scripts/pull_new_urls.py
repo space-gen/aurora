@@ -41,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
 # HuggingFace dataset used for deduplication checks.
-HF_DATASET_REPO = "solarhub/helios-annotations"
+HF_DATASET_REPO = "spacegen/helios-annotations"
 
 # Supported task types mapped to their source API endpoints.
 # Each entry is a dict with at least a "url" key; additional fields are
@@ -63,6 +63,18 @@ SOURCE_APIS: list[dict[str, Any]] = [
         "task_type": "coronal_hole",
         "api_url": "https://jsoc.stanford.edu/latest_coronalhole_urls.json",
     },
+    {
+        "task_type": "prominence",
+        "api_url": "https://www.nso.edu/latest_prominence_urls.json",
+    },
+    {
+        "task_type": "active_region",
+        "api_url": "https://www.solarmonitor.org/latest_activeregion_urls.json",
+    },
+    {
+        "task_type": "cme",
+        "api_url": "https://cdaw.gsfc.nasa.gov/latest_cme_urls.json",
+    },
 ]
 
 # Empty task template — ml_prediction and confidence are populated later by
@@ -72,7 +84,6 @@ TASK_TEMPLATE: dict[str, Any] = {
     "task_type": None,
     "ml_prediction": None,
     "confidence": None,
-    "points": 0,
     "user_comments": [],
 }
 

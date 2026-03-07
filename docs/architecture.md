@@ -44,11 +44,11 @@ Modular, single-responsibility scripts invoked by the GitHub Actions workflows.
 | `merge_annotations_to_hf.py` | Push pending annotations to the HuggingFace dataset |
 | `prepare_kaggle_dataset.py` | Build and upload the Kaggle training/inference dataset |
 | `import_kaggle_predictions.py` | Pull prediction output from Kaggle and write it to task files |
-| `compute_points.py` | Score user annotations against ML predictions |
+| `compute_points.py` | Evaluate model accuracy against user annotations |
 
 ### HuggingFace
-Stores the labelled annotation dataset (`solarhub/helios-annotations`) and trained models
-(`solarhub/helios-model`).  Access requires the `HF_TOKEN` GitHub Actions secret.
+Stores the labelled annotation dataset (`spacegen/helios-annotations`) and trained models
+(`spacegen/helios-model`).  Access requires the `HF_TOKEN` GitHub Actions secret.
 
 ### Kaggle
 Runs training and daily inference kernels against the HuggingFace dataset.  Predictions are

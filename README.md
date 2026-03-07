@@ -45,7 +45,7 @@ The pipeline runs every midnight UTC and progresses through 9 stages:
 | 5 | `05_trigger_kaggle_training.yml` | Trigger Kaggle model training |
 | 6 | `06_trigger_kaggle_inference.yml` | Trigger Kaggle daily inference |
 | 7 | `07_import_predictions.yml` | Write ML predictions into task files |
-| 8 | `08_compute_points.yml` | Compute user reward points |
+| 8 | `08_compute_points.yml` | Evaluate model accuracy against user annotations |
 | 9 | `09_unlock_frontend.yml` | Rename `data_processing/` → `data/` |
 
 ## Required Secrets
@@ -82,6 +82,9 @@ The Kaggle inference kernel also requires a `GH_TOKEN` **Kaggle Secret** to push
 - `solar_flare` — Solar flare detection and classification
 - `magnetogram` — Magnetic polarity feature classification
 - `coronal_hole` — Coronal hole identification from EUV imagery
+- `prominence` — Solar prominence and filament detection
+- `active_region` — Active solar region identification
+- `cme` — Coronal mass ejection detection
 
 ## License
 
