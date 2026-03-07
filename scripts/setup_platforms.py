@@ -1,12 +1,12 @@
 """
 setup_platforms.py
 ==================
-One-time Setup — Initialise HuggingFace and Kaggle Resources
+One-time Setup — Initialise HuggingFace Resources
 
-Creates one HuggingFace dataset repository **per task type** and one Kaggle
-dataset **per task type** if they do not already exist.
+Creates one HuggingFace **annotation dataset** repository and one HuggingFace
+**model** repository per task type if they do not already exist.
 
-HuggingFace repos created (one per task type):
+HuggingFace annotation dataset repos (one per task type):
   spacegen/solarhub-sunspot
   spacegen/solarhub-solar-flare
   spacegen/solarhub-magnetogram
@@ -15,18 +15,27 @@ HuggingFace repos created (one per task type):
   spacegen/solarhub-active-region
   spacegen/solarhub-cme
 
-Kaggle datasets created (one per task type, under the authenticated user):
-  solarhub-sunspot
-  solarhub-solar-flare
-  … etc.
+HuggingFace model repos (one per task type):
+  spacegen/solarhub-model-sunspot
+  spacegen/solarhub-model-solar-flare
+  spacegen/solarhub-model-magnetogram
+  spacegen/solarhub-model-coronal-hole
+  spacegen/solarhub-model-prominence
+  spacegen/solarhub-model-active-region
+  spacegen/solarhub-model-cme
+
+Kaggle is used only for compute (training & inference kernels).  No datasets
+are stored in Kaggle — all data and models live on HuggingFace.  Kaggle
+kernels must be configured with an ``HF_TOKEN`` Kaggle Secret so they can push
+trained models directly to the HuggingFace model repos above.
 
 Run this script **once** before the nightly pipeline is started for the first
 time, or after a full reset.
 
 Environment variables (populated from GitHub Actions secrets):
   HF_TOKEN        — HuggingFace write token (required).
-  KAGGLE_USERNAME — Kaggle account username (required).
-  KAGGLE_KEY      — Kaggle API key (required).
+  KAGGLE_USERNAME — Kaggle account username (required to verify Kaggle creds).
+  KAGGLE_KEY      — Kaggle API key (required to verify Kaggle creds).
 
 Usage:
     python scripts/setup_platforms.py
@@ -38,7 +47,6 @@ import json
 import logging
 import os
 import sys
-import tempfile
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -65,32 +73,31 @@ TASK_TYPES: list[str] = [
     "cme",
 ]
 
-# Prefix for HuggingFace dataset repo IDs.
+# Prefix for HuggingFace annotation dataset repo IDs.
 HF_DATASET_REPO_PREFIX = "spacegen/solarhub-"
 
-# Prefix for Kaggle dataset slugs.
-KAGGLE_DATASET_SLUG_PREFIX = "solarhub-"
+# Prefix for HuggingFace model repo IDs.
+HF_MODEL_REPO_PREFIX = "spacegen/solarhub-model-"
 
 
 # ---------------------------------------------------------------------------
-# Shared helpers
+# Shared naming helpers
 # ---------------------------------------------------------------------------
 
 def _hf_repo_for_task(task_type: str) -> str:
-    """Return the HuggingFace dataset repo ID for *task_type*.
+    """Return the HuggingFace annotation dataset repo ID for *task_type*.
 
-    Underscores in the task type are converted to hyphens to follow
-    HuggingFace naming conventions, e.g. ``solar_flare`` → ``spacegen/solarhub-solar-flare``.
+    e.g. ``solar_flare`` → ``spacegen/solarhub-solar-flare``.
     """
     return HF_DATASET_REPO_PREFIX + task_type.replace("_", "-")
 
 
-def _kaggle_slug_for_task(task_type: str) -> str:
-    """Return the Kaggle dataset slug for *task_type*.
+def _hf_model_repo_for_task(task_type: str) -> str:
+    """Return the HuggingFace model repo ID for *task_type*.
 
-    e.g. ``solar_flare`` → ``solarhub-solar-flare``.
+    e.g. ``solar_flare`` → ``spacegen/solarhub-model-solar-flare``.
     """
-    return KAGGLE_DATASET_SLUG_PREFIX + task_type.replace("_", "-")
+    return HF_MODEL_REPO_PREFIX + task_type.replace("_", "-")
 
 
 # ---------------------------------------------------------------------------
@@ -109,7 +116,7 @@ def _get_hf_token() -> str:
 
 
 def _setup_hf_dataset_for_task(task_type: str, token: str) -> None:
-    """Create the per-task HuggingFace dataset if it does not already exist."""
+    """Create the per-task HuggingFace annotation dataset if it does not already exist."""
     try:
         from datasets import Dataset  # type: ignore[import]
         from huggingface_hub import HfApi, DatasetCard  # type: ignore[import]
@@ -156,6 +163,7 @@ def _setup_hf_dataset_for_task(task_type: str, token: str) -> None:
 
     # Add a dataset card (README).
     task_label = task_type.replace("_", " ").title()
+    model_repo_id = _hf_model_repo_for_task(task_type)
     card_content = f"""\
 ---
 license: cc-by-4.0
@@ -185,6 +193,8 @@ solar-observation classification project.
 | `metadata` | JSON string with annotator, issue number, and timestamp |
 
 Annotations are collected via GitHub Issues and merged nightly by the Aurora pipeline.
+The corresponding trained model is published at
+[{model_repo_id}](https://huggingface.co/{model_repo_id}).
 """
     try:
         DatasetCard(card_content).push_to_hub(repo_id, token=token)
@@ -193,103 +203,131 @@ Annotations are collected via GitHub Issues and merged nightly by the Aurora pip
         log.warning("Could not push dataset card to '%s' (non-fatal): %s", repo_id, exc)
 
 
+def _setup_hf_model_repo_for_task(task_type: str, token: str) -> None:
+    """Create the per-task HuggingFace model repository if it does not already exist.
+
+    The model repo is where Kaggle training kernels push trained model weights
+    after each nightly training run.
+    """
+    try:
+        from huggingface_hub import HfApi, ModelCard  # type: ignore[import]
+    except ImportError as exc:
+        log.error(
+            "Required packages not installed: %s. "
+            "Run: pip install huggingface_hub",
+            exc,
+        )
+        sys.exit(1)
+
+    repo_id = _hf_model_repo_for_task(task_type)
+    api = HfApi(token=token)
+
+    # Check if the model repo already exists.
+    try:
+        api.model_info(repo_id, token=token)
+        log.info("HuggingFace model repo '%s' already exists — skipping creation.", repo_id)
+        return
+    except Exception:  # pylint: disable=broad-except
+        pass  # Model repo does not exist yet; proceed to create it.
+
+    log.info("Creating HuggingFace model repo '%s' (task_type=%s).", repo_id, task_type)
+
+    try:
+        api.create_repo(repo_id, repo_type="model", token=token, exist_ok=True)
+        log.info("HuggingFace model repo '%s' created successfully.", repo_id)
+    except Exception as exc:  # pylint: disable=broad-except
+        log.error("Failed to create HuggingFace model repo '%s': %s", repo_id, exc)
+        sys.exit(1)
+
+    # Add a model card (README).
+    task_label = task_type.replace("_", " ").title()
+    dataset_repo = _hf_repo_for_task(task_type)
+    card_content = f"""\
+---
+license: cc-by-4.0
+tags:
+  - solar
+  - astronomy
+  - image-classification
+  - solarhub
+  - {task_type}
+datasets:
+  - {dataset_repo}
+---
+
+# SolarHub — {task_label} Model
+
+Image classification model for the **{task_label}** task in the
+[SolarHub](https://github.com/space-gen/aurora) citizen-science
+solar-observation classification project.
+
+This model is trained nightly by a Kaggle kernel on annotations collected
+from [{dataset_repo}](https://huggingface.co/datasets/{dataset_repo}) and pushed
+directly to this repository from the Kaggle training environment.
+
+## Usage
+
+```python
+from huggingface_hub import hf_hub_download
+
+model_path = hf_hub_download(repo_id="{repo_id}", filename="model.pt")
+```
+"""
+    try:
+        ModelCard(card_content).push_to_hub(repo_id, token=token)
+        log.info("Model card pushed to '%s'.", repo_id)
+    except Exception as exc:  # pylint: disable=broad-except
+        log.warning("Could not push model card to '%s' (non-fatal): %s", repo_id, exc)
+
+
 def _setup_all_hf_datasets(token: str) -> None:
-    """Create one HuggingFace dataset per task type."""
-    log.info("Setting up %d HuggingFace dataset(s) …", len(TASK_TYPES))
+    """Create one HuggingFace annotation dataset per task type."""
+    log.info("Setting up %d HuggingFace annotation dataset(s) …", len(TASK_TYPES))
     for task_type in TASK_TYPES:
         _setup_hf_dataset_for_task(task_type, token)
-    log.info("HuggingFace setup complete.")
+    log.info("HuggingFace annotation dataset setup complete.")
+
+
+def _setup_all_hf_model_repos(token: str) -> None:
+    """Create one HuggingFace model repository per task type."""
+    log.info("Setting up %d HuggingFace model repo(s) …", len(TASK_TYPES))
+    for task_type in TASK_TYPES:
+        _setup_hf_model_repo_for_task(task_type, token)
+    log.info("HuggingFace model repo setup complete.")
 
 
 # ---------------------------------------------------------------------------
-# Kaggle setup
+# Kaggle credentials verification
 # ---------------------------------------------------------------------------
 
-def _configure_kaggle_credentials() -> str:
-    """Write Kaggle credentials from env vars and return the username."""
+def _verify_kaggle_credentials() -> None:
+    """Verify that the Kaggle credentials env vars are present.
+
+    Kaggle is used only for compute (training & inference kernels).
+    No datasets are stored in Kaggle — all data and models live on HuggingFace.
+
+    The Kaggle training kernel must be configured with an ``HF_TOKEN`` Kaggle
+    Secret so it can push trained model weights directly to the per-task
+    HuggingFace model repos.
+    """
     username = os.environ.get("KAGGLE_USERNAME", "")
     key = os.environ.get("KAGGLE_KEY", "")
     missing = [n for n, v in (("KAGGLE_USERNAME", username), ("KAGGLE_KEY", key)) if not v]
     if missing:
         log.error(
-            "Missing required environment variable(s): %s. "
+            "Missing required Kaggle environment variable(s): %s. "
             "Add them as GitHub Actions secrets.",
             ", ".join(missing),
         )
         sys.exit(1)
 
+    # Write credentials so the kaggle CLI can authenticate when kernels are triggered.
     kaggle_dir = Path.home() / ".kaggle"
     kaggle_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     creds_path = kaggle_dir / "kaggle.json"
     creds_path.write_text(json.dumps({"username": username, "key": key}), encoding="utf-8")
     creds_path.chmod(0o600)
-    log.info("Kaggle credentials configured.")
-    return username
-
-
-def _setup_kaggle_dataset_for_task(task_type: str, username: str) -> None:
-    """Create the per-task Kaggle dataset if it does not already exist."""
-    try:
-        from kaggle.api.kaggle_api_extended import KaggleApiExtended  # type: ignore[import]
-    except ImportError as exc:
-        log.error("kaggle package not installed: %s. Run: pip install kaggle", exc)
-        sys.exit(1)
-
-    api = KaggleApiExtended()
-    api.authenticate()
-
-    slug = _kaggle_slug_for_task(task_type)
-    dataset_id = f"{username}/{slug}"
-
-    # Check if the dataset already exists.
-    try:
-        api.dataset_status(username, slug)
-        log.info("Kaggle dataset '%s' already exists — skipping creation.", dataset_id)
-        return
-    except Exception:  # pylint: disable=broad-except
-        pass  # Dataset does not exist; proceed to create it.
-
-    log.info("Creating Kaggle dataset '%s' (task_type=%s).", dataset_id, task_type)
-    task_label = task_type.replace("_", " ").title()
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
-
-        # Seed file — an empty JSONL so Kaggle accepts the dataset.
-        (tmp_path / "tasks.jsonl").write_text("", encoding="utf-8")
-
-        metadata = {
-            "title": slug,
-            "id": dataset_id,
-            "licenses": [{"name": "CC0-1.0"}],
-            "description": (
-                f"Solar observation task URLs for the '{task_label}' task in the "
-                "SolarHub citizen-science platform. Updated nightly by the Aurora pipeline."
-            ),
-        }
-        (tmp_path / "dataset-metadata.json").write_text(
-            json.dumps(metadata, indent=2), encoding="utf-8"
-        )
-
-        try:
-            api.dataset_create_new(
-                folder=str(tmp_path),
-                public=False,
-                quiet=False,
-                dir_mode="zip",
-            )
-            log.info("Kaggle dataset '%s' created successfully.", dataset_id)
-        except Exception as exc:  # pylint: disable=broad-except
-            log.error("Failed to create Kaggle dataset '%s': %s", dataset_id, exc)
-            sys.exit(1)
-
-
-def _setup_all_kaggle_datasets(username: str) -> None:
-    """Create one Kaggle dataset per task type."""
-    log.info("Setting up %d Kaggle dataset(s) …", len(TASK_TYPES))
-    for task_type in TASK_TYPES:
-        _setup_kaggle_dataset_for_task(task_type, username)
-    log.info("Kaggle setup complete.")
+    log.info("Kaggle credentials verified and configured (used for kernel triggers only).")
 
 
 # ---------------------------------------------------------------------------
@@ -300,15 +338,21 @@ def main() -> None:
     log.info("=== SolarHub Platform Setup ===")
     log.info("Task types: %s", ", ".join(TASK_TYPES))
 
-    # --- HuggingFace ---
+    # --- HuggingFace annotation datasets (one per task type) ---
     hf_token = _get_hf_token()
     _setup_all_hf_datasets(hf_token)
 
-    # --- Kaggle ---
-    kaggle_username = _configure_kaggle_credentials()
-    _setup_all_kaggle_datasets(kaggle_username)
+    # --- HuggingFace model repos (one per task type) ---
+    _setup_all_hf_model_repos(hf_token)
+
+    # --- Kaggle credentials (for kernel triggers only — no datasets in Kaggle) ---
+    _verify_kaggle_credentials()
 
     log.info("Platform setup complete.")
+    log.info(
+        "IMPORTANT: Configure the Kaggle training kernel with an 'HF_TOKEN' Kaggle Secret "
+        "so it can push trained models to HuggingFace after each training run."
+    )
 
 
 if __name__ == "__main__":

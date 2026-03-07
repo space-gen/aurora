@@ -11,19 +11,20 @@ workflow:
   nightly_time: "00:00 UTC"
 
 huggingface:
-  # Per-task-type dataset repository prefix.
-  # The full repo ID for a task is: {dataset_repo_prefix}{task_type_hyphenated}
+  # Per-task-type annotation dataset prefix.
+  # Full dataset repo: {dataset_repo_prefix}{task_type_hyphenated}
   # e.g. spacegen/solarhub-sunspot, spacegen/solarhub-solar-flare, …
   dataset_repo_prefix: spacegen/solarhub-
-  model_repo: spacegen/solarhub-model
+  # Per-task-type model repository prefix.
+  # Full model repo: {model_repo_prefix}{task_type_hyphenated}
+  # e.g. spacegen/solarhub-model-sunspot, spacegen/solarhub-model-solar-flare, …
+  model_repo_prefix: spacegen/solarhub-model-
   # Name of the GitHub Actions secret that holds the HF write token.
   token_secret: HF_TOKEN
 
 kaggle:
-  # Per-task-type dataset slug prefix.
-  # The full slug for a task is: {dataset_slug_prefix}{task_type_hyphenated}
-  # e.g. solarhub-sunspot, solarhub-solar-flare, …
-  dataset_slug_prefix: solarhub-
+  # Kaggle is used only for compute (training & inference kernels).
+  # No datasets are stored in Kaggle — all data lives in HuggingFace.
   # Credentials are supplied at runtime via the KAGGLE_USERNAME and KAGGLE_KEY secrets.
   username_secret: KAGGLE_USERNAME
   key_secret: KAGGLE_KEY

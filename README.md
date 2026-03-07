@@ -47,25 +47,32 @@ HuggingFace dataset during the next nightly pipeline run.
 ## First-Time Setup
 
 Before running the nightly pipeline for the first time, initialise the
-HuggingFace and Kaggle resources by triggering the **Setup Platforms**
-workflow manually from the Actions tab (requires `HF_TOKEN`, `KAGGLE_USERNAME`,
-and `KAGGLE_KEY` secrets to be set):
+HuggingFace resources and verify Kaggle credentials by triggering the
+**Setup Platforms** workflow manually from the Actions tab (requires
+`HF_TOKEN`, `KAGGLE_USERNAME`, and `KAGGLE_KEY` secrets to be set):
 
 ```
 Actions → Setup Platforms → Run workflow → confirm: yes
 ```
 
-This creates **one HuggingFace dataset and one Kaggle dataset per task type**:
+This creates **one HuggingFace annotation dataset and one HuggingFace model
+repository per task type** (14 repos total). No data is stored in Kaggle —
+Kaggle is used only for running training and inference kernels.
 
-| Task Type | HuggingFace Dataset | Kaggle Dataset |
-|-----------|---------------------|----------------|
-| sunspot | `spacegen/solarhub-sunspot` | `solarhub-sunspot` |
-| solar_flare | `spacegen/solarhub-solar-flare` | `solarhub-solar-flare` |
-| magnetogram | `spacegen/solarhub-magnetogram` | `solarhub-magnetogram` |
-| coronal_hole | `spacegen/solarhub-coronal-hole` | `solarhub-coronal-hole` |
-| prominence | `spacegen/solarhub-prominence` | `solarhub-prominence` |
-| active_region | `spacegen/solarhub-active-region` | `solarhub-active-region` |
-| cme | `spacegen/solarhub-cme` | `solarhub-cme` |
+| Task Type | HF Annotation Dataset | HF Model Repo |
+|-----------|----------------------|---------------|
+| sunspot | `spacegen/solarhub-sunspot` | `spacegen/solarhub-model-sunspot` |
+| solar_flare | `spacegen/solarhub-solar-flare` | `spacegen/solarhub-model-solar-flare` |
+| magnetogram | `spacegen/solarhub-magnetogram` | `spacegen/solarhub-model-magnetogram` |
+| coronal_hole | `spacegen/solarhub-coronal-hole` | `spacegen/solarhub-model-coronal-hole` |
+| prominence | `spacegen/solarhub-prominence` | `spacegen/solarhub-model-prominence` |
+| active_region | `spacegen/solarhub-active-region` | `spacegen/solarhub-model-active-region` |
+| cme | `spacegen/solarhub-cme` | `spacegen/solarhub-model-cme` |
+
+> **Important:** After setup, configure the Kaggle training kernel with an
+> `HF_TOKEN` [Kaggle Secret](https://www.kaggle.com/docs/notebooks#the-secret-manager)
+> so that it can push trained model weights directly to the HuggingFace model
+> repos after each nightly training run.
 
 ## Nightly Pipeline
 
@@ -76,11 +83,11 @@ The pipeline runs every midnight UTC and progresses through 9 stages:
 | — | `00_parse_annotation_issue.yml` | Parse issue annotations (event-driven, not nightly) |
 | 1 | `01_lock_and_prepare.yml` | Rename `data/` → `data_processing/` |
 | 2 | `02_refresh_data.yml` | Fetch & validate new solar-observation URLs (with pagination) |
-| 3 | `03_merge_annotations.yml` | Push annotations to HuggingFace |
+| 3 | `03_merge_annotations.yml` | Push annotations to per-task HuggingFace datasets |
 | 4 | `04_sync_annotations.yml` | Sync task templates into `annotations/` |
-| 5 | `05_trigger_kaggle_training.yml` | Trigger Kaggle model training |
-| 6 | `06_trigger_kaggle_inference.yml` | Trigger Kaggle daily inference |
-| 7 | `07_import_predictions.yml` | Write ML predictions into task files |
+| 5 | `05_trigger_kaggle_training.yml` | Push task data to HuggingFace; trigger Kaggle training kernel (kernel pushes model to HF) |
+| 6 | `06_trigger_kaggle_inference.yml` | Trigger Kaggle inference kernel (reads data + model from HF) |
+| 7 | `07_import_predictions.yml` | Download predictions from Kaggle kernel output; update task files |
 | 8 | `08_compute_points.yml` | Evaluate model accuracy against user annotations |
 | 9 | `09_unlock_frontend.yml` | Rename `data_processing/` → `data/` |
 

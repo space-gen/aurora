@@ -7,6 +7,24 @@ Download the predictions.json output from the Kaggle inference kernel and
 write the ``ml_prediction`` and ``confidence`` values back into the
 corresponding task files in data_processing/.
 
+Architecture note
+-----------------
+Kaggle is used **only for compute** — no data is stored in Kaggle.
+
+* Training kernel: reads annotation data from the HuggingFace per-task
+  annotation datasets (``spacegen/solarhub-{task_type}``), trains a model,
+  and pushes the model directly to the corresponding HuggingFace model repo
+  (``spacegen/solarhub-model-{task_type}``) using an ``HF_TOKEN`` Kaggle
+  Secret.
+
+* Inference kernel: reads task URLs from the HuggingFace per-task datasets
+  (``tasks`` split written by ``prepare_hf_training_data.py``), pulls the
+  model from the HuggingFace model repo, runs inference, and writes
+  ``predictions.json`` as a kernel output file.
+
+This script then downloads that ``predictions.json`` and applies the
+predictions to the local task files.
+
 Environment variables (populated from GitHub Actions secrets):
   KAGGLE_USERNAME — Kaggle account username (required).
   KAGGLE_KEY      — Kaggle API key (required).
