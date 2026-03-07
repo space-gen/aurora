@@ -11,21 +11,24 @@ workflow:
   nightly_time: "00:00 UTC"
 
 huggingface:
-  # HuggingFace repository / dataset identifiers.
-  # The actual API token is supplied at runtime via the HF_TOKEN secret.
-  dataset_repo: spacegen/solarhub-annotations
+  # Per-task-type dataset repository prefix.
+  # The full repo ID for a task is: {dataset_repo_prefix}{task_type_hyphenated}
+  # e.g. spacegen/solarhub-sunspot, spacegen/solarhub-solar-flare, …
+  dataset_repo_prefix: spacegen/solarhub-
   model_repo: spacegen/solarhub-model
   # Name of the GitHub Actions secret that holds the HF write token.
   token_secret: HF_TOKEN
 
 kaggle:
-  # Kaggle username and competition / kernel settings.
+  # Per-task-type dataset slug prefix.
+  # The full slug for a task is: {dataset_slug_prefix}{task_type_hyphenated}
+  # e.g. solarhub-sunspot, solarhub-solar-flare, …
+  dataset_slug_prefix: solarhub-
   # Credentials are supplied at runtime via the KAGGLE_USERNAME and KAGGLE_KEY secrets.
   username_secret: KAGGLE_USERNAME
   key_secret: KAGGLE_KEY
   kernel_name: solarhub-training
   inference_kernel: solarhub-inference
-  dataset_title: solarhub-dataset
 
 data:
   task_types:

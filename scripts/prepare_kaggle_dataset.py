@@ -1,11 +1,20 @@
 """
 prepare_kaggle_dataset.py
 =========================
-Pipeline Stage 5 (pre-training) — Prepare Kaggle Dataset
+Pipeline Stage 5 (pre-training) — Prepare Kaggle Datasets
 
-Build a Kaggle dataset from the current data_processing/ task files and push
-it to Kaggle so that training and inference kernels can access the latest
-solar-observation URLs.
+Build one Kaggle dataset **per task type** from the current data_processing/
+task files and push each to Kaggle so that training and inference kernels can
+access the latest solar-observation URLs grouped by task type.
+
+Kaggle datasets updated (one per task type, under the authenticated user):
+  solarhub-sunspot
+  solarhub-solar-flare
+  solarhub-magnetogram
+  solarhub-coronal-hole
+  solarhub-prominence
+  solarhub-active-region
+  solarhub-cme
 
 Environment variables (populated from GitHub Actions secrets):
   KAGGLE_USERNAME — Kaggle account username (required).
@@ -22,6 +31,7 @@ import logging
 import os
 import sys
 import tempfile
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -40,20 +50,28 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
-KAGGLE_DATASET_TITLE = "solarhub-dataset"
-KAGGLE_DATASET_SLUG = "solarhub-dataset"
+# Prefix for per-task Kaggle dataset slugs.
+KAGGLE_DATASET_SLUG_PREFIX = "solarhub-"
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _configure_kaggle_credentials() -> None:
+def _kaggle_slug_for_task(task_type: str) -> str:
+    """Return the Kaggle dataset slug for *task_type*.
+
+    e.g. ``solar_flare`` → ``solarhub-solar-flare``.
+    """
+    return KAGGLE_DATASET_SLUG_PREFIX + task_type.replace("_", "-")
+
+
+def _configure_kaggle_credentials() -> str:
     """
     Write KAGGLE_USERNAME and KAGGLE_KEY from environment variables to
     ~/.kaggle/kaggle.json so the kaggle-api client can authenticate.
 
-    Raises SystemExit if either variable is absent.
+    Returns the username.  Raises SystemExit if either variable is absent.
     """
     username = os.environ.get("KAGGLE_USERNAME", "")
     key = os.environ.get("KAGGLE_KEY", "")
@@ -75,25 +93,44 @@ def _configure_kaggle_credentials() -> None:
     )
     creds_path.chmod(0o600)
     log.info("Kaggle credentials configured from environment secrets.")
+    return username
 
 
-def _collect_task_records() -> list[dict[str, Any]]:
-    """Read all task JSON files from data_processing/ and return them as a list."""
-    records: list[dict[str, Any]] = []
+def _collect_task_records_by_type() -> dict[str, list[dict[str, Any]]]:
+    """
+    Read all task JSON files from data_processing/ and group them by
+    ``task_type``.  Files without a ``task_type`` are skipped.
+    """
+    by_type: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for path in sorted(DATA_PROCESSING_DIR.glob("*.json")):
         try:
             record = json.loads(path.read_text(encoding="utf-8"))
-            records.append(record)
         except (json.JSONDecodeError, OSError) as exc:
             log.warning("Skipping unreadable task file %s: %s", path.name, exc)
-    log.info("Collected %d task record(s) from data_processing/.", len(records))
-    return records
+            continue
+        task_type = record.get("task_type")
+        if not task_type:
+            log.warning("Skipping task file %s: missing task_type.", path.name)
+            continue
+        by_type[task_type].append(record)
+
+    for task_type, records in sorted(by_type.items()):
+        log.info(
+            "Collected %d record(s) for task_type='%s'.", len(records), task_type
+        )
+    return dict(by_type)
 
 
-def _push_dataset_to_kaggle(records: list[dict[str, Any]]) -> None:
+def _push_task_dataset_to_kaggle(
+    task_type: str,
+    records: list[dict[str, Any]],
+    username: str,
+) -> None:
     """
-    Serialize *records* as a JSONL file and push it as a new Kaggle dataset
-    version using the kaggle-api client.
+    Serialize *records* as a JSONL file and push a new version of the
+    per-task Kaggle dataset.
+
+    The dataset must already exist (created by setup_platforms.py).
     """
     try:
         import kaggle  # type: ignore[import]  # noqa: F401
@@ -104,7 +141,8 @@ def _push_dataset_to_kaggle(records: list[dict[str, Any]]) -> None:
         )
         sys.exit(1)
 
-    username = os.environ["KAGGLE_USERNAME"]
+    slug = _kaggle_slug_for_task(task_type)
+    dataset_id = f"{username}/{slug}"
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
@@ -118,8 +156,8 @@ def _push_dataset_to_kaggle(records: list[dict[str, Any]]) -> None:
 
         # Write dataset-metadata.json required by the Kaggle API.
         metadata = {
-            "title": KAGGLE_DATASET_TITLE,
-            "id": f"{username}/{KAGGLE_DATASET_SLUG}",
+            "title": slug,
+            "id": dataset_id,
             "licenses": [{"name": "CC0-1.0"}],
         }
         (tmp_path / "dataset-metadata.json").write_text(
@@ -130,9 +168,8 @@ def _push_dataset_to_kaggle(records: list[dict[str, Any]]) -> None:
         api.authenticate()
 
         log.info(
-            "Pushing dataset '%s/%s' to Kaggle (%d record(s)).",
-            username,
-            KAGGLE_DATASET_SLUG,
+            "Pushing dataset '%s' to Kaggle (%d record(s)).",
+            dataset_id,
             len(records),
         )
         # Create a new version; the dataset must already exist on Kaggle.
@@ -141,7 +178,7 @@ def _push_dataset_to_kaggle(records: list[dict[str, Any]]) -> None:
             version_notes="Nightly pipeline update",
             quiet=False,
         )
-        log.info("Kaggle dataset pushed successfully.")
+        log.info("Kaggle dataset '%s' pushed successfully.", dataset_id)
 
 
 # ---------------------------------------------------------------------------
@@ -149,13 +186,22 @@ def _push_dataset_to_kaggle(records: list[dict[str, Any]]) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    _configure_kaggle_credentials()
-    records = _collect_task_records()
-    if not records:
+    username = _configure_kaggle_credentials()
+
+    records_by_type = _collect_task_records_by_type()
+    if not records_by_type:
         log.warning("No task records found in data_processing/. Skipping Kaggle upload.")
         return
-    _push_dataset_to_kaggle(records)
-    log.info("Stage 5 (prepare_kaggle_dataset) complete.")
+
+    for task_type, records in sorted(records_by_type.items()):
+        _push_task_dataset_to_kaggle(task_type, records, username)
+
+    total = sum(len(r) for r in records_by_type.values())
+    log.info(
+        "Stage 5 complete. %d record(s) pushed across %d task type dataset(s).",
+        total,
+        len(records_by_type),
+    )
 
 
 if __name__ == "__main__":
@@ -164,3 +210,4 @@ if __name__ == "__main__":
     except Exception as exc:  # pylint: disable=broad-except
         log.exception("Unexpected error in prepare_kaggle_dataset: %s", exc)
         sys.exit(1)
+

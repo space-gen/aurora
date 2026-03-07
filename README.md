@@ -41,8 +41,8 @@ Users annotate solar observations by **opening a GitHub Issue** using the
 *Submit Solar Observation Annotation* template.  When the `annotation` label
 is applied to an issue, the `00_parse_annotation_issue.yml` workflow
 automatically parses the form fields and writes the annotation to
-`annotations/`.  It is then merged into the HuggingFace dataset during the
-next nightly pipeline run.
+`annotations/`.  It is then merged into the appropriate per-task-type
+HuggingFace dataset during the next nightly pipeline run.
 
 ## First-Time Setup
 
@@ -54,6 +54,18 @@ and `KAGGLE_KEY` secrets to be set):
 ```
 Actions → Setup Platforms → Run workflow → confirm: yes
 ```
+
+This creates **one HuggingFace dataset and one Kaggle dataset per task type**:
+
+| Task Type | HuggingFace Dataset | Kaggle Dataset |
+|-----------|---------------------|----------------|
+| sunspot | `spacegen/solarhub-sunspot` | `solarhub-sunspot` |
+| solar_flare | `spacegen/solarhub-solar-flare` | `solarhub-solar-flare` |
+| magnetogram | `spacegen/solarhub-magnetogram` | `solarhub-magnetogram` |
+| coronal_hole | `spacegen/solarhub-coronal-hole` | `solarhub-coronal-hole` |
+| prominence | `spacegen/solarhub-prominence` | `solarhub-prominence` |
+| active_region | `spacegen/solarhub-active-region` | `solarhub-active-region` |
+| cme | `spacegen/solarhub-cme` | `solarhub-cme` |
 
 ## Nightly Pipeline
 

@@ -50,8 +50,19 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
-# HuggingFace dataset used for deduplication checks.
-HF_DATASET_REPO = "spacegen/solarhub-annotations"
+# HuggingFace per-task dataset prefix used for deduplication checks.
+HF_DATASET_REPO_PREFIX = "spacegen/solarhub-"
+
+# All task types — must match configs/system_config.yaml data.task_types.
+HF_TASK_TYPES: list[str] = [
+    "sunspot",
+    "solar_flare",
+    "magnetogram",
+    "coronal_hole",
+    "prominence",
+    "active_region",
+    "cme",
+]
 
 # Maximum number of pagination pages to fetch per source API.
 # Set to 0 to disable the limit (fetch all pages).
@@ -123,33 +134,54 @@ def _get_hf_token() -> str:
     return token
 
 
+def _hf_repo_for_task(task_type: str) -> str:
+    """Return the HuggingFace dataset repo ID for *task_type*.
+
+    e.g. ``solar_flare`` → ``spacegen/solarhub-solar-flare``.
+    """
+    return HF_DATASET_REPO_PREFIX + task_type.replace("_", "-")
+
+
 def _load_hf_urls(token: str) -> set[str]:
     """
-    Return the set of URLs already present in the HuggingFace annotation
-    dataset so we can skip adding them as new tasks.
+    Return the set of URLs already present across all per-task-type
+    HuggingFace annotation datasets so we can skip adding duplicates.
 
-    Returns an empty set if the token is absent, the dataset does not yet
-    exist, or the ``datasets`` library is not installed.
+    Returns an empty set if the token is absent, no datasets exist yet,
+    or the ``datasets`` library is not installed.
     """
     if not token:
         return set()
     try:
         from datasets import load_dataset  # type: ignore[import]
-
-        log.info("Loading existing URLs from HuggingFace dataset '%s'.", HF_DATASET_REPO)
-        ds = load_dataset(HF_DATASET_REPO, token=token, split="train")
-        urls: set[str] = set(ds["url"])
-        log.info("Found %d URL(s) already in the HuggingFace dataset.", len(urls))
-        return urls
     except ImportError:
         log.warning("'datasets' package not installed — skipping HF deduplication.")
         return set()
-    except Exception as exc:  # pylint: disable=broad-except
-        log.warning(
-            "Could not load HuggingFace dataset for deduplication (it may not exist yet): %s",
-            exc,
-        )
-        return set()
+
+    all_urls: set[str] = set()
+    for task_type in HF_TASK_TYPES:
+        repo_id = _hf_repo_for_task(task_type)
+        try:
+            log.info("Loading existing URLs from HuggingFace dataset '%s'.", repo_id)
+            ds = load_dataset(repo_id, token=token, split="train")
+            task_urls: set[str] = set(ds["url"])
+            log.info(
+                "Found %d URL(s) in '%s'.", len(task_urls), repo_id
+            )
+            all_urls |= task_urls
+        except Exception as exc:  # pylint: disable=broad-except
+            log.warning(
+                "Could not load HuggingFace dataset '%s' for deduplication "
+                "(it may not exist yet): %s",
+                repo_id,
+                exc,
+            )
+
+    log.info(
+        "Total of %d unique URL(s) loaded from HuggingFace for deduplication.",
+        len(all_urls),
+    )
+    return all_urls
 
 
 def _is_valid_url(url: str) -> bool:

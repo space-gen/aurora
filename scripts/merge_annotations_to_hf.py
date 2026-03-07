@@ -4,8 +4,19 @@ merge_annotations_to_hf.py
 Pipeline Stage 3 — Merge Annotations
 
 Read pending annotation files from annotations/ and append them to the
-HuggingFace dataset.  After a successful push the annotation file content
-is cleared (the file itself is kept as an empty placeholder).
+per-task-type HuggingFace datasets.  Each annotation is routed to the
+dataset that matches its ``task_type`` field:
+
+  sunspot       → spacegen/solarhub-sunspot
+  solar_flare   → spacegen/solarhub-solar-flare
+  magnetogram   → spacegen/solarhub-magnetogram
+  coronal_hole  → spacegen/solarhub-coronal-hole
+  prominence    → spacegen/solarhub-prominence
+  active_region → spacegen/solarhub-active-region
+  cme           → spacegen/solarhub-cme
+
+After a successful push the annotation file content is cleared (the file
+itself is kept as an empty placeholder).
 
 Environment variables (populated from GitHub Actions secrets):
   HF_TOKEN — HuggingFace write token (required).
@@ -20,6 +31,7 @@ import json
 import logging
 import os
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -38,7 +50,8 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
-HF_DATASET_REPO = "spacegen/solarhub-annotations"
+# Prefix for per-task HuggingFace dataset repo IDs.
+HF_DATASET_REPO_PREFIX = "spacegen/solarhub-"
 
 # Required fields that every annotation file must contain.
 REQUIRED_FIELDS = {"url", "task_type", "user_label"}
@@ -47,6 +60,14 @@ REQUIRED_FIELDS = {"url", "task_type", "user_label"}
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _hf_repo_for_task(task_type: str) -> str:
+    """Return the HuggingFace dataset repo ID for *task_type*.
+
+    e.g. ``solar_flare`` → ``spacegen/solarhub-solar-flare``.
+    """
+    return HF_DATASET_REPO_PREFIX + task_type.replace("_", "-")
+
 
 def _get_hf_token() -> str:
     """Read and validate the HuggingFace API token from the environment."""
@@ -90,17 +111,17 @@ def _load_annotation_files() -> list[tuple[Path, dict[str, Any]]]:
 
 
 def _push_annotations_to_hf(
-    annotations: list[dict[str, Any]], token: str
+    annotations: list[dict[str, Any]],
+    token: str,
+    repo_id: str,
 ) -> bool:
     """
-    Append *annotations* to the HuggingFace dataset.
+    Append *annotations* to the HuggingFace dataset *repo_id*.
 
-    Uses the ``huggingface_hub`` library to push a new Parquet shard to the
-    dataset repository.  Returns True on success, False on failure.
+    Returns True on success, False on failure.
     """
     try:
         from datasets import Dataset  # type: ignore[import]
-        from huggingface_hub import HfApi  # type: ignore[import]
     except ImportError as exc:
         log.error(
             "Required packages not installed: %s. "
@@ -112,7 +133,7 @@ def _push_annotations_to_hf(
     log.info(
         "Pushing %d annotation(s) to HuggingFace dataset '%s'.",
         len(annotations),
-        HF_DATASET_REPO,
+        repo_id,
     )
 
     # Normalise annotations to only include dataset-relevant fields.
@@ -127,18 +148,17 @@ def _push_annotations_to_hf(
     ]
 
     try:
-        api = HfApi(token=token)
         dataset = Dataset.from_list(records)
 
         dataset.push_to_hub(
-            HF_DATASET_REPO,
+            repo_id,
             token=token,
             split="train",
         )
-        log.info("Successfully pushed annotations to HuggingFace.")
+        log.info("Successfully pushed %d annotation(s) to '%s'.", len(records), repo_id)
         return True
     except Exception as exc:  # pylint: disable=broad-except
-        log.error("Failed to push annotations to HuggingFace: %s", exc)
+        log.error("Failed to push annotations to '%s': %s", repo_id, exc)
         return False
 
 
@@ -161,18 +181,44 @@ def main() -> None:
         return
 
     log.info("Found %d pending annotation file(s).", len(annotation_pairs))
-    annotations = [ann for _, ann in annotation_pairs]
 
-    success = _push_annotations_to_hf(annotations, token)
-    if not success:
-        log.error("Annotation merge failed. Files will not be cleared.")
+    # Group annotation paths and dicts by task_type.
+    by_task: dict[str, list[tuple[Path, dict[str, Any]]]] = defaultdict(list)
+    for path, ann in annotation_pairs:
+        by_task[ann["task_type"]].append((path, ann))
+
+    failed_task_types: list[str] = []
+    cleared_paths: list[Path] = []
+
+    for task_type, pairs in sorted(by_task.items()):
+        repo_id = _hf_repo_for_task(task_type)
+        annotations = [ann for _, ann in pairs]
+
+        success = _push_annotations_to_hf(annotations, token, repo_id)
+        if not success:
+            log.error(
+                "Annotation merge failed for task_type='%s'. "
+                "Files will not be cleared.",
+                task_type,
+            )
+            failed_task_types.append(task_type)
+            continue
+
+        for path, _ in pairs:
+            _clear_annotation_file(path)
+            cleared_paths.append(path)
+
+    if failed_task_types:
+        log.error(
+            "Stage 3 completed with errors. Failed task type(s): %s",
+            ", ".join(failed_task_types),
+        )
         sys.exit(1)
 
-    for path, _ in annotation_pairs:
-        _clear_annotation_file(path)
-
     log.info(
-        "Stage 3 complete. %d annotation(s) merged and cleared.", len(annotation_pairs)
+        "Stage 3 complete. %d annotation(s) merged across %d task type(s).",
+        len(cleared_paths),
+        len(by_task),
     )
 
 
@@ -182,3 +228,4 @@ if __name__ == "__main__":
     except Exception as exc:  # pylint: disable=broad-except
         log.exception("Unexpected error in merge_annotations_to_hf: %s", exc)
         sys.exit(1)
+
