@@ -41,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
 # HuggingFace dataset used for deduplication checks.
-HF_DATASET_REPO = "spacegen/helios-annotations"
+HF_DATASET_REPO = "spacegen/solarhub-annotations"
 
 # Supported task types mapped to their source API endpoints.
 # Each entry is a dict with at least a "url" key; additional fields are

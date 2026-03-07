@@ -1,4 +1,4 @@
-# SolarHub Helios — Aurora
+# SolarHub — Aurora
 
 > **Backend orchestration system for the SolarHub citizen-science platform.**
 

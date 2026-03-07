@@ -40,8 +40,8 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
-KAGGLE_DATASET_TITLE = "solarhub-helios-dataset"
-KAGGLE_DATASET_SLUG = "solarhub-helios-dataset"
+KAGGLE_DATASET_TITLE = "solarhub-dataset"
+KAGGLE_DATASET_SLUG = "solarhub-dataset"
 
 
 # ---------------------------------------------------------------------------

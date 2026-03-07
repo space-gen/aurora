@@ -41,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
 # Kaggle kernel that produces predictions.json as an output file.
-KAGGLE_INFERENCE_KERNEL = "solarhub/solarhub-helios-inference"
+KAGGLE_INFERENCE_KERNEL = "solarhub/solarhub-inference"
 
 # Name of the output file produced by the Kaggle inference kernel.
 PREDICTIONS_FILENAME = "predictions.json"

@@ -41,7 +41,7 @@ jobs:
 
           # Trigger the inference kernel.  The kernel will:
           #   1. Pull the latest model from HuggingFace (using its own HF_TOKEN secret).
-          #   2. Run inference over the solarhub-helios-dataset URLs.
+          #   2. Run inference over the solarhub-dataset URLs.
           #   3. Produce predictions.json and push it back to GitHub.
           kaggle kernels push \
             --path .github/kaggle/inference_kernel_metadata.json \

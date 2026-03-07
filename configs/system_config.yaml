@@ -1,5 +1,5 @@
 system:
-  name: SolarHub Helios
+  name: SolarHub
   codename: Aurora
   version: 1.0
 
@@ -13,8 +13,8 @@ workflow:
 huggingface:
   # HuggingFace repository / dataset identifiers.
   # The actual API token is supplied at runtime via the HF_TOKEN secret.
-  dataset_repo: spacegen/helios-annotations
-  model_repo: spacegen/helios-model
+  dataset_repo: spacegen/solarhub-annotations
+  model_repo: spacegen/solarhub-model
   # Name of the GitHub Actions secret that holds the HF write token.
   token_secret: HF_TOKEN
 
@@ -23,9 +23,9 @@ kaggle:
   # Credentials are supplied at runtime via the KAGGLE_USERNAME and KAGGLE_KEY secrets.
   username_secret: KAGGLE_USERNAME
   key_secret: KAGGLE_KEY
-  kernel_name: solarhub-helios-training
-  inference_kernel: solarhub-helios-inference
-  dataset_title: solarhub-helios-dataset
+  kernel_name: solarhub-training
+  inference_kernel: solarhub-inference
+  dataset_title: solarhub-dataset
 
 data:
   task_types:

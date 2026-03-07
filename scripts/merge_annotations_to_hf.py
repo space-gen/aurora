@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
-HF_DATASET_REPO = "spacegen/helios-annotations"
+HF_DATASET_REPO = "spacegen/solarhub-annotations"
 
 # Required fields that every annotation file must contain.
 REQUIRED_FIELDS = {"url", "task_type", "user_label"}

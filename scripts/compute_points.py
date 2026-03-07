@@ -56,7 +56,7 @@ def _load_task_index() -> dict[str, dict[str, Any]]:
     """
     index: dict[str, dict[str, Any]] = {}
     for path in sorted(DATA_PROCESSING_DIR.glob("*.json")):
-        if path.name == ACCURACY_OUTPUT_FILE.name:
+        if path == ACCURACY_OUTPUT_FILE:
             continue
         try:
             task = json.loads(path.read_text(encoding="utf-8"))

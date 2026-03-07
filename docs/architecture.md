@@ -1,8 +1,8 @@
-# SolarHub Helios — Architecture
+# SolarHub — Architecture
 
 ## Overview
 
-SolarHub Helios (codename **Aurora**) is the backend orchestration layer for the SolarHub
+SolarHub (codename **Aurora**) is the backend orchestration layer for the SolarHub
 citizen-science platform.  It manages task data, user annotations, machine-learning pipelines,
 and data synchronisation across three external platforms: **GitHub**, **HuggingFace**, and **Kaggle**.
 
@@ -47,8 +47,8 @@ Modular, single-responsibility scripts invoked by the GitHub Actions workflows.
 | `compute_points.py` | Evaluate model accuracy against user annotations |
 
 ### HuggingFace
-Stores the labelled annotation dataset (`spacegen/helios-annotations`) and trained models
-(`spacegen/helios-model`).  Access requires the `HF_TOKEN` GitHub Actions secret.
+Stores the labelled annotation dataset (`spacegen/solarhub-annotations`) and trained models
+(`spacegen/solarhub-model`).  Access requires the `HF_TOKEN` GitHub Actions secret.
 
 ### Kaggle
 Runs training and daily inference kernels against the HuggingFace dataset.  Predictions are
