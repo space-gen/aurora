@@ -8,7 +8,7 @@ on:
 
 jobs:
   trigger-training:
-    name: Upload dataset and trigger Kaggle training kernel
+    name: Push task data to HuggingFace and trigger Kaggle training kernel
     runs-on: ubuntu-latest
     if: >
       github.event_name == 'workflow_dispatch' ||
@@ -26,16 +26,20 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install kaggle
+        run: pip install datasets huggingface_hub kaggle
 
-      - name: Prepare and push Kaggle dataset
+      - name: Push task records to HuggingFace
         env:
+          # HF_TOKEN is used to push task records to per-task HuggingFace datasets
+          # (spacegen/solarhub-{task_type}, tasks split) so that Kaggle kernels
+          # can pull training/inference data directly from HuggingFace.
+          # Set this secret under Settings → Secrets and variables → Actions.
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           # KAGGLE_USERNAME and KAGGLE_KEY are written to ~/.kaggle/kaggle.json
-          # by prepare_kaggle_dataset.py.
-          # Set these secrets under Settings → Secrets and variables → Actions.
+          # by prepare_hf_training_data.py for the subsequent kernel trigger step.
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-        run: python scripts/prepare_kaggle_dataset.py
+        run: python scripts/prepare_hf_training_data.py
 
       - name: Trigger Kaggle training kernel
         env:
@@ -48,6 +52,11 @@ jobs:
             > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
+          # The training kernel:
+          #   1. Reads annotation data from HuggingFace (spacegen/solarhub-{task_type}, train split).
+          #   2. Trains a model per task type.
+          #   3. Pushes trained model weights to HuggingFace (spacegen/solarhub-model-{task_type})
+          #      using the HF_TOKEN Kaggle Secret configured in the kernel settings.
           kaggle kernels push \
             --path .github/kaggle/training_kernel_metadata.json \
             || echo "Kernel push attempted — check Kaggle for run status."

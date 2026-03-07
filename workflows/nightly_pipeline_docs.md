@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document describes the nightly automation pipeline for SolarHub Helios (Aurora).
+This document describes the nightly automation pipeline for SolarHub (Aurora).
 The pipeline runs every day at **00:00 UTC** and is fully orchestrated by GitHub Actions.
 
 ## Workflow Files

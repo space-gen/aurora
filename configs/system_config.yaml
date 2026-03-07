@@ -1,5 +1,5 @@
 system:
-  name: SolarHub Helios
+  name: SolarHub
   codename: Aurora
   version: 1.0
 
@@ -11,21 +11,25 @@ workflow:
   nightly_time: "00:00 UTC"
 
 huggingface:
-  # HuggingFace repository / dataset identifiers.
-  # The actual API token is supplied at runtime via the HF_TOKEN secret.
-  dataset_repo: solarhub/helios-annotations
-  model_repo: solarhub/helios-model
+  # Per-task-type annotation dataset prefix.
+  # Full dataset repo: {dataset_repo_prefix}{task_type_hyphenated}
+  # e.g. spacegen/solarhub-sunspot, spacegen/solarhub-solar-flare, …
+  dataset_repo_prefix: spacegen/solarhub-
+  # Per-task-type model repository prefix.
+  # Full model repo: {model_repo_prefix}{task_type_hyphenated}
+  # e.g. spacegen/solarhub-model-sunspot, spacegen/solarhub-model-solar-flare, …
+  model_repo_prefix: spacegen/solarhub-model-
   # Name of the GitHub Actions secret that holds the HF write token.
   token_secret: HF_TOKEN
 
 kaggle:
-  # Kaggle username and competition / kernel settings.
+  # Kaggle is used only for compute (training & inference kernels).
+  # No datasets are stored in Kaggle — all data lives in HuggingFace.
   # Credentials are supplied at runtime via the KAGGLE_USERNAME and KAGGLE_KEY secrets.
   username_secret: KAGGLE_USERNAME
   key_secret: KAGGLE_KEY
-  kernel_name: solarhub-helios-training
-  inference_kernel: solarhub-helios-inference
-  dataset_title: solarhub-helios-dataset
+  kernel_name: solarhub-training
+  inference_kernel: solarhub-inference
 
 data:
   task_types:
@@ -33,6 +37,9 @@ data:
     - solar_flare
     - magnetogram
     - coronal_hole
+    - prominence
+    - active_region
+    - cme
   source_apis:
     - name: NASA SDAC
       base_url: https://umbra.nascom.nasa.gov/
@@ -40,6 +47,12 @@ data:
       base_url: https://lasco-www.nrl.navy.mil/
     - name: SDO HMI
       base_url: https://jsoc.stanford.edu/
+    - name: NSO
+      base_url: https://www.nso.edu/
+    - name: SolarMonitor
+      base_url: https://www.solarmonitor.org/
+    - name: NASA CDAW
+      base_url: https://cdaw.gsfc.nasa.gov/
 
 annotations:
   merge_strategy: append

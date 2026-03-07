@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: SolarHub Documentation
+    url: https://github.com/space-gen/aurora/blob/main/README.md
+    about: Learn more about the SolarHub annotation pipeline.

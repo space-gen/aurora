@@ -1,6 +1,6 @@
 {
-  "id": "solarhub/solarhub-helios-training",
-  "title": "SolarHub Helios — Training",
+  "id": "solarhub/solarhub-training",
+  "title": "SolarHub — Training",
   "code_file": "train.py",
   "language": "python",
   "kernel_type": "script",
@@ -8,7 +8,7 @@
   "enable_gpu": true,
   "enable_internet": true,
   "dataset_sources": [
-    "solarhub/solarhub-helios-dataset"
+    "solarhub/solarhub-dataset"
   ],
   "competition_sources": [],
   "kernel_sources": []

@@ -40,9 +40,10 @@ jobs:
           chmod 600 ~/.kaggle/kaggle.json
 
           # Trigger the inference kernel.  The kernel will:
-          #   1. Pull the latest model from HuggingFace (using its own HF_TOKEN secret).
-          #   2. Run inference over the solarhub-helios-dataset URLs.
-          #   3. Produce predictions.json and push it back to GitHub.
+          #   1. Pull the latest model from HuggingFace (spacegen/solarhub-model-{task_type})
+          #      using its HF_TOKEN Kaggle Secret.
+          #   2. Read task URLs from HuggingFace (spacegen/solarhub-{task_type}, tasks split).
+          #   3. Run inference and produce predictions.json as a kernel output file.
           kaggle kernels push \
             --path .github/kaggle/inference_kernel_metadata.json \
             || echo "Kernel push attempted — check Kaggle for run status."

@@ -1,4 +1,4 @@
-# SolarHub Helios — ML Flow
+# SolarHub — ML Flow
 
 ## Overview
 
@@ -8,13 +8,13 @@ GitHub Actions orchestrates the trigger sequence.
 
 ```
   HuggingFace dataset           Kaggle kernel
-  solarhub/helios-annotations ──► solarhub-helios-training
+  spacegen/solarhub-annotations ──► solarhub-training
                                          │
                                          ▼ (trained model)
-  HuggingFace model hub         solarhub/helios-model
-  solarhub/helios-model ◄────────────────┘
+  HuggingFace model hub         spacegen/solarhub-model
+  spacegen/solarhub-model ◄────────────────┘
 
-  data_processing/ URLs ─────► solarhub-helios-inference
+  data_processing/ URLs ─────► solarhub-inference
                                          │
                                          ▼ (predictions.json)
                                GitHub (import_kaggle_predictions.py)
@@ -22,30 +22,30 @@ GitHub Actions orchestrates the trigger sequence.
 
 ## Training Pipeline
 
-1. **Data source:** The `solarhub/helios-annotations` HuggingFace dataset, which is
+1. **Data source:** The `spacegen/solarhub-annotations` HuggingFace dataset, which is
    updated nightly by `merge_annotations_to_hf.py`.
 
 2. **Trigger:** The `05_trigger_kaggle_training.yml` GitHub Actions workflow calls the
    Kaggle API using `KAGGLE_USERNAME` + `KAGGLE_KEY` secrets to run the
-   `solarhub-helios-training` kernel.
+   `solarhub-training` kernel.
 
 3. **Kernel responsibilities:**
    - Pull the latest HuggingFace dataset using the `datasets` library and `HF_TOKEN`.
    - Fine-tune the solar-classification model.
-   - Push the updated model to `solarhub/helios-model` on HuggingFace model hub.
+   - Push the updated model to `spacegen/solarhub-model` on HuggingFace model hub.
 
 4. **Output:** A versioned model artifact on HuggingFace.
 
 ## Inference Pipeline
 
-1. **Data source:** The Kaggle dataset `solarhub-helios-dataset` (uploaded by
+1. **Data source:** The Kaggle dataset `solarhub-dataset` (uploaded by
    `prepare_kaggle_dataset.py`) containing current solar-observation URLs.
 
 2. **Trigger:** The `06_trigger_kaggle_inference.yml` GitHub Actions workflow calls the
-   Kaggle API to run the `solarhub-helios-inference` kernel.
+   Kaggle API to run the `solarhub-inference` kernel.
 
 3. **Kernel responsibilities:**
-   - Pull the latest model from `solarhub/helios-model` on HuggingFace.
+   - Pull the latest model from `spacegen/solarhub-model` on HuggingFace.
    - Pull the latest task URLs from the Kaggle dataset.
    - Run inference on each observation image.
    - Produce `predictions.json` in the format:
@@ -70,6 +70,9 @@ GitHub Actions orchestrates the trigger sequence.
 | `solar_flare` | Detect and classify solar flare events |
 | `magnetogram` | Classify magnetic polarity features |
 | `coronal_hole` | Identify coronal holes from EUV imagery |
+| `prominence` | Detect solar prominences and filaments |
+| `active_region` | Identify active solar regions |
+| `cme` | Detect coronal mass ejection events |
 
 ## Secrets Required
 

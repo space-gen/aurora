@@ -1,4 +1,4 @@
-# SolarHub Helios — Nightly Pipeline
+# SolarHub — Nightly Pipeline
 
 ## Schedule
 
@@ -14,7 +14,7 @@ Stage 4  Sync Annotation Templates  copy data_processing/ → annotations/
 Stage 5  Trigger Kaggle Training    run HF dataset training kernel
 Stage 6  Trigger Kaggle Inference   run daily inference kernel
 Stage 7  Import Predictions    write ML results → data_processing/ task files
-Stage 8  Compute User Points   score annotations vs. ML predictions
+Stage 8  Evaluate Model Accuracy  compare ML predictions vs. user annotations
 Stage 9  Unlock Frontend       rename data_processing/ → data/
 ```
 
@@ -38,7 +38,7 @@ Stage 9  Unlock Frontend       rename data_processing/ → data/
 
 - Calls `scripts/merge_annotations_to_hf.py`.
 - Reads pending annotation files from `annotations/`.
-- Appends them to the `solarhub/helios-annotations` HuggingFace dataset.
+- Appends them to the `spacegen/solarhub-annotations` HuggingFace dataset.
 - Clears annotation file contents after a successful merge.
 - **Requires secret:** `HF_TOKEN`
 
@@ -51,12 +51,12 @@ Stage 9  Unlock Frontend       rename data_processing/ → data/
 ### Stage 5 — Trigger Kaggle Training (`05_trigger_kaggle_training.yml`)
 
 - Calls `scripts/prepare_kaggle_dataset.py` to push updated task URLs to Kaggle.
-- Triggers the `solarhub-helios-training` Kaggle kernel via the Kaggle API.
+- Triggers the `solarhub-training` Kaggle kernel via the Kaggle API.
 - **Requires secrets:** `KAGGLE_USERNAME`, `KAGGLE_KEY`
 
 ### Stage 6 — Trigger Kaggle Inference (`06_trigger_kaggle_inference.yml`)
 
-- Triggers the `solarhub-helios-inference` Kaggle kernel via the Kaggle API.
+- Triggers the `solarhub-inference` Kaggle kernel via the Kaggle API.
 - The inference kernel reads from HuggingFace + Kaggle dataset, runs predictions,
   and pushes `predictions.json` back to this repository.
 - **Requires secrets:** `KAGGLE_USERNAME`, `KAGGLE_KEY`
@@ -69,11 +69,12 @@ Stage 9  Unlock Frontend       rename data_processing/ → data/
   in `data_processing/`.
 - **Requires secrets:** `KAGGLE_USERNAME`, `KAGGLE_KEY`
 
-### Stage 8 — Compute User Points (`08_compute_points.yml`)
+### Stage 8 — Evaluate Model Accuracy (`08_compute_points.yml`)
 
 - Calls `scripts/compute_points.py`.
-- Compares user annotation labels against ML predictions weighted by confidence.
-- Updates the `points` field in each task file.
+- Compares ML prediction labels against user annotation labels.
+- Computes overall and per-task-type model accuracy.
+- Writes the accuracy report to `data_processing/model_accuracy.json`.
 
 ### Stage 9 — Unlock Frontend (`09_unlock_frontend.yml`)
 
