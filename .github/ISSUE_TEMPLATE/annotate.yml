@@ -1,0 +1,66 @@
+name: "Submit Solar Observation Annotation"
+description: "Label a solar observation image for the SolarHub citizen-science dataset."
+labels:
+  - annotation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Annotate a Solar Observation
+
+        Fill in the fields below to submit your annotation.  Your label will be
+        used to train and evaluate the SolarHub solar-classification model.
+
+        **Valid labels per task type:**
+        | Task Type | Valid Labels |
+        |-----------|-------------|
+        | `sunspot` | `active_region` · `quiet_sun` · `sunspot_group` · `no_sunspot` |
+        | `solar_flare` | `a_class` · `b_class` · `c_class` · `m_class` · `x_class` · `no_flare` |
+        | `magnetogram` | `bipolar_active` · `unipolar` · `complex` · `quiet` |
+        | `coronal_hole` | `polar` · `equatorial` · `mid_latitude` · `none` |
+        | `prominence` | `eruptive` · `quiescent` · `active` · `none` |
+        | `active_region` | `alpha` · `beta` · `beta_gamma` · `beta_gamma_delta` · `none` |
+        | `cme` | `halo` · `partial_halo` · `narrow` · `none` |
+
+  - type: input
+    id: image_url
+    attributes:
+      label: "Image URL"
+      description: "The full HTTPS URL of the solar observation image you are labelling."
+      placeholder: "https://solar-data-source/image.jpg"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: "Task Type"
+      description: "What kind of solar feature does this image show?"
+      options:
+        - sunspot
+        - solar_flare
+        - magnetogram
+        - coronal_hole
+        - prominence
+        - active_region
+        - cme
+    validations:
+      required: true
+
+  - type: input
+    id: user_label
+    attributes:
+      label: "Your Label"
+      description: "Your classification for this image (see the table above for valid values)."
+      placeholder: "e.g. active_region"
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Notes (optional)"
+      description: "Any additional observations or comments about this image."
+      placeholder: "Optional notes..."
+    validations:
+      required: false
