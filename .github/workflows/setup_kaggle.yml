@@ -36,11 +36,17 @@ jobs:
           chmod 600 ~/.kaggle/kaggle.json
 
       - name: Initialise Training Kernel
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         run: |
-          kaggle kernels push --path .github/kaggle/ --file train.py
+          sed -i "s|solarhub/|${KAGGLE_USERNAME}/|g" .github/kaggle/training/kernel-metadata.json
+          kaggle kernels push --path .github/kaggle/training/
           # Wait a bit for Kaggle to process
           sleep 10
 
       - name: Initialise Inference Kernel
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         run: |
-          kaggle kernels push --path .github/kaggle/ --file inference.py
+          sed -i "s|solarhub/|${KAGGLE_USERNAME}/|g" .github/kaggle/inference/kernel-metadata.json
+          kaggle kernels push --path .github/kaggle/inference/

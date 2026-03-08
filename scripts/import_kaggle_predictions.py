@@ -101,6 +101,13 @@ def _download_predictions(tmp_dir: str) -> Path:
     Pull the latest predictions.json output file from the Kaggle inference
     kernel into *tmp_dir* and return its path.
     """
+    username = os.environ.get("KAGGLE_USERNAME", "")
+    if not username:
+        log.error("KAGGLE_USERNAME not set.")
+        sys.exit(1)
+    
+    kernel_id = f"{username}/solarhub-inference"
+
     try:
         from kaggle import KaggleApi  # type: ignore[import]
     except ImportError as exc:
@@ -110,8 +117,8 @@ def _download_predictions(tmp_dir: str) -> Path:
     api = KaggleApi()
     api.authenticate()
 
-    log.info("Downloading kernel output '%s' from %s.", PREDICTIONS_FILENAME, KAGGLE_INFERENCE_KERNEL)
-    api.kernels_output(KAGGLE_INFERENCE_KERNEL, path=tmp_dir)
+    log.info("Downloading kernel output '%s' from %s.", PREDICTIONS_FILENAME, kernel_id)
+    api.kernels_output(kernel_id, path=tmp_dir)
 
     predictions_path = Path(tmp_dir) / PREDICTIONS_FILENAME
     if not predictions_path.exists():

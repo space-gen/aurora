@@ -57,6 +57,7 @@ jobs:
           #   2. Trains a model per task type.
           #   3. Pushes trained model weights to HuggingFace (SpaceGen/solarhub-model-{task_type})
           #      using the HF_TOKEN Kaggle Secret configured in the kernel settings.
+          sed -i "s|solarhub/|${KAGGLE_USERNAME}/|g" .github/kaggle/training/kernel-metadata.json
           kaggle kernels push \
-            --path .github/kaggle/training_kernel_metadata.json \
+            --path .github/kaggle/training/ \
             || echo "Kernel push attempted — check Kaggle for run status."
