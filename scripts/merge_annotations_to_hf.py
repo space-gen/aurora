@@ -86,27 +86,37 @@ def _load_annotation_files() -> list[tuple[Path, dict[str, Any]]]:
     """
     Return a list of (path, annotation_dict) for all non-empty annotation
     JSON files in the annotations/ directory.
+    Handles both single records and lists of records.
     """
     results: list[tuple[Path, dict[str, Any]]] = []
     for path in sorted(ANNOTATIONS_DIR.glob("*.json")):
         raw = path.read_text(encoding="utf-8").strip()
-        if not raw:
+        if not raw or raw == "{}":
             log.debug("Skipping empty annotation file: %s", path.name)
             continue
         try:
-            annotation = json.loads(raw)
+            content = json.loads(raw)
+            if isinstance(content, list):
+                records = content
+            else:
+                records = [content]
         except json.JSONDecodeError as exc:
             log.warning("Skipping malformed annotation file %s: %s", path.name, exc)
             continue
-        missing = REQUIRED_FIELDS - annotation.keys()
-        if missing:
-            log.warning(
-                "Skipping annotation %s — missing required fields: %s",
-                path.name,
-                missing,
-            )
-            continue
-        results.append((path, annotation))
+        
+        for annotation in records:
+            # Skip empty objects in a list
+            if not annotation:
+                continue
+            missing = REQUIRED_FIELDS - annotation.keys()
+            if missing:
+                log.warning(
+                    "Skipping annotation in %s — missing required fields: %s",
+                    path.name,
+                    missing,
+                )
+                continue
+            results.append((path, annotation))
     return results
 
 
