@@ -39,7 +39,7 @@ jobs:
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         run: |
-          sed -i "s|solarhub/|${KAGGLE_USERNAME}/|g" .github/kaggle/training/kernel-metadata.json
+          sed -i "s|__USER__/|${KAGGLE_USERNAME}/|g" .github/kaggle/training/kernel-metadata.json
           kaggle kernels push --path .github/kaggle/training/
           # Wait a bit for Kaggle to process
           sleep 10
@@ -48,5 +48,5 @@ jobs:
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         run: |
-          sed -i "s|solarhub/|${KAGGLE_USERNAME}/|g" .github/kaggle/inference/kernel-metadata.json
+          sed -i "s|__USER__/|${KAGGLE_USERNAME}/|g" .github/kaggle/inference/kernel-metadata.json
           kaggle kernels push --path .github/kaggle/inference/

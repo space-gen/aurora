@@ -44,7 +44,7 @@ jobs:
           #      using its HF_TOKEN Kaggle Secret.
           #   2. Read task URLs from HuggingFace (SpaceGen/solarhub-{task_type}, tasks split).
           #   3. Run inference and produce predictions.json as a kernel output file.
-          sed -i "s|solarhub/|${KAGGLE_USERNAME}/|g" .github/kaggle/inference/kernel-metadata.json
+          sed -i "s|__USER__/|${KAGGLE_USERNAME}/|g" .github/kaggle/inference/kernel-metadata.json
           kaggle kernels push \
             --path .github/kaggle/inference/ \
             || echo "Kernel push attempted — check Kaggle for run status."
