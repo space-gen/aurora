@@ -149,26 +149,42 @@ def _load_predictions(predictions_path: Path) -> dict[str, dict[str, Any]]:
 def _apply_predictions(predictions: dict[str, dict[str, Any]]) -> int:
     """
     For each task file in data_processing/, update ml_prediction and
-    confidence from *predictions*.  Returns the number of files updated.
+    confidence from *predictions*.  Returns the number of records updated.
     """
     updated = 0
     for task_path in sorted(DATA_PROCESSING_DIR.glob("*.json")):
+        # Skip the model accuracy report itself
+        if task_path.name == "model_accuracy.json":
+            continue
+
         try:
-            task = json.loads(task_path.read_text(encoding="utf-8"))
+            content = json.loads(task_path.read_text(encoding="utf-8"))
+            if isinstance(content, list):
+                records = content
+                is_list = True
+            else:
+                records = [content]
+                is_list = False
         except (json.JSONDecodeError, OSError) as exc:
             log.warning("Skipping unreadable task file %s: %s", task_path.name, exc)
             continue
 
-        url = task.get("url")
-        if not url or url not in predictions:
-            continue
+        file_changed = False
+        for task in records:
+            url = task.get("url")
+            if not url or url not in predictions:
+                continue
 
-        pred = predictions[url]
-        task["ml_prediction"] = pred.get("ml_prediction")
-        task["confidence"] = pred.get("confidence")
-        task_path.write_text(json.dumps(task, indent=2), encoding="utf-8")
-        updated += 1
-        log.debug("Updated prediction for %s", url)
+            pred = predictions[url]
+            task["ml_prediction"] = pred.get("ml_prediction")
+            task["confidence"] = pred.get("confidence")
+            updated += 1
+            file_changed = True
+            log.debug("Updated prediction for %s", url)
+
+        if file_changed:
+            output_content = records if is_list else records[0]
+            task_path.write_text(json.dumps(output_content, indent=2), encoding="utf-8")
 
     return updated
 

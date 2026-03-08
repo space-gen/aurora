@@ -24,11 +24,13 @@ jobs:
 
       - name: Sync annotation templates from data_processing/
         run: |
-          # Copy task files from data_processing/ into annotations/ as blank
-          # annotation templates.  The user_label field is intentionally absent
-          # so users fill it when submitting GitHub Issues.
-          for src in data_processing/task_*.json; do
+          # Copy grouped task files from data_processing/ into annotations/ 
+          # so users can find URLs to annotate.
+          for src in data_processing/*.json; do
             [ -f "$src" ] || continue
+            # Skip model accuracy report if it exists
+            [[ "$(basename "$src")" == "model_accuracy.json" ]] && continue
+            
             dest="annotations/$(basename "$src")"
             cp "$src" "$dest"
           done

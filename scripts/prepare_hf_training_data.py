@@ -124,20 +124,26 @@ def _configure_kaggle_credentials() -> None:
 def _collect_task_records_by_type() -> dict[str, list[dict[str, Any]]]:
     """
     Read all task JSON files from data_processing/ and group them by
-    ``task_type``.  Files without a ``task_type`` are skipped.
+    ``task_type``.  Handles both single record files and lists of records.
     """
     by_type: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for path in sorted(DATA_PROCESSING_DIR.glob("*.json")):
         try:
-            record = json.loads(path.read_text(encoding="utf-8"))
+            content = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(content, list):
+                records = content
+            else:
+                records = [content]
         except (json.JSONDecodeError, OSError) as exc:
             log.warning("Skipping unreadable task file %s: %s", path.name, exc)
             continue
-        task_type = record.get("task_type")
-        if not task_type:
-            log.warning("Skipping task file %s: missing task_type.", path.name)
-            continue
-        by_type[task_type].append(record)
+        
+        for record in records:
+            task_type = record.get("task_type")
+            if not task_type:
+                log.warning("Skipping record in %s: missing task_type.", path.name)
+                continue
+            by_type[task_type].append(record)
 
     for task_type, records in sorted(by_type.items()):
         log.info(

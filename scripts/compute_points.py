@@ -59,13 +59,19 @@ def _load_task_index() -> dict[str, dict[str, Any]]:
         if path == ACCURACY_OUTPUT_FILE:
             continue
         try:
-            task = json.loads(path.read_text(encoding="utf-8"))
+            content = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(content, list):
+                records = content
+            else:
+                records = [content]
         except (json.JSONDecodeError, OSError) as exc:
             log.warning("Skipping unreadable task file %s: %s", path.name, exc)
             continue
-        url = task.get("url")
-        if url and task.get("ml_prediction") is not None:
-            index[url] = {"task": task, "path": path}
+        
+        for task in records:
+            url = task.get("url")
+            if url and task.get("ml_prediction") is not None:
+                index[url] = {"task": task, "path": path}
     log.info("Loaded %d task(s) with ML predictions.", len(index))
     return index
 
@@ -78,12 +84,18 @@ def _load_annotations() -> list[dict[str, Any]]:
         if not raw or raw == "{}":
             continue
         try:
-            ann = json.loads(raw)
+            content = json.loads(raw)
+            if isinstance(content, list):
+                anns = content
+            else:
+                anns = [content]
         except json.JSONDecodeError as exc:
             log.warning("Skipping malformed annotation file %s: %s", path.name, exc)
             continue
-        if ann.get("url") and ann.get("user_label"):
-            records.append(ann)
+        
+        for ann in anns:
+            if ann.get("url") and ann.get("user_label"):
+                records.append(ann)
     log.info("Loaded %d annotation record(s).", len(records))
     return records
 
