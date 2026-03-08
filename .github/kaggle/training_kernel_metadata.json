@@ -7,9 +7,7 @@
   "is_private": true,
   "enable_gpu": true,
   "enable_internet": true,
-  "dataset_sources": [
-    "solarhub/solarhub-dataset"
-  ],
+  "dataset_sources": [],
   "competition_sources": [],
   "kernel_sources": []
 }

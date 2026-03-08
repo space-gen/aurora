@@ -1,0 +1,46 @@
+name: "Setup Kaggle"
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'yes' to confirm Kaggle kernel initialisation"
+        required: true
+        default: ""
+
+jobs:
+  setup-kaggle:
+    name: Initialise Kaggle Kernels
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'yes'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Kaggle CLI
+        run: pip install kaggle
+
+      - name: Configure Kaggle
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p ~/.kaggle
+          echo '{"username":"'"$KAGGLE_USERNAME"'","key":"'"$KAGGLE_KEY"'"}' > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Initialise Training Kernel
+        run: |
+          kaggle kernels push --path .github/kaggle/ --file train.py
+          # Wait a bit for Kaggle to process
+          sleep 10
+
+      - name: Initialise Inference Kernel
+        run: |
+          kaggle kernels push --path .github/kaggle/ --file inference.py
