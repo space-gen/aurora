@@ -13,18 +13,18 @@ One HuggingFace dataset split is updated per task type:
 
 Kaggle kernels read from HF:
   • Training kernel: reads the ``train`` split (annotations) to train models,
-    then pushes trained model weights to spacegen/solarhub-model-{task_type}.
+    then pushes trained model weights to SpaceGen/solarhub-model-{task_type}.
   • Inference kernel: reads the ``tasks`` split (task URLs + existing predictions)
     to produce a new predictions.json.
 
 HuggingFace repos updated (one per task type with new task records):
-  spacegen/solarhub-sunspot       (split: tasks)
-  spacegen/solarhub-solar-flare   (split: tasks)
-  spacegen/solarhub-magnetogram   (split: tasks)
-  spacegen/solarhub-coronal-hole  (split: tasks)
-  spacegen/solarhub-prominence    (split: tasks)
-  spacegen/solarhub-active-region (split: tasks)
-  spacegen/solarhub-cme           (split: tasks)
+  SpaceGen/solarhub-sunspot       (split: tasks)
+  SpaceGen/solarhub-solar-flare   (split: tasks)
+  SpaceGen/solarhub-magnetogram   (split: tasks)
+  SpaceGen/solarhub-coronal-hole  (split: tasks)
+  SpaceGen/solarhub-prominence    (split: tasks)
+  SpaceGen/solarhub-active-region (split: tasks)
+  SpaceGen/solarhub-cme           (split: tasks)
 
 Environment variables (populated from GitHub Actions secrets):
   HF_TOKEN        — HuggingFace write token (required).
@@ -61,7 +61,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
 # Prefix for per-task HuggingFace annotation dataset repo IDs.
-HF_DATASET_REPO_PREFIX = "spacegen/solarhub-"
+HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 # HuggingFace split name used for task records (separate from annotation "train" split).
 HF_TASKS_SPLIT = "tasks"
@@ -74,7 +74,7 @@ HF_TASKS_SPLIT = "tasks"
 def _hf_repo_for_task(task_type: str) -> str:
     """Return the HuggingFace dataset repo ID for *task_type*.
 
-    e.g. ``solar_flare`` → ``spacegen/solarhub-solar-flare``.
+    e.g. ``solar_flare`` → ``SpaceGen/solarhub-solar-flare``.
     """
     return HF_DATASET_REPO_PREFIX + task_type.replace("_", "-")
 

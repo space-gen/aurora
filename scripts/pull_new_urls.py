@@ -51,7 +51,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
 # HuggingFace per-task dataset prefix used for deduplication checks.
-HF_DATASET_REPO_PREFIX = "spacegen/solarhub-"
+HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 # All task types — must match configs/system_config.yaml data.task_types.
 HF_TASK_TYPES: list[str] = [
@@ -137,7 +137,7 @@ def _get_hf_token() -> str:
 def _hf_repo_for_task(task_type: str) -> str:
     """Return the HuggingFace dataset repo ID for *task_type*.
 
-    e.g. ``solar_flare`` → ``spacegen/solarhub-solar-flare``.
+    e.g. ``solar_flare`` → ``SpaceGen/solarhub-solar-flare``.
     """
     return HF_DATASET_REPO_PREFIX + task_type.replace("_", "-")
 

@@ -7,13 +7,13 @@ Read pending annotation files from annotations/ and append them to the
 per-task-type HuggingFace datasets.  Each annotation is routed to the
 dataset that matches its ``task_type`` field:
 
-  sunspot       → spacegen/solarhub-sunspot
-  solar_flare   → spacegen/solarhub-solar-flare
-  magnetogram   → spacegen/solarhub-magnetogram
-  coronal_hole  → spacegen/solarhub-coronal-hole
-  prominence    → spacegen/solarhub-prominence
-  active_region → spacegen/solarhub-active-region
-  cme           → spacegen/solarhub-cme
+  sunspot       → SpaceGen/solarhub-sunspot
+  solar_flare   → SpaceGen/solarhub-solar-flare
+  magnetogram   → SpaceGen/solarhub-magnetogram
+  coronal_hole  → SpaceGen/solarhub-coronal-hole
+  prominence    → SpaceGen/solarhub-prominence
+  active_region → SpaceGen/solarhub-active-region
+  cme           → SpaceGen/solarhub-cme
 
 After a successful push the annotation file content is cleared (the file
 itself is kept as an empty placeholder).
@@ -51,7 +51,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
 # Prefix for per-task HuggingFace dataset repo IDs.
-HF_DATASET_REPO_PREFIX = "spacegen/solarhub-"
+HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 # Required fields that every annotation file must contain.
 REQUIRED_FIELDS = {"url", "task_type", "user_label"}
@@ -64,7 +64,7 @@ REQUIRED_FIELDS = {"url", "task_type", "user_label"}
 def _hf_repo_for_task(task_type: str) -> str:
     """Return the HuggingFace dataset repo ID for *task_type*.
 
-    e.g. ``solar_flare`` → ``spacegen/solarhub-solar-flare``.
+    e.g. ``solar_flare`` → ``SpaceGen/solarhub-solar-flare``.
     """
     return HF_DATASET_REPO_PREFIX + task_type.replace("_", "-")
 

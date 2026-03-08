@@ -38,7 +38,7 @@ Stage 9  Unlock Frontend       rename data_processing/ → data/
 
 - Calls `scripts/merge_annotations_to_hf.py`.
 - Reads pending annotation files from `annotations/`.
-- Appends them to the `spacegen/solarhub-annotations` HuggingFace dataset.
+- Appends them to the `SpaceGen/solarhub-annotations` HuggingFace dataset.
 - Clears annotation file contents after a successful merge.
 - **Requires secret:** `HF_TOKEN`
 

@@ -13,12 +13,12 @@ workflow:
 huggingface:
   # Per-task-type annotation dataset prefix.
   # Full dataset repo: {dataset_repo_prefix}{task_type_hyphenated}
-  # e.g. spacegen/solarhub-sunspot, spacegen/solarhub-solar-flare, …
-  dataset_repo_prefix: spacegen/solarhub-
+  # e.g. SpaceGen/solarhub-sunspot, SpaceGen/solarhub-solar-flare, …
+  dataset_repo_prefix: SpaceGen/solarhub-
   # Per-task-type model repository prefix.
   # Full model repo: {model_repo_prefix}{task_type_hyphenated}
-  # e.g. spacegen/solarhub-model-sunspot, spacegen/solarhub-model-solar-flare, …
-  model_repo_prefix: spacegen/solarhub-model-
+  # e.g. SpaceGen/solarhub-model-sunspot, SpaceGen/solarhub-model-solar-flare, …
+  model_repo_prefix: SpaceGen/solarhub-model-
   # Name of the GitHub Actions secret that holds the HF write token.
   token_secret: HF_TOKEN
 

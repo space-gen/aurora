@@ -12,9 +12,9 @@ Architecture note
 Kaggle is used **only for compute** — no data is stored in Kaggle.
 
 * Training kernel: reads annotation data from the HuggingFace per-task
-  annotation datasets (``spacegen/solarhub-{task_type}``), trains a model,
+  annotation datasets (``SpaceGen/solarhub-{task_type}``), trains a model,
   and pushes the model directly to the corresponding HuggingFace model repo
-  (``spacegen/solarhub-model-{task_type}``) using an ``HF_TOKEN`` Kaggle
+  (``SpaceGen/solarhub-model-{task_type}``) using an ``HF_TOKEN`` Kaggle
   Secret.
 
 * Inference kernel: reads task URLs from the HuggingFace per-task datasets

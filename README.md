@@ -61,13 +61,13 @@ Kaggle is used only for running training and inference kernels.
 
 | Task Type | HF Annotation Dataset | HF Model Repo |
 |-----------|----------------------|---------------|
-| sunspot | `spacegen/solarhub-sunspot` | `spacegen/solarhub-model-sunspot` |
-| solar_flare | `spacegen/solarhub-solar-flare` | `spacegen/solarhub-model-solar-flare` |
-| magnetogram | `spacegen/solarhub-magnetogram` | `spacegen/solarhub-model-magnetogram` |
-| coronal_hole | `spacegen/solarhub-coronal-hole` | `spacegen/solarhub-model-coronal-hole` |
-| prominence | `spacegen/solarhub-prominence` | `spacegen/solarhub-model-prominence` |
-| active_region | `spacegen/solarhub-active-region` | `spacegen/solarhub-model-active-region` |
-| cme | `spacegen/solarhub-cme` | `spacegen/solarhub-model-cme` |
+| sunspot | `SpaceGen/solarhub-sunspot` | `SpaceGen/solarhub-model-sunspot` |
+| solar_flare | `SpaceGen/solarhub-solar-flare` | `SpaceGen/solarhub-model-solar-flare` |
+| magnetogram | `SpaceGen/solarhub-magnetogram` | `SpaceGen/solarhub-model-magnetogram` |
+| coronal_hole | `SpaceGen/solarhub-coronal-hole` | `SpaceGen/solarhub-model-coronal-hole` |
+| prominence | `SpaceGen/solarhub-prominence` | `SpaceGen/solarhub-model-prominence` |
+| active_region | `SpaceGen/solarhub-active-region` | `SpaceGen/solarhub-model-active-region` |
+| cme | `SpaceGen/solarhub-cme` | `SpaceGen/solarhub-model-cme` |
 
 > **Important:** After setup, configure the Kaggle training kernel with an
 > `HF_TOKEN` [Kaggle Secret](https://www.kaggle.com/docs/notebooks#the-secret-manager)

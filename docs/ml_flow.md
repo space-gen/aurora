@@ -8,11 +8,11 @@ GitHub Actions orchestrates the trigger sequence.
 
 ```
   HuggingFace dataset           Kaggle kernel
-  spacegen/solarhub-annotations ──► solarhub-training
+  SpaceGen/solarhub-annotations ──► solarhub-training
                                          │
                                          ▼ (trained model)
-  HuggingFace model hub         spacegen/solarhub-model
-  spacegen/solarhub-model ◄────────────────┘
+  HuggingFace model hub         SpaceGen/solarhub-model
+  SpaceGen/solarhub-model ◄────────────────┘
 
   data_processing/ URLs ─────► solarhub-inference
                                          │
@@ -22,7 +22,7 @@ GitHub Actions orchestrates the trigger sequence.
 
 ## Training Pipeline
 
-1. **Data source:** The `spacegen/solarhub-annotations` HuggingFace dataset, which is
+1. **Data source:** The `SpaceGen/solarhub-annotations` HuggingFace dataset, which is
    updated nightly by `merge_annotations_to_hf.py`.
 
 2. **Trigger:** The `05_trigger_kaggle_training.yml` GitHub Actions workflow calls the
@@ -32,7 +32,7 @@ GitHub Actions orchestrates the trigger sequence.
 3. **Kernel responsibilities:**
    - Pull the latest HuggingFace dataset using the `datasets` library and `HF_TOKEN`.
    - Fine-tune the solar-classification model.
-   - Push the updated model to `spacegen/solarhub-model` on HuggingFace model hub.
+   - Push the updated model to `SpaceGen/solarhub-model` on HuggingFace model hub.
 
 4. **Output:** A versioned model artifact on HuggingFace.
 
@@ -45,7 +45,7 @@ GitHub Actions orchestrates the trigger sequence.
    Kaggle API to run the `solarhub-inference` kernel.
 
 3. **Kernel responsibilities:**
-   - Pull the latest model from `spacegen/solarhub-model` on HuggingFace.
+   - Pull the latest model from `SpaceGen/solarhub-model` on HuggingFace.
    - Pull the latest task URLs from the Kaggle dataset.
    - Run inference on each observation image.
    - Produce `predictions.json` in the format:

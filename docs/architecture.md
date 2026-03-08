@@ -47,8 +47,8 @@ Modular, single-responsibility scripts invoked by the GitHub Actions workflows.
 | `compute_points.py` | Evaluate model accuracy against user annotations |
 
 ### HuggingFace
-Stores the labelled annotation dataset (`spacegen/solarhub-annotations`) and trained models
-(`spacegen/solarhub-model`).  Access requires the `HF_TOKEN` GitHub Actions secret.
+Stores the labelled annotation dataset (`SpaceGen/solarhub-annotations`) and trained models
+(`SpaceGen/solarhub-model`).  Access requires the `HF_TOKEN` GitHub Actions secret.
 
 ### Kaggle
 Runs training and daily inference kernels against the HuggingFace dataset.  Predictions are

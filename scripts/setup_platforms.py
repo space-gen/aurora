@@ -7,22 +7,22 @@ Creates one HuggingFace **annotation dataset** repository and one HuggingFace
 **model** repository per task type if they do not already exist.
 
 HuggingFace annotation dataset repos (one per task type):
-  spacegen/solarhub-sunspot
-  spacegen/solarhub-solar-flare
-  spacegen/solarhub-magnetogram
-  spacegen/solarhub-coronal-hole
-  spacegen/solarhub-prominence
-  spacegen/solarhub-active-region
-  spacegen/solarhub-cme
+  SpaceGen/solarhub-sunspot
+  SpaceGen/solarhub-solar-flare
+  SpaceGen/solarhub-magnetogram
+  SpaceGen/solarhub-coronal-hole
+  SpaceGen/solarhub-prominence
+  SpaceGen/solarhub-active-region
+  SpaceGen/solarhub-cme
 
 HuggingFace model repos (one per task type):
-  spacegen/solarhub-model-sunspot
-  spacegen/solarhub-model-solar-flare
-  spacegen/solarhub-model-magnetogram
-  spacegen/solarhub-model-coronal-hole
-  spacegen/solarhub-model-prominence
-  spacegen/solarhub-model-active-region
-  spacegen/solarhub-model-cme
+  SpaceGen/solarhub-model-sunspot
+  SpaceGen/solarhub-model-solar-flare
+  SpaceGen/solarhub-model-magnetogram
+  SpaceGen/solarhub-model-coronal-hole
+  SpaceGen/solarhub-model-prominence
+  SpaceGen/solarhub-model-active-region
+  SpaceGen/solarhub-model-cme
 
 Kaggle is used only for compute (training & inference kernels).  No datasets
 are stored in Kaggle — all data and models live on HuggingFace.  Kaggle
@@ -74,10 +74,10 @@ TASK_TYPES: list[str] = [
 ]
 
 # Prefix for HuggingFace annotation dataset repo IDs.
-HF_DATASET_REPO_PREFIX = "spacegen/solarhub-"
+HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 # Prefix for HuggingFace model repo IDs.
-HF_MODEL_REPO_PREFIX = "spacegen/solarhub-model-"
+HF_MODEL_REPO_PREFIX = "SpaceGen/solarhub-model-"
 
 
 # ---------------------------------------------------------------------------
@@ -87,7 +87,7 @@ HF_MODEL_REPO_PREFIX = "spacegen/solarhub-model-"
 def _hf_repo_for_task(task_type: str) -> str:
     """Return the HuggingFace annotation dataset repo ID for *task_type*.
 
-    e.g. ``solar_flare`` → ``spacegen/solarhub-solar-flare``.
+    e.g. ``solar_flare`` → ``SpaceGen/solarhub-solar-flare``.
     """
     return HF_DATASET_REPO_PREFIX + task_type.replace("_", "-")
 
@@ -95,7 +95,7 @@ def _hf_repo_for_task(task_type: str) -> str:
 def _hf_model_repo_for_task(task_type: str) -> str:
     """Return the HuggingFace model repo ID for *task_type*.
 
-    e.g. ``solar_flare`` → ``spacegen/solarhub-model-solar-flare``.
+    e.g. ``solar_flare`` → ``SpaceGen/solarhub-model-solar-flare``.
     """
     return HF_MODEL_REPO_PREFIX + task_type.replace("_", "-")
 
