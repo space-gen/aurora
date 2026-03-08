@@ -102,12 +102,12 @@ def _download_predictions(tmp_dir: str) -> Path:
     kernel into *tmp_dir* and return its path.
     """
     try:
-        from kaggle.api.kaggle_api_extended import KaggleApiExtended  # type: ignore[import]
+        from kaggle import KaggleApi  # type: ignore[import]
     except ImportError as exc:
         log.error("kaggle package not installed: %s. Run: pip install kaggle", exc)
         sys.exit(1)
 
-    api = KaggleApiExtended()
+    api = KaggleApi()
     api.authenticate()
 
     log.info("Downloading kernel output '%s' from %s.", PREDICTIONS_FILENAME, KAGGLE_INFERENCE_KERNEL)

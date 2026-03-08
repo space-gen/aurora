@@ -361,10 +361,20 @@ def main() -> None:
     )
 
     total_written = 0
+    sources_failed = 0
     for source in SOURCE_APIS:
         task_type = source["task_type"]
         api_url = source["api_url"]
-        urls = _fetch_urls_from_api(api_url, task_type)
+        try:
+            urls = _fetch_urls_from_api(api_url, task_type)
+            if not urls:
+                # If the API returned success but empty list, we don't count it as a failure
+                # but we still log it.
+                log.info("API for %s returned 0 URLs.", task_type)
+        except Exception as exc:
+            log.error("Failed to fetch URLs for %s from %s: %s", task_type, api_url, exc)
+            sources_failed += 1
+            continue
 
         for url in urls:
             if url in existing_urls:
@@ -382,6 +392,10 @@ def main() -> None:
         )
 
     log.info("Stage 2 complete. %d new task file(s) written.", total_written)
+
+    if total_written == 0 and sources_failed == len(SOURCE_APIS):
+        log.error("All source APIs failed to return data. Exiting with error.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
