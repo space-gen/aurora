@@ -27,18 +27,12 @@ jobs:
 
       - name: Trigger inference kernel
         env:
-          # KAGGLE_USERNAME and KAGGLE_KEY authenticate the Kaggle API call.
+          # KAGGLE_KEY authenticates the Kaggle API call via KAGGLE_API_TOKEN.
           # The inference kernel itself uses a GH_TOKEN Kaggle Secret to push
           # predictions.json back to this GitHub repository.
           # Set these secrets under Settings → Secrets and variables → Actions.
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_KEY }}
         run: |
-          mkdir -p ~/.kaggle
-          echo '{"username":"'"$KAGGLE_USERNAME"'","key":"'"$KAGGLE_KEY"'"}' \
-            > ~/.kaggle/kaggle.json
-          chmod 600 ~/.kaggle/kaggle.json
-
           # Trigger the inference kernel.  The kernel will:
           #   1. Pull the latest model from HuggingFace (SpaceGen/solarhub-model-{task_type})
           #      using its HF_TOKEN Kaggle Secret.

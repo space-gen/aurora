@@ -71,16 +71,26 @@ PREDICTIONS_FILENAME = "predictions.json"
 
 def _configure_kaggle_credentials() -> None:
     """
-    Write KAGGLE_USERNAME and KAGGLE_KEY from environment variables to
-    ~/.kaggle/kaggle.json so the kaggle-api client can authenticate.
+    Configure Kaggle credentials.
+    Supports both KAGGLE_API_TOKEN (preferred for CLI 2.0+) 
+    and KAGGLE_USERNAME/KAGGLE_KEY pairs.
     """
+    api_token = os.environ.get("KAGGLE_API_TOKEN", "")
     username = os.environ.get("KAGGLE_USERNAME", "")
     key = os.environ.get("KAGGLE_KEY", "")
-    missing = [name for name, val in (("KAGGLE_USERNAME", username), ("KAGGLE_KEY", key)) if not val]
+
+    if api_token:
+        log.info("Kaggle credentials configured via KAGGLE_API_TOKEN.")
+        return
+
+    missing = []
+    if not username: missing.append("KAGGLE_USERNAME")
+    if not key: missing.append("KAGGLE_KEY")
+    
     if missing:
         log.error(
             "Missing required environment variable(s): %s. "
-            "Add them as GitHub Actions secrets.",
+            "Set KAGGLE_API_TOKEN or both KAGGLE_USERNAME and KAGGLE_KEY.",
             ", ".join(missing),
         )
         sys.exit(1)
@@ -93,7 +103,7 @@ def _configure_kaggle_credentials() -> None:
         encoding="utf-8",
     )
     creds_path.chmod(0o600)
-    log.info("Kaggle credentials configured from environment secrets.")
+    log.info("Kaggle credentials configured from username/key pair.")
 
 
 def _download_predictions(tmp_dir: str) -> Path:

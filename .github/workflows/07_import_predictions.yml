@@ -32,11 +32,10 @@ jobs:
 
       - name: Import Kaggle predictions
         env:
-          # KAGGLE_USERNAME and KAGGLE_KEY are used to download the kernel
-          # output (predictions.json) via the Kaggle API.
-          # Set these secrets under Settings → Secrets and variables → Actions.
+          # KAGGLE_KEY authenticates via KAGGLE_API_TOKEN.
+          # Set this secret under Settings → Secrets and variables → Actions.
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_KEY }}
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: python scripts/import_kaggle_predictions.py
 
       - name: Commit updated task files
