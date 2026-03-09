@@ -1,5 +1,5 @@
 {
-  "id": "__USER__/solarhub-inference",
+  "id": "SpaceGen/solarhub-inference",
   "title": "SolarHub — Inference",
   "code_file": "inference.py",
   "language": "python",
