@@ -19338,5 +19338,2935 @@
       "source": "JSOC",
       "date": "2026-03-09T09:09:45.762445+00:00"
     }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/10/20260310_000000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.351365+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/10/20260310_001500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.351378+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/10/20260310_003000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.351382+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/10/20260310_004500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.351384+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/10/20260310_010000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.351387+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_000000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381713+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_001500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381723+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_003000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381726+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_004500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381729+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_010000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381732+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_011500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381734+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_013000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381736+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_014500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381738+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_020000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381741+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_021500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381748+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_023000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381750+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_024500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381752+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_030000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381754+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_031500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381756+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_033000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381758+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_034500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381760+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_040000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381762+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_041500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381764+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_043000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381766+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_044500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381768+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_050000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381770+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_051500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381773+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_053000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381774+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_054500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381776+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_060000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381778+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_061500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381780+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_063000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381782+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_064500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381784+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_070000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381786+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_071500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381789+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_073000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381791+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_074500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381793+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_080000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381795+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_081500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381797+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_083000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381799+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_084500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381800+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_090000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381803+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_091500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381804+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_093000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381807+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_094500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381809+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_100000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381811+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_101500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381813+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_103000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381815+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_104500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381817+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_110000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381820+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_111500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381822+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_113000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381824+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_114500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381826+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_120000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381828+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_121500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381830+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_123000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381832+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_124500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381834+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_130000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381836+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_131500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381839+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_133000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381840+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_134500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381843+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_140000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381845+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_141500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381847+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_143000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381849+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_144500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381851+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_150000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381853+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_151500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381855+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_153000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381857+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_154500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381859+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_160000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381862+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_161500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381863+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_163000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381866+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_164500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381868+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_170000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381870+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_171500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381872+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_173000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381874+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_174500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381876+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_180000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381879+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_181500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381881+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_183000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381883+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_184500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381886+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_190000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381888+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_191500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381890+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_193000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381892+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_194500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381894+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_200000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381896+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_201500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381898+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_203000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381900+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_204500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381902+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_210000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381904+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_211500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381906+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_213000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381909+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_214500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381911+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_220000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381913+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_221500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381915+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_223000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381917+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_224500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381919+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_230000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381921+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_231500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381923+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_233000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381926+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/07/20260307_234500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.381928+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_000000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397562+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_001500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397571+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_003000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397574+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_004500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397577+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_010000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397579+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_011500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397581+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_013000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397583+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_014500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397585+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_020000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397588+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_021500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397590+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_023000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397592+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_024500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397594+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_030000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397596+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_031500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397598+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_033000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397600+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_034500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397602+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_040000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397604+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_041500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397606+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_043000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397608+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_044500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397610+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_050000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397612+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_051500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397614+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_053000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397616+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_054500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397617+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_060000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397624+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_061500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397626+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_063000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397628+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_064500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397630+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_070000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397632+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_071500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397634+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_073000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397636+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_074500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397638+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_080000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397640+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_081500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397642+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_083000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397644+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_084500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397646+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_090000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397648+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_091500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397650+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_093000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397652+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_094500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397654+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_100000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397657+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_101500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397659+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_103000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397661+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_104500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397663+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_110000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397665+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_111500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397667+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_113000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397669+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_114500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397671+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_120000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397674+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_121500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397676+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_123000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397678+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_124500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397680+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_130000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397682+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_131500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397684+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_133000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397686+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_134500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397688+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_140000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397690+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_141500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397692+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_143000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397694+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_144500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397697+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_150000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397699+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_151500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397701+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_153000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397703+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_154500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397705+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_160000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397707+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_161500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397710+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_163000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397713+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_164500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397716+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_170000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397720+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_171500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397723+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_173000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397725+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_174500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397727+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_180000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397729+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_181500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397732+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_183000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397734+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_184500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397736+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_190000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397738+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_191500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397740+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_193000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397742+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_194500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397744+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_200000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397746+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_201500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397748+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_203000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397750+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_204500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397752+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_210000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397754+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_211500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397756+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_213000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397758+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_214500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397763+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_220000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397765+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_221500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397767+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_223000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397770+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_224500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397772+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_230000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397774+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_231500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397776+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_233000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397778+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_234500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.397780+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_000000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399737+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_001500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399745+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_003000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399749+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_004500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399751+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_010000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399754+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_011500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399757+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_013000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399759+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_014500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399761+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_020000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399763+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_021500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399765+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_023000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399767+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_024500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399769+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_030000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399771+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_031500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399773+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_033000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399775+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_034500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399777+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_040000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399780+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_041500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399782+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_043000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399784+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_044500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399786+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_050000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399788+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_051500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399790+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_053000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399792+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_054500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399794+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_060000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399796+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_061500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399803+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_063000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399805+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_064500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399807+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_070000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399810+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_071500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399812+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_073000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399814+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_074500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399816+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_080000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399818+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_081500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399820+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_083000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399822+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_084500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399824+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_090000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399827+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_091500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399829+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_093000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399831+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_094500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399833+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_100000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399835+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_101500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399837+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_103000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399840+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_104500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399842+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_110000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399844+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_111500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399846+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_113000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399848+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_114500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399851+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_120000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399853+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_121500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399855+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_123000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399857+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_124500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399859+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_130000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399861+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_131500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399863+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_133000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399865+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_134500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399867+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_140000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399870+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_141500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399872+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_143000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399874+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_144500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399876+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_150000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399878+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_151500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399880+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_153000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399882+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_154500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399884+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_160000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399886+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_161500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399888+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_163000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399890+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_164500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399892+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_170000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399894+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_171500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399897+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_173000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399899+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_174500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399901+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_180000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399903+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_181500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399905+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_183000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399907+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_184500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399910+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_190000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399912+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_191500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399914+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_193000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399916+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_194500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399918+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_200000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399920+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_201500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399922+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_203000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399924+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_204500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399926+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_210000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399929+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_211500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399931+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_213000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399933+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_214500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399935+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_220000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399937+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_221500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399939+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_223000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399941+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_224500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399943+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_230000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399945+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_231500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399947+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_233000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399949+00:00"
+    }
+  },
+  {
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/09/20260309_234500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "ml_prediction": null,
+    "confidence": null,
+    "metadata": {
+      "source": "JSOC",
+      "date": "2026-03-10T01:24:51.399951+00:00"
+    }
   }
 ]
