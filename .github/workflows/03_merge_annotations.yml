@@ -47,6 +47,6 @@ jobs:
           else
             git commit -m "chore(pipeline): annotations merged to HuggingFace [skip ci]
 
-Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
           fi

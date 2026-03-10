@@ -42,7 +42,7 @@ jobs:
           else
             git commit -m "chore(annotation): record annotation from issue #${{ github.event.issue.number }} [skip ci]
 
-Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
           fi
 
