@@ -1,14 +1,14 @@
-name: "07 · Import Predictions"
+name: "07 · Evaluate Model Accuracy"
 
 on:
   workflow_run:
-    workflows: ["06 · Trigger Kaggle Inference"]
+    workflows: ["07 · Import Predictions"]
     types: [completed]
   workflow_dispatch:
 
 jobs:
-  import-predictions:
-    name: Download Kaggle predictions and update task files
+  evaluate-accuracy:
+    name: Evaluate model accuracy against user annotations
     runs-on: ubuntu-latest
     if: >
       github.event_name == 'workflow_dispatch' ||
@@ -27,25 +27,20 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install kaggle
+      - name: Evaluate model accuracy
+        # compute_points.py reads only local files; no external API secrets needed.
+        run: python scripts/compute_points.py
 
-      - name: Import Kaggle predictions
-        env:
-          # KAGGLE_KEY authenticates via KAGGLE_API_TOKEN.
-          # Set this secret under Settings → Secrets and variables → Actions.
-          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_KEY }}
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-        run: python scripts/import_kaggle_predictions.py
-
-      - name: Commit updated task files
+      - name: Commit model accuracy report
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data_processing/
           if git diff --cached --quiet; then
-            echo "No prediction changes to commit."
+            echo "No accuracy changes to commit."
           else
-            git commit -m "chore(pipeline): import ML predictions into task files [skip ci]"
+            git commit -m "chore(pipeline): update model accuracy report [skip ci]
+
+Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
           fi

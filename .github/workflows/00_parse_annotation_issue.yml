@@ -40,7 +40,9 @@ jobs:
           if git diff --cached --quiet; then
             echo "No annotation changes to commit (possibly a duplicate)."
           else
-            git commit -m "chore(annotation): record annotation from issue #${{ github.event.issue.number }} [skip ci]"
+            git commit -m "chore(annotation): record annotation from issue #${{ github.event.issue.number }} [skip ci]
+
+Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
           fi
 

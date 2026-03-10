@@ -42,11 +42,46 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 ACCURACY_OUTPUT_FILE = DATA_PROCESSING_DIR / "model_accuracy.json"
+PREDICTIONS_FILE = REPO_ROOT / "predictions.json"
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _apply_predictions():
+    """Reads predictions.json and updates task files in data_processing/."""
+    if not PREDICTIONS_FILE.exists():
+        log.warning("predictions.json not found. Skipping prediction application.")
+        return
+
+    try:
+        predictions = json.loads(PREDICTIONS_FILE.read_text(encoding="utf-8"))
+    except Exception as e:
+        log.error("Failed to load predictions.json: %s", e)
+        return
+
+    updated = 0
+    for task_path in sorted(DATA_PROCESSING_DIR.glob("*.json")):
+        if task_path == ACCURACY_OUTPUT_FILE:
+            continue
+        try:
+            content = json.loads(task_path.read_text(encoding="utf-8"))
+            records = content if isinstance(content, list) else [content]
+            file_changed = False
+            for record in records:
+                url = record.get("url")
+                if url in predictions:
+                    pred = predictions[url]
+                    record["ml_prediction"] = pred.get("ml_prediction")
+                    record["confidence"] = pred.get("confidence")
+                    updated += 1
+                    file_changed = True
+            if file_changed:
+                task_path.write_text(json.dumps(content, indent=2), encoding="utf-8")
+        except Exception as e:
+            log.warning("Error processing %s: %s", task_path.name, e)
+    log.info("Applied %d prediction(s) from predictions.json.", updated)
 
 def _load_task_index() -> dict[str, dict[str, Any]]:
     """
@@ -177,6 +212,10 @@ def _compute_accuracy(
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    # 1. Apply ML results from Kaggle to local task files
+    _apply_predictions()
+
+    # 2. Build index for evaluation
     task_index = _load_task_index()
     if not task_index:
         log.info("No tasks with ML predictions available. Skipping accuracy evaluation.")

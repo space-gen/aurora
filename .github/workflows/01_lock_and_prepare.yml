@@ -24,7 +24,9 @@ jobs:
             git mv data data_processing
             git config user.name  "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore(pipeline): lock — rename data/ to data_processing/ [skip ci]"
+            git commit -m "chore(pipeline): lock — rename data/ to data_processing/ [skip ci]
+
+Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
             echo "System locked: data/ renamed to data_processing/"
           elif [ -d "data_processing" ]; then

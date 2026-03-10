@@ -1,8 +1,8 @@
-name: "09 · Unlock Frontend"
+name: "08 · Unlock Frontend"
 
 on:
   workflow_run:
-    workflows: ["08 · Evaluate Model Accuracy"]
+    workflows: ["07 · Evaluate Model Accuracy"]
     types: [completed]
   workflow_dispatch:
 
@@ -28,7 +28,9 @@ jobs:
             git mv data_processing data
             git config user.name  "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore(pipeline): unlock — rename data_processing/ to data/ [skip ci]"
+            git commit -m "chore(pipeline): unlock — rename data_processing/ to data/ [skip ci]
+
+Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
             echo "System unlocked: data_processing/ renamed to data/"
           elif [ -d "data" ]; then

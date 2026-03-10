@@ -44,6 +44,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "No annotation template changes to commit."
           else
-            git commit -m "chore(pipeline): sync annotation templates from data_processing/ [skip ci]"
+            git commit -m "chore(pipeline): sync annotation templates from data_processing/ [skip ci]
+
+Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
           fi

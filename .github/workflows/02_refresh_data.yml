@@ -46,6 +46,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "No new task files to commit."
           else
-            git commit -m "chore(pipeline): refresh — add new task URLs [skip ci]"
+            git commit -m "chore(pipeline): refresh — add new task URLs [skip ci]
+
+Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
           fi

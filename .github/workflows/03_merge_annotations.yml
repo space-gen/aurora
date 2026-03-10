@@ -45,6 +45,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "No annotation files changed."
           else
-            git commit -m "chore(pipeline): annotations merged to HuggingFace [skip ci]"
+            git commit -m "chore(pipeline): annotations merged to HuggingFace [skip ci]
+
+Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
           fi
