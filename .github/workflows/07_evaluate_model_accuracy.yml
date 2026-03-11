@@ -2,7 +2,7 @@ name: "07 · Evaluate Model Accuracy"
 
 on:
   workflow_run:
-    workflows: ["07 · Import Predictions"]
+    workflows: ["06 · Trigger Kaggle Inference"]
     types: [completed]
   workflow_dispatch:
 
