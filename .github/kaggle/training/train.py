@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import requests
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -29,19 +30,28 @@ EPOCHS = 5
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def get_tokens():
-    """Resilient token retrieval with fallback."""
+    """Resilient token retrieval with retries and deep fallback."""
     hf_token = os.environ.get("HF_TOKEN")
     gh_token = os.environ.get("GH_TOKEN")
     
-    if not hf_token or not gh_token:
+    if hf_token and gh_token:
+        return hf_token, gh_token
+
+    # Retry secrets client
+    for attempt in range(3):
         try:
             from kaggle_secrets import UserSecretsClient
             user_secrets = UserSecretsClient()
             hf_token = hf_token or user_secrets.get_secret("HF_TOKEN")
             gh_token = gh_token or user_secrets.get_secret("GH_TOKEN")
+            if hf_token and gh_token:
+                return hf_token, gh_token
         except Exception as e:
-            logger.warning(f"Kaggle Secrets service unavailable: {e}")
+            logger.warning(f"Attempt {attempt+1}: Kaggle Secrets service error: {e}")
+            time.sleep(5)
             
+    # Final debug log (masking values)
+    logger.error(f"Tokens missing. ENV keys: {list(os.environ.keys())}")
     return hf_token, gh_token
 
 class SolarDataset(Dataset):
@@ -153,7 +163,7 @@ def trigger_next_workflow(gh_token, workflow_id="06_trigger_kaggle_inference.yml
 def main():
     hf_token, gh_token = get_tokens()
     if not hf_token or not gh_token:
-        logger.error("Tokens still missing after fallback. Check Kaggle configuration.")
+        logger.error("Tokens still missing after retries. Check Kaggle Secrets configuration.")
         return
 
     for task_type in TASK_TYPES:

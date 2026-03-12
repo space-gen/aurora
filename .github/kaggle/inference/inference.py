@@ -3,6 +3,7 @@ import json
 import logging
 import requests
 import base64
+import time
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
@@ -23,19 +24,28 @@ BRANCH = "main"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def get_tokens():
-    """Resilient token retrieval with fallback."""
+    """Resilient token retrieval with retries and deep fallback."""
     hf_token = os.environ.get("HF_TOKEN")
     gh_token = os.environ.get("GH_TOKEN")
     
-    if not hf_token or not gh_token:
+    if hf_token and gh_token:
+        return hf_token, gh_token
+
+    # Retry secrets client
+    for attempt in range(3):
         try:
             from kaggle_secrets import UserSecretsClient
             user_secrets = UserSecretsClient()
             hf_token = hf_token or user_secrets.get_secret("HF_TOKEN")
             gh_token = gh_token or user_secrets.get_secret("GH_TOKEN")
+            if hf_token and gh_token:
+                return hf_token, gh_token
         except Exception as e:
-            logger.warning(f"Kaggle Secrets service unavailable: {e}")
+            logger.warning(f"Attempt {attempt+1}: Kaggle Secrets service error: {e}")
+            time.sleep(5)
             
+    # Final debug log (masking values)
+    logger.error(f"Tokens missing. ENV keys: {list(os.environ.keys())}")
     return hf_token, gh_token
 
 def run_inference(task_type, hf_token):
@@ -86,6 +96,7 @@ def run_inference(task_type, hf_token):
                     prob = torch.nn.functional.softmax(output, dim=1)
                     conf, pred_idx = torch.max(prob, 1)
                 
+                # Mapping: 0 -> "none", 1 -> "detected"
                 label_map = {0: "none", 1: "detected"}
                 predictions[url] = {
                     "ml_prediction": label_map.get(pred_idx.item(), "unknown"),
@@ -134,7 +145,7 @@ def trigger_workflow(gh_token, workflow_id="07_evaluate_model_accuracy.yml"):
 def main():
     hf_token, gh_token = get_tokens()
     if not hf_token or not gh_token:
-        logger.error("Missing tokens.")
+        logger.error("Tokens still missing after retries. Check Kaggle Secrets configuration.")
         return
 
     all_predictions = {}
