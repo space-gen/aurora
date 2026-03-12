@@ -10,6 +10,7 @@ from PIL import Image
 from io import BytesIO
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
+from kaggle_secrets import UserSecretsClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,6 +22,17 @@ HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 GITHUB_REPO = "space-gen/aurora"
 BRANCH = "main"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def get_tokens():
+    """Fetch tokens from Kaggle Secrets."""
+    try:
+        user_secrets = UserSecretsClient()
+        hf_token = user_secrets.get_secret("HF_TOKEN")
+        gh_token = user_secrets.get_secret("GH_TOKEN")
+        return hf_token, gh_token
+    except Exception as e:
+        logger.error(f"Failed to fetch secrets from Kaggle: {e}")
+        return None, None
 
 def run_inference(task_type, hf_token):
     dataset_repo = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
@@ -34,15 +46,13 @@ def run_inference(task_type, hf_token):
         try:
             model_path = hf_hub_download(repo_id=model_repo, filename="model.pt", token=hf_token)
             model = models.resnet50()
-            num_ftrs = model.fc.in_features
-            model.fc = nn.Linear(num_ftrs, 2)
+            model.fc = nn.Linear(model.fc.in_features, 2)
             model.load_state_dict(torch.load(model_path, map_location=DEVICE))
             model = model.to(DEVICE).eval()
         except Exception as e:
             logger.warning(f"No production model found for {task_type}: {e}. using base ResNet.")
             model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-            num_ftrs = model.fc.in_features
-            model.fc = nn.Linear(num_ftrs, 2)
+            model.fc = nn.Linear(model.fc.in_features, 2)
             model = model.to(DEVICE).eval()
 
         # 2. Load tasks
@@ -69,7 +79,6 @@ def run_inference(task_type, hf_token):
                     prob = torch.nn.functional.softmax(output, dim=1)
                     conf, pred_idx = torch.max(prob, 1)
                 
-                # Mapping: 0 -> "none", 1 -> "detected"
                 label_map = {0: "none", 1: "detected"}
                 predictions[url] = {
                     "ml_prediction": label_map.get(pred_idx.item(), "unknown"),
@@ -115,10 +124,9 @@ def trigger_workflow(gh_token, workflow_id="07_evaluate_model_accuracy.yml"):
         logger.error(f"Failed to trigger evaluation: {r.status_code}")
 
 def main():
-    hf_token = os.environ.get("HF_TOKEN")
-    gh_token = os.environ.get("GH_TOKEN")
+    hf_token, gh_token = get_tokens()
     if not hf_token or not gh_token:
-        logger.error("Missing tokens.")
+        logger.error("Missing tokens from Kaggle Secrets.")
         return
 
     all_predictions = {}

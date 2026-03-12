@@ -166,7 +166,7 @@ def _setup_hf_dataset_for_task(task_type: str, token: str) -> None:
     model_repo_id = _hf_model_repo_for_task(task_type)
     card_content = f"""\
 ---
-license: cc-by-4.0
+license: agpl-3.0
 task_categories:
   - image-classification
 tags:
@@ -240,7 +240,7 @@ def _setup_hf_model_repo_for_task(task_type: str, token: str) -> None:
     dataset_repo = _hf_repo_for_task(task_type)
     card_content = f"""\
 ---
-license: cc-by-4.0
+license: agpl-3.0
 tags:
   - solar
   - astronomy

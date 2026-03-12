@@ -11,6 +11,7 @@ from PIL import Image
 from io import BytesIO
 from datasets import load_dataset
 from huggingface_hub import HfApi
+from kaggle_secrets import UserSecretsClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,12 +29,21 @@ LEARNING_RATE = 1e-4
 EPOCHS = 5
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+def get_tokens():
+    """Fetch tokens from Kaggle Secrets."""
+    try:
+        user_secrets = UserSecretsClient()
+        hf_token = user_secrets.get_secret("HF_TOKEN")
+        gh_token = user_secrets.get_secret("GH_TOKEN")
+        return hf_token, gh_token
+    except Exception as e:
+        logger.error(f"Failed to fetch secrets from Kaggle: {e}")
+        return None, None
+
 class SolarDataset(Dataset):
     def __init__(self, hf_records, transform=None):
         self.records = [r for r in hf_records if r.get("user_label") is not None]
         self.transform = transform
-        # Map labels to integers (example: "none" -> 0, "active" -> 1)
-        # In a real scenario, this would be more dynamic based on the task_type
         self.label_map = {"none": 0, "detected": 1}
 
     def __len__(self):
@@ -42,7 +52,7 @@ class SolarDataset(Dataset):
     def __getitem__(self, idx):
         record = self.records[idx]
         url = record["url"]
-        label_str = record["user_label"].lower()
+        label_str = record.get("user_label", "none").lower()
         label = self.label_map.get(label_str, 0)
 
         try:
@@ -50,7 +60,6 @@ class SolarDataset(Dataset):
             img = Image.open(BytesIO(response.content)).convert("RGB")
         except Exception as e:
             logger.warning(f"Failed to fetch image {url}: {e}")
-            # Return a blank image on failure to prevent crashing
             img = Image.new("RGB", (224, 224))
 
         if self.transform:
@@ -65,35 +74,28 @@ def train_model(task_type, hf_token):
     logger.info(f"--- Production Training for {task_type} ---")
     
     try:
-        # 1. Load data from HF
         dataset = load_dataset(dataset_repo, token=hf_token, split="train", trust_remote_code=True)
-        if len(dataset) < 5: # Minimum data threshold
-            logger.warning(f"Insufficient data for {task_type} ({len(dataset)} records). Skipping.")
+        if len(dataset) < 5:
+            logger.warning(f"Insufficient data for {task_type}. Skipping.")
             return
 
-        # 2. Setup Data
         transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
         train_ds = SolarDataset(dataset, transform=transform)
-        if len(train_ds) == 0:
-            logger.warning(f"No labeled data for {task_type}. skipping.")
-            return
+        if len(train_ds) == 0: return
             
         loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
 
-        # 3. Model: Production-grade ResNet50
         model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, 2) # Binary classification example
+        model.fc = nn.Linear(model.fc.in_features, 2)
         model = model.to(DEVICE)
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-        # 4. Training Loop
         model.train()
         for epoch in range(EPOCHS):
             running_loss = 0.0
@@ -105,9 +107,8 @@ def train_model(task_type, hf_token):
                 loss.backward()
                 optimizer.step()
                 running_loss += loss.item()
-            logger.info(f"Epoch {epoch+1}/{EPOCHS} Loss: {running_loss/len(loader):.4f}")
+            logger.info(f"Epoch {epoch+1} Loss: {running_loss/len(loader):.4f}")
 
-        # 5. Save and Upload
         model_path = "model.pt"
         torch.save(model.state_dict(), model_path)
 
@@ -119,10 +120,9 @@ def train_model(task_type, hf_token):
             repo_type="model",
             commit_message=f"feat: production model update for {task_type}"
         )
-        logger.info(f"Model for {task_type} successfully deployed to HF.")
         
     except Exception as e:
-        logger.error(f"Training pipeline failed for {task_type}: {e}")
+        logger.error(f"Training failed for {task_type}: {e}")
 
 def trigger_next_workflow(gh_token, workflow_id="06_trigger_kaggle_inference.yml"):
     url = f"https://api.github.com/repos/{GITHUB_REPO}/actions/workflows/{workflow_id}/dispatches"
@@ -134,10 +134,9 @@ def trigger_next_workflow(gh_token, workflow_id="06_trigger_kaggle_inference.yml
         logger.error(f"Failed to trigger GitHub: {r.status_code} {r.text}")
 
 def main():
-    hf_token = os.environ.get("HF_TOKEN")
-    gh_token = os.environ.get("GH_TOKEN")
+    hf_token, gh_token = get_tokens()
     if not hf_token or not gh_token:
-        logger.error("Missing tokens.")
+        logger.error("Missing tokens from Kaggle Secrets.")
         return
 
     for task_type in TASK_TYPES:
