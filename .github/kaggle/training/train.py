@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 TASK_TYPES = ["sunspot", "solar_flare", "magnetogram", "coronal_hole", "prominence", "active_region", "cme"]
 HF_MODEL_REPO_PREFIX = "SpaceGen/solarhub-model-"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
+GITHUB_REPO = "space-gen/aurora"
+BRANCH = "main"
 
 def train_model(task_type, hf_token):
     dataset_repo = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
@@ -28,8 +30,7 @@ def train_model(task_type, hf_token):
             logger.warning(f"No annotations found for {task_type}. Skipping training.")
             return
 
-        # 2. Mock Training (Placeholder for actual model logic)
-        # In a real scenario, you would use torch/tensorflow here.
+        # 2. Mock Training
         model_path = "model.pt"
         with open(model_path, "w") as f:
             f.write("MOCK_MODEL_WEIGHTS")
@@ -48,14 +49,36 @@ def train_model(task_type, hf_token):
     except Exception as e:
         logger.error(f"Failed training for {task_type}: {e}")
 
+def trigger_next_workflow(gh_token, workflow_id="06_trigger_kaggle_inference.yml"):
+    """Triggers the inference stage in the pipeline."""
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/actions/workflows/{workflow_id}/dispatches"
+    headers = {
+        "Authorization": f"token {gh_token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    payload = {"ref": BRANCH}
+    r = requests.post(url, headers=headers, data=json.dumps(payload))
+    if r.status_code == 204:
+        logger.info(f"Successfully triggered next workflow: {workflow_id}")
+    else:
+        logger.error(f"Failed to trigger workflow: {r.status_code} {r.text}")
+
 def main():
     hf_token = os.environ.get("HF_TOKEN")
+    gh_token = os.environ.get("GH_TOKEN")
+    
     if not hf_token:
-        logger.error("HF_TOKEN not found in environment variables.")
+        logger.error("HF_TOKEN not found.")
+        return
+    if not gh_token:
+        logger.error("GH_TOKEN not found.")
         return
 
     for task_type in TASK_TYPES:
         train_model(task_type, hf_token)
+
+    # Trigger next step
+    trigger_next_workflow(gh_token)
 
 if __name__ == "__main__":
     main()

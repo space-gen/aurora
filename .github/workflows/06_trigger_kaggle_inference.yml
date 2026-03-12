@@ -1,9 +1,6 @@
 name: "06 · Trigger Kaggle Inference"
 
 on:
-  workflow_run:
-    workflows: ["05 · Trigger Kaggle Training"]
-    types: [completed]
   workflow_dispatch:
 
 jobs:

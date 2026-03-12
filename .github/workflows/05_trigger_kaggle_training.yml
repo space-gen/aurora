@@ -40,4 +40,5 @@ jobs:
         run: |
           kaggle kernels push \
             --path .github/kaggle/training/ \
-            || echo "Kernel push attempted — check Kaggle for run status."
+            || { echo "Kernel push failed"; exit 1; }
+          echo "Kernel pushed. Kaggle will trigger the next workflow stage upon completion."
