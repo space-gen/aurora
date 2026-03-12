@@ -10,7 +10,6 @@ from PIL import Image
 from io import BytesIO
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
-from kaggle_secrets import UserSecretsClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,15 +23,20 @@ BRANCH = "main"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def get_tokens():
-    """Fetch tokens from Kaggle Secrets."""
-    try:
-        user_secrets = UserSecretsClient()
-        hf_token = user_secrets.get_secret("HF_TOKEN")
-        gh_token = user_secrets.get_secret("GH_TOKEN")
-        return hf_token, gh_token
-    except Exception as e:
-        logger.error(f"Failed to fetch secrets from Kaggle: {e}")
-        return None, None
+    """Resilient token retrieval with fallback."""
+    hf_token = os.environ.get("HF_TOKEN")
+    gh_token = os.environ.get("GH_TOKEN")
+    
+    if not hf_token or not gh_token:
+        try:
+            from kaggle_secrets import UserSecretsClient
+            user_secrets = UserSecretsClient()
+            hf_token = hf_token or user_secrets.get_secret("HF_TOKEN")
+            gh_token = gh_token or user_secrets.get_secret("GH_TOKEN")
+        except Exception as e:
+            logger.warning(f"Kaggle Secrets service unavailable: {e}")
+            
+    return hf_token, gh_token
 
 def run_inference(task_type, hf_token):
     dataset_repo = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
@@ -64,8 +68,11 @@ def run_inference(task_type, hf_token):
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
 
-        # 3. Batch Inference
+        # 3. Batch Inference (Process a subset to ensure speed in initial runs)
+        limit = 100
+        count = 0
         for record in dataset:
+            if count >= limit: break
             url = record.get("url")
             if not url: continue
             
@@ -84,6 +91,7 @@ def run_inference(task_type, hf_token):
                     "ml_prediction": label_map.get(pred_idx.item(), "unknown"),
                     "confidence": round(conf.item(), 4)
                 }
+                count += 1
             except Exception as e:
                 logger.warning(f"Inference failed for {url}: {e}")
 
@@ -126,7 +134,7 @@ def trigger_workflow(gh_token, workflow_id="07_evaluate_model_accuracy.yml"):
 def main():
     hf_token, gh_token = get_tokens()
     if not hf_token or not gh_token:
-        logger.error("Missing tokens from Kaggle Secrets.")
+        logger.error("Missing tokens.")
         return
 
     all_predictions = {}
