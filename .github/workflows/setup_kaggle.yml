@@ -29,13 +29,19 @@ jobs:
       - name: Install Kaggle CLI
         run: pip install kaggle
 
-      - name: Configure Kaggle
+      - name: Configure Kaggle and Inject Tokens
         env:
           KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          # Kaggle CLI version 2.0+ supports KAGGLE_API_TOKEN directly.
-          # No need to write kaggle.json manually if the env var is set.
-          echo "Kaggle configured via KAGGLE_API_TOKEN"
+          # Inject actual secrets into the Python files before they leave GitHub
+          sed -i "s|__HF_TOKEN_PLACEHOLDER__|${HF_TOKEN}|g" .github/kaggle/training/train.py
+          sed -i "s|__GH_TOKEN_PLACEHOLDER__|${GH_TOKEN}|g" .github/kaggle/training/train.py
+          sed -i "s|__HF_TOKEN_PLACEHOLDER__|${HF_TOKEN}|g" .github/kaggle/inference/inference.py
+          sed -i "s|__GH_TOKEN_PLACEHOLDER__|${GH_TOKEN}|g" .github/kaggle/inference/inference.py
+          
+          echo "Kaggle configured and secrets injected."
 
       - name: Initialise Training Kernel
         env:

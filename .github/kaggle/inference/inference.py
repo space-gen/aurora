@@ -3,7 +3,6 @@ import json
 import logging
 import requests
 import base64
-import time
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
@@ -15,38 +14,16 @@ from huggingface_hub import hf_hub_download
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- Configuration ---
+# --- Configuration (Placeholders for Injection) ---
+HF_TOKEN = "__HF_TOKEN_PLACEHOLDER__"
+GH_TOKEN = "__GH_TOKEN_PLACEHOLDER__"
+
 TASK_TYPES = ["sunspot", "solar_flare", "magnetogram", "coronal_hole", "prominence", "active_region", "cme"]
 HF_MODEL_REPO_PREFIX = "SpaceGen/solarhub-model-"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 GITHUB_REPO = "space-gen/aurora"
 BRANCH = "main"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-def get_tokens():
-    """Resilient token retrieval with retries and deep fallback."""
-    hf_token = os.environ.get("HF_TOKEN")
-    gh_token = os.environ.get("GH_TOKEN")
-    
-    if hf_token and gh_token:
-        return hf_token, gh_token
-
-    # Retry secrets client
-    for attempt in range(3):
-        try:
-            from kaggle_secrets import UserSecretsClient
-            user_secrets = UserSecretsClient()
-            hf_token = hf_token or user_secrets.get_secret("HF_TOKEN")
-            gh_token = gh_token or user_secrets.get_secret("GH_TOKEN")
-            if hf_token and gh_token:
-                return hf_token, gh_token
-        except Exception as e:
-            logger.warning(f"Attempt {attempt+1}: Kaggle Secrets service error: {e}")
-            time.sleep(5)
-            
-    # Final debug log (masking values)
-    logger.error(f"Tokens missing. ENV keys: {list(os.environ.keys())}")
-    return hf_token, gh_token
 
 def run_inference(task_type, hf_token):
     dataset_repo = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
@@ -96,7 +73,6 @@ def run_inference(task_type, hf_token):
                     prob = torch.nn.functional.softmax(output, dim=1)
                     conf, pred_idx = torch.max(prob, 1)
                 
-                # Mapping: 0 -> "none", 1 -> "detected"
                 label_map = {0: "none", 1: "detected"}
                 predictions[url] = {
                     "ml_prediction": label_map.get(pred_idx.item(), "unknown"),
@@ -143,19 +119,18 @@ def trigger_workflow(gh_token, workflow_id="07_evaluate_model_accuracy.yml"):
         logger.error(f"Failed to trigger evaluation: {r.status_code}")
 
 def main():
-    hf_token, gh_token = get_tokens()
-    if not hf_token or not gh_token:
-        logger.error("Tokens still missing after retries. Check Kaggle Secrets configuration.")
+    if "__PLACEHOLDER__" in HF_TOKEN or "__PLACEHOLDER__" in GH_TOKEN:
+        logger.error("Tokens not injected.")
         return
 
     all_predictions = {}
     for task_type in TASK_TYPES:
-        task_preds = run_inference(task_type, hf_token)
+        task_preds = run_inference(task_type, HF_TOKEN)
         all_predictions.update(task_preds)
 
     pred_content = json.dumps(all_predictions, indent=2)
-    push_to_github("predictions.json", pred_content, gh_token)
-    trigger_workflow(gh_token)
+    push_to_github("predictions.json", pred_content, GH_TOKEN)
+    trigger_workflow(GH_TOKEN)
 
 if __name__ == "__main__":
     main()
