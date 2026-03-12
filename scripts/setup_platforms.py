@@ -116,7 +116,7 @@ def _get_hf_token() -> str:
 
 
 def _setup_hf_dataset_for_task(task_type: str, token: str) -> None:
-    """Create the per-task HuggingFace annotation dataset if it does not already exist."""
+    """Delete and recreate the per-task HuggingFace annotation dataset."""
     try:
         from datasets import Dataset  # type: ignore[import]
         from huggingface_hub import HfApi, DatasetCard  # type: ignore[import]
@@ -131,15 +131,15 @@ def _setup_hf_dataset_for_task(task_type: str, token: str) -> None:
     repo_id = _hf_repo_for_task(task_type)
     api = HfApi(token=token)
 
-    # Check if the dataset already exists.
+    # --- Delete if exists ---
     try:
-        api.dataset_info(repo_id, token=token)
-        log.info("HuggingFace dataset '%s' already exists — skipping creation.", repo_id)
-        return
-    except Exception:  # pylint: disable=broad-except
-        pass  # Dataset does not exist yet; proceed to create it.
+        log.info("Deleting existing HuggingFace dataset '%s'...", repo_id)
+        api.delete_repo(repo_id=repo_id, repo_type="dataset", token=token)
+        log.info("Successfully deleted dataset '%s'.", repo_id)
+    except Exception as exc:
+        log.debug("Dataset '%s' did not exist or could not be deleted: %s", repo_id, exc)
 
-    log.info("Creating HuggingFace dataset '%s' (task_type=%s).", repo_id, task_type)
+    log.info("Creating fresh HuggingFace dataset '%s' (task_type=%s).", repo_id, task_type)
 
     # Push an empty dataset with the correct schema to initialise the repo.
     empty_dataset = Dataset.from_dict({
@@ -204,11 +204,7 @@ The corresponding trained model is published at
 
 
 def _setup_hf_model_repo_for_task(task_type: str, token: str) -> None:
-    """Create the per-task HuggingFace model repository if it does not already exist.
-
-    The model repo is where Kaggle training kernels push trained model weights
-    after each nightly training run.
-    """
+    """Delete and recreate the per-task HuggingFace model repository."""
     try:
         from huggingface_hub import HfApi, ModelCard  # type: ignore[import]
     except ImportError as exc:
@@ -222,15 +218,15 @@ def _setup_hf_model_repo_for_task(task_type: str, token: str) -> None:
     repo_id = _hf_model_repo_for_task(task_type)
     api = HfApi(token=token)
 
-    # Check if the model repo already exists.
+    # --- Delete if exists ---
     try:
-        api.model_info(repo_id, token=token)
-        log.info("HuggingFace model repo '%s' already exists — skipping creation.", repo_id)
-        return
-    except Exception:  # pylint: disable=broad-except
-        pass  # Model repo does not exist yet; proceed to create it.
+        log.info("Deleting existing HuggingFace model repo '%s'...", repo_id)
+        api.delete_repo(repo_id=repo_id, repo_type="model", token=token)
+        log.info("Successfully deleted model repo '%s'.", repo_id)
+    except Exception as exc:
+        log.debug("Model repo '%s' did not exist or could not be deleted: %s", repo_id, exc)
 
-    log.info("Creating HuggingFace model repo '%s' (task_type=%s).", repo_id, task_type)
+    log.info("Creating fresh HuggingFace model repo '%s' (task_type=%s).", repo_id, task_type)
 
     try:
         api.create_repo(repo_id, repo_type="model", token=token, exist_ok=True)
