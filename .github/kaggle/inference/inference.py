@@ -111,7 +111,7 @@ def push_to_github(filename, content, gh_token):
 
 def trigger_workflow(gh_token, workflow_id="07_evaluate_model_accuracy.yml"):
     url = f"https://api.github.com/repos/{GITHUB_REPO}/actions/workflows/{workflow_id}/dispatches"
-    headers = {"Authorization": f"token {gh_token}", "Accept": "application/vnd.github.v3+json"}
+    headers = {"Authorization": f"Bearer {gh_token}", "Accept": "application/vnd.github.v3+json"}
     r = requests.post(url, headers=headers, json={"ref": BRANCH})
     if r.status_code == 204:
         logger.info(f"Triggered evaluation: {workflow_id}")

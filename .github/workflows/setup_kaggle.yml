@@ -41,7 +41,10 @@ jobs:
           sed -i "s|__HF_TOKEN_PLACEHOLDER__|${HF_TOKEN}|g" .github/kaggle/inference/inference.py
           sed -i "s|__GH_TOKEN_PLACEHOLDER__|${GH_TOKEN}|g" .github/kaggle/inference/inference.py
           
-          echo "Kaggle configured and secrets injected."
+          # Configure Kaggle CLI
+          mkdir -p ~/.kaggle
+          echo "{\"username\":\"soumyadipkarforma\",\"key\":\"$KAGGLE_API_TOKEN\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
 
       - name: Initialise Training Kernel
         env:
