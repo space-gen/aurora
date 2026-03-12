@@ -2,6 +2,13 @@ import os
 import json
 import logging
 import requests
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader
+from torchvision import models, transforms
+from PIL import Image
+from io import BytesIO
 from datasets import load_dataset
 from huggingface_hub import HfApi
 
@@ -15,69 +22,127 @@ HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 GITHUB_REPO = "space-gen/aurora"
 BRANCH = "main"
 
+# Production Training Params
+BATCH_SIZE = 16
+LEARNING_RATE = 1e-4
+EPOCHS = 5
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+class SolarDataset(Dataset):
+    def __init__(self, hf_records, transform=None):
+        self.records = [r for r in hf_records if r.get("user_label") is not None]
+        self.transform = transform
+        # Map labels to integers (example: "none" -> 0, "active" -> 1)
+        # In a real scenario, this would be more dynamic based on the task_type
+        self.label_map = {"none": 0, "detected": 1}
+
+    def __len__(self):
+        return len(self.records)
+
+    def __getitem__(self, idx):
+        record = self.records[idx]
+        url = record["url"]
+        label_str = record["user_label"].lower()
+        label = self.label_map.get(label_str, 0)
+
+        try:
+            response = requests.get(url, timeout=10)
+            img = Image.open(BytesIO(response.content)).convert("RGB")
+        except Exception as e:
+            logger.warning(f"Failed to fetch image {url}: {e}")
+            # Return a blank image on failure to prevent crashing
+            img = Image.new("RGB", (224, 224))
+
+        if self.transform:
+            img = self.transform(img)
+
+        return img, torch.tensor(label, dtype=torch.long)
+
 def train_model(task_type, hf_token):
     dataset_repo = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
     model_repo = f"{HF_MODEL_REPO_PREFIX}{task_type.replace('_', '-')}"
     
-    logger.info(f"Training for {task_type} using dataset {dataset_repo}")
+    logger.info(f"--- Production Training for {task_type} ---")
     
     try:
-        # 1. Load annotations from HF
-        dataset = load_dataset(dataset_repo, token=hf_token, split="train")
-        logger.info(f"Loaded {len(dataset)} annotations for {task_type}")
-        
-        if len(dataset) == 0:
-            logger.warning(f"No annotations found for {task_type}. Skipping training.")
+        # 1. Load data from HF
+        dataset = load_dataset(dataset_repo, token=hf_token, split="train", trust_remote_code=True)
+        if len(dataset) < 5: # Minimum data threshold
+            logger.warning(f"Insufficient data for {task_type} ({len(dataset)} records). Skipping.")
             return
 
-        # 2. Mock Training
-        model_path = "model.pt"
-        with open(model_path, "w") as f:
-            f.write("MOCK_MODEL_WEIGHTS")
+        # 2. Setup Data
+        transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+        train_ds = SolarDataset(dataset, transform=transform)
+        if len(train_ds) == 0:
+            logger.warning(f"No labeled data for {task_type}. skipping.")
+            return
+            
+        loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
 
-        # 3. Push model weights back to HF
+        # 3. Model: Production-grade ResNet50
+        model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, 2) # Binary classification example
+        model = model.to(DEVICE)
+
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
+        # 4. Training Loop
+        model.train()
+        for epoch in range(EPOCHS):
+            running_loss = 0.0
+            for images, labels in loader:
+                images, labels = images.to(DEVICE), labels.to(DEVICE)
+                optimizer.zero_grad()
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+                running_loss += loss.item()
+            logger.info(f"Epoch {epoch+1}/{EPOCHS} Loss: {running_loss/len(loader):.4f}")
+
+        # 5. Save and Upload
+        model_path = "model.pt"
+        torch.save(model.state_dict(), model_path)
+
         api = HfApi(token=hf_token)
         api.upload_file(
             path_or_fileobj=model_path,
             path_in_repo="model.pt",
             repo_id=model_repo,
             repo_type="model",
-            commit_message=f"chore: update model weights for {task_type}"
+            commit_message=f"feat: production model update for {task_type}"
         )
-        logger.info(f"Model for {task_type} pushed to {model_repo}")
+        logger.info(f"Model for {task_type} successfully deployed to HF.")
         
     except Exception as e:
-        logger.error(f"Failed training for {task_type}: {e}")
+        logger.error(f"Training pipeline failed for {task_type}: {e}")
 
 def trigger_next_workflow(gh_token, workflow_id="06_trigger_kaggle_inference.yml"):
-    """Triggers the inference stage in the pipeline."""
     url = f"https://api.github.com/repos/{GITHUB_REPO}/actions/workflows/{workflow_id}/dispatches"
-    headers = {
-        "Authorization": f"token {gh_token}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    payload = {"ref": BRANCH}
-    r = requests.post(url, headers=headers, data=json.dumps(payload))
+    headers = {"Authorization": f"token {gh_token}", "Accept": "application/vnd.github.v3+json"}
+    r = requests.post(url, headers=headers, json={"ref": BRANCH})
     if r.status_code == 204:
-        logger.info(f"Successfully triggered next workflow: {workflow_id}")
+        logger.info(f"Triggered next workflow: {workflow_id}")
     else:
-        logger.error(f"Failed to trigger workflow: {r.status_code} {r.text}")
+        logger.error(f"Failed to trigger GitHub: {r.status_code} {r.text}")
 
 def main():
     hf_token = os.environ.get("HF_TOKEN")
     gh_token = os.environ.get("GH_TOKEN")
-    
-    if not hf_token:
-        logger.error("HF_TOKEN not found.")
-        return
-    if not gh_token:
-        logger.error("GH_TOKEN not found.")
+    if not hf_token or not gh_token:
+        logger.error("Missing tokens.")
         return
 
     for task_type in TASK_TYPES:
         train_model(task_type, hf_token)
 
-    # Trigger next step
     trigger_next_workflow(gh_token)
 
 if __name__ == "__main__":
