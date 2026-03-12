@@ -6,6 +6,9 @@ on:
     types: [completed]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   sync-annotations:
     name: Copy task templates into annotations/

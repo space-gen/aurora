@@ -3,6 +3,9 @@ name: "06 · Trigger Kaggle Inference"
 on:
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   trigger-inference:
     name: Trigger Kaggle daily inference kernel

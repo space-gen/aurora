@@ -6,6 +6,9 @@ on:
     types: [completed]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   merge-annotations:
     name: Push annotations to HuggingFace
