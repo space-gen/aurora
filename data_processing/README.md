@@ -1,21 +1,34 @@
-# data_processing/
+# SolarHub Data Processing Directory
 
-This directory is the **temporary workspace** used during the nightly automation pipeline.
+This directory contains grouped task JSON files ready for annotation and model training.
 
-## Pipeline Lifecycle
+## Sample Data URLs (Best-in-Class NASA SDO JPGs)
 
-1. At the **start** of the nightly pipeline (`01_lock_and_prepare.yml`), the `data/` directory is
-   renamed to `data_processing/`. This acts as a system lock, preventing the frontend from serving
-   stale or partially-updated tasks.
+### Active Region
+![active_region](http://jsoc.stanford.edu/data/aia/images/2026/03/08/171/2026_03_08__00_00_09_349__SDO_AIA_AIA_171.jp2)
+- URL: http://jsoc.stanford.edu/data/aia/images/2026/03/08/171/2026_03_08__00_00_09_349__SDO_AIA_AIA_171.jp2
 
-2. All intermediate pipeline stages (URL refresh, annotation sync, ML predictions) operate on
-   files in this directory.
+### Cme
+![cme](http://jsoc.stanford.edu/data/aia/images/2026/03/08/211/2026_03_08__00_00_21_620__SDO_AIA_AIA_211.jp2)
+- URL: http://jsoc.stanford.edu/data/aia/images/2026/03/08/211/2026_03_08__00_00_21_620__SDO_AIA_AIA_211.jp2
 
-3. At the **end** of the nightly pipeline (`09_unlock_frontend.yml`), the directory is renamed
-   back to `data/`, making updated task files available to the frontend again.
+### Coronal Hole
+![coronal_hole](http://jsoc.stanford.edu/data/aia/images/2026/03/08/193/2026_03_08__00_00_28_842__SDO_AIA_AIA_193.jp2)
+- URL: http://jsoc.stanford.edu/data/aia/images/2026/03/08/193/2026_03_08__00_00_28_842__SDO_AIA_AIA_193.jp2
 
-## Notes
+### Magnetogram
+![magnetogram](http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_000000_M_1k.jpg)
+- URL: http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_000000_M_1k.jpg
 
-- This directory should be **empty** at all times outside of an active nightly pipeline run.
-- Do **not** commit processing artifacts or intermediate files here.
-- `data_processing/` and HuggingFace datasets must never mix automatically.
+### Prominence
+![prominence](http://jsoc.stanford.edu/data/aia/images/2026/03/08/304/2026_03_08__00_00_05_132__SDO_AIA_AIA_304.jp2)
+- URL: http://jsoc.stanford.edu/data/aia/images/2026/03/08/304/2026_03_08__00_00_05_132__SDO_AIA_AIA_304.jp2
+
+### Solar Flare
+![solar_flare](http://jsoc.stanford.edu/data/aia/images/2026/03/08/94/2026_03_08__00_00_35_119__SDO_AIA_AIA_94.jp2)
+- URL: http://jsoc.stanford.edu/data/aia/images/2026/03/08/94/2026_03_08__00_00_35_119__SDO_AIA_AIA_94.jp2
+
+### Sunspot
+![sunspot](http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_000000_Ic_1k.jpg)
+- URL: http://jsoc.stanford.edu/data/hmi/images/2026/03/08/20260308_000000_Ic_1k.jpg
+
