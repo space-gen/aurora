@@ -86,24 +86,36 @@ def main():
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
     existing_urls = _get_existing_urls()
     
-    # Always pull exactly "yesterday"
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    log.info(f"Crawling JSOC for yesterday: {yesterday}")
+    # Check if we should do initial 3-month pull or just daily
+    is_initial = os.environ.get("SOLARHUB_INITIAL_SETUP", "false").lower() == "true"
+    
+    if is_initial:
+        days_to_pull = 90
+        log.info("Initial setup mode: Pulling 3 months of data.")
+    else:
+        days_to_pull = 1
+        log.info("Daily mode: Pulling yesterday's data.")
 
+    start_date = datetime.date.today() - datetime.timedelta(days=days_to_pull)
+    all_dates = [start_date + datetime.timedelta(days=i) for i in range(days_to_pull)]
+    
     tasks_by_type = defaultdict(list)
     
-    for task_type in SOURCE_MAP.keys():
-        log.info(f"Processing {task_type}...")
-        urls = _fetch_day_urls(task_type, yesterday)
-        for url in urls:
-            if url not in existing_urls:
-                tasks_by_type[task_type].append({
-                    "url": url,
-                    "task_type": task_type,
-                    "user_comments": [],
-                    "metadata": {"source": "JSOC_HMI_JPG", "date": yesterday.isoformat()}
-                })
-                existing_urls.add(url)
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        for task_type in SOURCE_MAP.keys():
+            log.info(f"Processing {task_type}...")
+            futures = {executor.submit(_fetch_day_urls, task_type, dt): dt for dt in all_dates}
+            for future in as_completed(futures):
+                urls = future.result()
+                for url in urls:
+                    if url not in existing_urls:
+                        tasks_by_type[task_type].append({
+                            "url": url,
+                            "task_type": task_type,
+                            "user_comments": [],
+                            "metadata": {"source": "JSOC_HMI_JPG", "date": datetime.datetime.now(datetime.UTC).isoformat()}
+                        })
+                        existing_urls.add(url)
 
     # Write grouped files
     for task_type, tasks in tasks_by_type.items():

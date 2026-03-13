@@ -1,4 +1,4 @@
-name: "08 · Unlock Frontend"
+name: "06 · Unlock Frontend"
 
 on:
   workflow_run:
