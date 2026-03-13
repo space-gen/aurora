@@ -1,10 +1,10 @@
 """
 pull_new_urls.py
 ================
-Stage 2 — High-Volume Solar Data Crawler (NASA SDO Browse)
+Stage 2 — High-Volume Solar Data Crawler (JSOC Synoptic JPGs)
 
-Fetches daily-updating JPG URLs for all task types from the official 
-NASA SDO browse image archive. These are standard JPGs suitable for web.
+Fetches daily-updating JPG URLs for all task types from the JSOC synoptic
+archive. These are standard JPGs suitable for web embedding.
 """
 
 import os
@@ -38,20 +38,20 @@ BULK_DAYS = int(os.environ.get("SOLARHUB_BULK_DAYS", "0"))
 MAX_WORKERS = int(os.environ.get("SOLARHUB_FETCH_WORKERS", "15"))
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
-# NASA SDO Browse Patterns
-# Channels: 0171, 0193, 0304, 0094, 0211, HMIIC (Continuum), HMIB (Magnetogram)
+# JSOC Synoptic JPG Patterns
+# HMI: hmi.ic_720s, hmi.m_720s
+# AIA: aia.lev1_euv_12s (171, 193, 211, 304, 94)
 SOURCE_MAP = {
-    "sunspot": {"filter": "_1024_HMIIC.jpg"},
-    "magnetogram": {"filter": "_1024_HMIB.jpg"},
-    "active_region": {"filter": "_1024_0171.jpg"},
-    "coronal_hole": {"filter": "_1024_0193.jpg"},
-    "prominence": {"filter": "_1024_0304.jpg"},
-    "solar_flare": {"filter": "_1024_0094.jpg"},
-    "cme": {"filter": "_1024_0211.jpg"},
+    "sunspot": {"path": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/", "filter": "_Ic_1k.jpg"},
+    "magnetogram": {"path": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/", "filter": "_M_1k.jpg"},
+    "active_region": {"path": "http://jsoc.stanford.edu/data/aia/synoptic/{Y}/{M}/{D}/H0000/", "filter": "_0171.jpg"},
+    "coronal_hole": {"path": "http://jsoc.stanford.edu/data/aia/synoptic/{Y}/{M}/{D}/H0000/", "filter": "_0193.jpg"},
+    "prominence": {"path": "http://jsoc.stanford.edu/data/aia/synoptic/{Y}/{M}/{D}/H0000/", "filter": "_0304.jpg"},
+    "solar_flare": {"path": "http://jsoc.stanford.edu/data/aia/synoptic/{Y}/{M}/{D}/H0000/", "filter": "_0094.jpg"},
+    "cme": {"path": "http://jsoc.stanford.edu/data/aia/synoptic/{Y}/{M}/{D}/H0000/", "filter": "_0211.jpg"},
 }
 
 LINK_REGEX = re.compile(r'href="([^"]+\.jpg)"')
-BASE_BROWSE_URL = "https://sdo.gsfc.nasa.gov/assets/img/browse/{Y}/{M}/{D}/"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -72,23 +72,22 @@ def _get_existing_urls():
         return all_urls
     except ImportError: return set()
 
-def _fetch_day_urls(date_obj):
+def _fetch_day_urls(task_type, date_obj):
     y, m, d = date_obj.strftime("%Y"), date_obj.strftime("%m"), date_obj.strftime("%d")
-    url = BASE_BROWSE_URL.format(Y=y, M=m, D=d)
+    cfg = SOURCE_MAP.get(task_type)
+    if not cfg: return []
     
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
+    url = cfg["path"].format(Y=y, M=m, D=d)
+    file_filter = cfg["filter"]
     
-    results = defaultdict(list)
+    results = []
     try:
-        response = requests.get(url, headers=headers, timeout=15)
+        response = requests.get(url, timeout=15)
         if response.status_code == 200:
             matches = LINK_REGEX.findall(response.text)
             for match in matches:
-                for task_type, cfg in SOURCE_MAP.items():
-                    if cfg["filter"] in match:
-                        results[task_type].append(url + match)
+                if file_filter in match:
+                    results.append(url + match)
     except Exception:
         pass
     return results
@@ -102,21 +101,20 @@ def main():
     existing_urls = _get_existing_urls()
     
     days_to_pull = BULK_DAYS if BULK_DAYS > 0 else LOOKBACK_DAYS
-    # SDO browse usually has a slight delay, so we start from yesterday
-    end_date = datetime.date.today() - datetime.timedelta(days=1)
-    start_date = end_date - datetime.timedelta(days=days_to_pull)
+    start_date = datetime.date.today() - datetime.timedelta(days=days_to_pull)
     
     all_dates = [start_date + datetime.timedelta(days=i) for i in range(days_to_pull + 1)]
-    log.info(f"Crawling NASA SDO Browse: {len(all_dates)} days from {start_date}")
+    log.info(f"Crawling JSOC JPG Archive: {len(all_dates)} days from {start_date}")
 
     tasks_by_type = defaultdict(list)
     
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(_fetch_day_urls, dt): dt for dt in all_dates}
-        
-        for future in as_completed(futures):
-            day_results = future.result()
-            for task_type, urls in day_results.items():
+        for task_type in SOURCE_MAP.keys():
+            log.info(f"Processing {task_type}...")
+            futures = {executor.submit(_fetch_day_urls, task_type, dt): dt for dt in all_dates}
+            
+            for future in as_completed(futures):
+                urls = future.result()
                 for url in urls:
                     if url not in existing_urls:
                         tasks_by_type[task_type].append({
@@ -124,7 +122,7 @@ def main():
                             "task_type": task_type,
                             "ml_prediction": None,
                             "confidence": None,
-                            "metadata": {"source": "NASA_SDO_BROWSE", "date": datetime.datetime.now(datetime.UTC).isoformat()}
+                            "metadata": {"source": "JSOC_SYNOPTIC_JPG", "date": datetime.datetime.now(datetime.UTC).isoformat()}
                         })
                         existing_urls.add(url)
 

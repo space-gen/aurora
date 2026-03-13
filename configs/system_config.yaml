@@ -8,7 +8,7 @@ ml:
   dataset_platform: huggingface
 
 workflow:
-  nightly_time: "00:00 UTC"
+  nightly_time: "00:00 UTC every 3 days"
 
 huggingface:
   # Per-task-type annotation dataset prefix.
