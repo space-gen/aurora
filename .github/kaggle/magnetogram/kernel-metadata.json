@@ -1,7 +1,7 @@
 {
-  "id": "soumyadipkarforma/solarhub-inference",
-  "title": "SolarHub — Inference",
-  "code_file": "inference.py",
+  "id": "soumyadipkarforma/solarhub-magnetogram-training",
+  "title": "SolarHub — Magnetogram Training",
+  "code_file": "train.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,

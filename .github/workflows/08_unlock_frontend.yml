@@ -2,7 +2,7 @@ name: "08 · Unlock Frontend"
 
 on:
   workflow_run:
-    workflows: ["07 · Evaluate Model Accuracy"]
+    workflows: ["05 · Trigger Kaggle Training"]
     types: [completed]
   workflow_dispatch:
 

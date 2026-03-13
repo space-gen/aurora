@@ -1,6 +1,6 @@
 {
-  "id": "soumyadipkarforma/solarhub-training",
-  "title": "SolarHub — Training",
+  "id": "soumyadipkarforma/solarhub-sunspot-training",
+  "title": "SolarHub — Sunspot Training",
   "code_file": "train.py",
   "language": "python",
   "kernel_type": "script",
