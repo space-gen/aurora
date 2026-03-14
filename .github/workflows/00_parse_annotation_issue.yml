@@ -49,13 +49,31 @@ jobs:
             git push
           fi
 
-      - name: Acknowledge annotation in issue comment
+      - name: Acknowledge and close issue
         uses: actions/github-script@v7
         with:
           script: |
+            // 1. Add acknowledgment comment
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "✅ **Annotation recorded!** Thank you for contributing to SolarHub.\n\nYour label will be included in the next nightly pipeline run and merged into the dataset.",
+              body: "✅ **Annotation recorded!** Thank you for contributing to SolarHub.\n\nYour label has been saved and will be merged into the master HuggingFace dataset during the next automated pipeline run.",
+            });
+
+            // 2. Add 'recorded' label and remove 'annotation' label if desired
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['recorded']
+            });
+
+            // 3. Close the issue to keep the tracker clean
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed',
+              state_reason: 'completed'
             });
