@@ -123,7 +123,8 @@ def main():
                 "serial_number": current_serial,
                 "url": url,
                 "task_type": task_type,
-                "user_label": None, # For annotations to fill
+                "user_label": None,
+                "locations": [], # New field: stores list of {"x": int, "y": int, "label": str}
                 "metadata": {
                     "source": "JSOC_HMI_JPG",
                     "captured_at": yesterday.isoformat()

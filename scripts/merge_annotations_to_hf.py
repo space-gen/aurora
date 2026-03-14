@@ -54,7 +54,7 @@ ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 # Required fields that every annotation file must contain.
-REQUIRED_FIELDS = {"url", "task_type", "user_label", "id", "serial_number"}
+REQUIRED_FIELDS = {"url", "task_type", "user_label", "id", "serial_number", "locations"}
 
 
 # ---------------------------------------------------------------------------
@@ -154,6 +154,7 @@ def _push_annotations_to_hf(
             "user_label": a["user_label"],
             "id": a["id"],
             "serial_number": a["serial_number"],
+            "locations": json.dumps(a.get("locations", [])),
             "metadata": json.dumps(a.get("metadata", {})),
         }
         for a in annotations

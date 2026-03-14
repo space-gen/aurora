@@ -181,12 +181,28 @@ def _build_annotation(
         "user_label": user_label,
         "id": record_id,
         "serial_number": serial_number,
+        "locations": [],
         "metadata": {
             "annotator": author,
             "issue_number": int(issue_number),
             "timestamp": datetime.now(tz=timezone.utc).isoformat(),
         },
     }
+
+    # Parse coordinates if present (format: x,y ; x,y)
+    coords_raw = fields.get("pixel_coordinates", "").strip()
+    if coords_raw and coords_raw.lower() != "none":
+        for pair in coords_raw.split(";"):
+            try:
+                x_str, y_str = pair.strip().split(",")
+                annotation["locations"].append({
+                    "x": int(x_str.strip()),
+                    "y": int(y_str.strip()),
+                    "label": user_label
+                })
+            except ValueError:
+                log.warning("Skipping invalid coordinate pair: %s", pair)
+
     if notes:
         annotation["metadata"]["notes"] = notes
 
