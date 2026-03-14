@@ -27,17 +27,28 @@ jobs:
 
       - name: Sync annotation templates from data_processing/
         run: |
-          # Copy grouped task files from data_processing/ into annotations/ 
-          # so users can find URLs to annotate.
-          for src in data_processing/*.json; do
-            [ -f "$src" ] || continue
-            # Skip model accuracy report if it exists
-            [[ "$(basename "$src")" == "model_accuracy.json" ]] && continue
-            
-            dest="annotations/$(basename "$src")"
-            cp "$src" "$dest"
-          done
-          echo "Annotation templates synced."
+          # Copy grouped task files from data_processing/ into annotations/
+          # while clearing user-provided labels and locations.
+          python -c '
+          import json, os, glob
+          from pathlib import Path
+          
+          for src_path in glob.glob("data_processing/*.json"):
+              if "model_accuracy.json" in src_path: continue
+              
+              with open(src_path, "r") as f:
+                  data = json.load(f)
+              
+              # Clear annotation fields for the template
+              for record in data:
+                  record["user_label"] = None
+                  record["locations"] = []
+              
+              dest_path = Path("annotations") / os.path.basename(src_path)
+              with open(dest_path, "w") as f:
+                  json.dump(data, f, indent=2)
+          '
+          echo "Annotation templates synced and cleared."
 
       - name: Commit synced annotation templates
         run: |
