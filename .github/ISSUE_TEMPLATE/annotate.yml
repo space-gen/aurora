@@ -33,22 +33,29 @@ body:
 
   - type: dropdown
     id: task_type
+...
+    validations:
+      required: true
+
+  - type: input
+    id: record_id
     attributes:
-      label: "Task Type"
-      description: "What kind of solar feature does this image show?"
-      options:
-        - sunspot
-        - solar_flare
-        - magnetogram
-        - coronal_hole
-        - prominence
-        - active_region
-        - cme
+      label: "Record ID"
+      description: "The unique ID of this record (e.g. sp-123). Found in the task JSON."
+    validations:
+      required: true
+
+  - type: input
+    id: serial_number
+    attributes:
+      label: "Serial Number"
+      description: "The serial number of this record. Found in the task JSON."
     validations:
       required: true
 
   - type: input
     id: user_label
+...
     attributes:
       label: "Your Label"
       description: "Your classification for this image (see the table above for valid values)."

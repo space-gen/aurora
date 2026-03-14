@@ -1,8 +1,8 @@
-name: "06 · Unlock Frontend"
+name: "05 · Unlock Frontend"
 
 on:
   workflow_run:
-    workflows: ["05 · Trigger Kaggle Training"]
+    workflows: ["04 · Sync Annotation Templates"]
     types: [completed]
   workflow_dispatch:
 

@@ -133,6 +133,8 @@ def _build_annotation(
     image_url = fields.get("image_url", "").strip()
     task_type = fields.get("task_type", "").strip().lower()
     user_label = fields.get("your_label", "").strip().lower()
+    record_id = fields.get("record_id", "").strip()
+    serial_number_str = fields.get("serial_number", "").strip()
     notes = fields.get("notes", "").strip()
 
     # --- validate ---
@@ -163,10 +165,22 @@ def _build_annotation(
         )
         sys.exit(1)
 
+    if not record_id or not serial_number_str:
+        log.error("Missing record_id or serial_number in issue body.")
+        sys.exit(1)
+
+    try:
+        serial_number = int(serial_number_str)
+    except ValueError:
+        log.error("Invalid serial number: %s", serial_number_str)
+        sys.exit(1)
+
     annotation: dict = {
         "url": image_url,
         "task_type": task_type,
         "user_label": user_label,
+        "id": record_id,
+        "serial_number": serial_number,
         "metadata": {
             "annotator": author,
             "issue_number": int(issue_number),
