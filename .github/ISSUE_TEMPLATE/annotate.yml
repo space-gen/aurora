@@ -33,7 +33,17 @@ body:
 
   - type: dropdown
     id: task_type
-...
+    attributes:
+      label: "Task Type"
+      description: "The type of solar observation task."
+      options:
+        - sunspot
+        - solar_flare
+        - magnetogram
+        - coronal_hole
+        - prominence
+        - active_region
+        - cme
     validations:
       required: true
 
@@ -54,23 +64,22 @@ body:
       required: true
 
   - type: input
-    - type: input
-      id: user_label
-      attributes:
-        label: "Your Label"
-        description: "Your classification for this image (see the table above for valid values)."
-        placeholder: "e.g. active_region"
-      validations:
-        required: true
+    id: user_label
+    attributes:
+      label: "Your Label"
+      description: "Your classification for this image (see the table above for valid values)."
+      placeholder: "e.g. active_region"
+    validations:
+      required: true
 
-    - type: input
-      id: coordinates
-      attributes:
-        label: "Pixel Coordinates (optional)"
-        description: "The (x, y) location of the feature. Multiple features separated by semicolon."
-        placeholder: "e.g. 450,320 ; 890,110"
-      validations:
-        required: false
+  - type: input
+    id: coordinates
+    attributes:
+      label: "Pixel Coordinates (optional)"
+      description: "The (x, y) location of the feature. Multiple features separated by semicolon."
+      placeholder: "e.g. 450,320 ; 890,110"
+    validations:
+      required: false
 
 
   - type: textarea
