@@ -101,8 +101,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 0. Pull latest changes before modifying anything
-          git pull origin main --rebase
+          # 0. Pull latest changes (--autostash handles the downloaded artifact files)
+          git pull origin main --rebase --autostash
 
           # 1. Reset annotations folder with latest images
           python -c '
