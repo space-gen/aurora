@@ -149,7 +149,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
+          git add data_processing/ annotations/
           git pull origin main --rebase
           if git diff --cached --quiet; then
             echo "No changes."
