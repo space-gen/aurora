@@ -10,7 +10,7 @@ env:
 
 jobs:
   lock:
-    name: Stage 01 · Lock
+    name: Stage 01 · Lock Frontend
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,34 +19,30 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Rename data/ to data_processing/ and Push
+      - name: Rename data/ to data_processing/
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
           if [ -d "data" ]; then
-            # Cleanly move to data_processing
-            if [ -d "data_processing" ]; then rm -rf data_processing; fi
+            # Cleanly move to data_processing to lock the public frontend
+            rm -rf data_processing
             mv data data_processing
             
             git add .
-            git commit -m "chore(pipeline): lock system for processing [skip ci]
+            git commit -m "chore(pipeline): lock frontend for nightly processing [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push origin main
-            echo "System locked."
+            echo "Frontend locked."
           else
-            echo "Data folder not found. System already locked."
+            echo "System already locked."
           fi
 
-  pull:
-    name: Stage 02 · Pull URLs (${{ matrix.task }})
+  pull-urls:
+    name: Node A · Pull New URLs
     needs: lock
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        task: [sunspot, magnetogram]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -56,25 +52,20 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: pip install requests huggingface_hub datasets
-      - name: Pull New URLs (${{ matrix.task }})
+      - name: Run Crawler
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          TASK_TYPE: ${{ matrix.task }}
         run: python scripts/pull_new_urls.py
-      - name: Upload Pull Artifact
+      - name: Upload Pull Results
         uses: actions/upload-artifact@v4
         with:
-          name: pull-data-${{ matrix.task }}
-          path: data_processing/${{ matrix.task }}.json
+          name: fresh-task-data
+          path: data_processing/*.json
 
-  push-hf:
-    name: Stage 03 · Push to HF (${{ matrix.task }})
+  push-annotations:
+    name: Node B · Push Annotations to HF
     needs: lock
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        task: [sunspot, magnetogram]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -84,15 +75,14 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: pip install requests huggingface_hub datasets
-      - name: Push to HuggingFace (${{ matrix.task }})
+      - name: Merge to HuggingFace
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          TASK_TYPE: ${{ matrix.task }}
         run: python scripts/merge_annotations_to_hf.py
 
   sync-and-unlock:
     name: Stage 04-05 · Sync & Unlock
-    needs: [pull, push-hf]
+    needs: [pull-urls, push-annotations]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -101,20 +91,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Download All Pull Data
+      - name: Download Pulled Data
         uses: actions/download-artifact@v4
         with:
+          name: fresh-task-data
           path: data_processing/
-          pattern: pull-data-*
-          merge-multiple: true
-      - name: Reset annotation templates
+      - name: Sync templates and Unlock
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 1. Reset annotations folder with latest images
           python -c '
-          import json, os, glob
+          import json, os, glob, shutil
           from pathlib import Path
           for src_path in glob.glob("data_processing/*.json"):
               with open(src_path, "r") as f:
@@ -126,28 +115,20 @@ jobs:
               with open(dest_path, "w") as f:
                   json.dump(data, f, indent=2)
           '
-      - name: Final Consolidated Unlock & Push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 1. Sync data back to public folder
+          # 2. Unlock system (Rename processing -> data)
           if [ -d "data_processing" ]; then
             rm -rf data
             mv data_processing data
           fi
           
-          # 2. Add all changes (data/ and annotations/)
+          # 3. Final Consolidated Commit
           git add data/ annotations/
-          
-          # 3. Pull latest changes to avoid conflict
           git pull origin main --rebase
-          
-          # 4. Commit and Push
           if git diff --cached --quiet; then
             echo "No changes."
           else
-            git commit -m "chore(pipeline): refresh tasks and sync templates [skip ci]
+            git commit -m "chore(pipeline): refresh task database and clean templates [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push origin main
