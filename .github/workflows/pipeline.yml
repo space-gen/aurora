@@ -131,10 +131,8 @@ jobs:
           # 2. Add all changes (data/ and annotations/)
           git add data/ annotations/
           
-          # 3. Pull latest changes to avoid conflict
-          git pull origin main --rebase
-          
-          # 4. Commit and Push
+          # 3. Final Commit and Push
+          # Note: No rebase here since Stage 02 and 03 did ZERO git operations.
           if git diff --cached --quiet; then
             echo "No changes."
           else
