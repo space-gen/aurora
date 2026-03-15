@@ -24,6 +24,7 @@ HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 def _push_to_hf(task_type: str, records: list[dict], token: str):
     try:
         from datasets import Dataset
+        from huggingface_hub import HfApi
         repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
         
         if not records:
@@ -47,8 +48,26 @@ def _push_to_hf(task_type: str, records: list[dict], token: str):
             
         dataset = Dataset.from_list(hf_data)
         
-        # We push to the 'train' split as requested to maintain the single-source-of-truth logic
-        dataset.push_to_hub(repo_id, token=token, split="train")
+        def _do_push():
+            dataset.push_to_hub(repo_id, token=token, split="train")
+
+        try:
+            _do_push()
+        except Exception as push_err:
+            if "don't match the features" in str(push_err) or "features" in str(push_err).lower():
+                # Schema mismatch: wipe old data from the repo then retry
+                log.warning(f"Schema mismatch for {repo_id}, clearing old data and retrying...")
+                api = HfApi(token=token)
+                try:
+                    for f in api.list_repo_files(repo_id=repo_id, repo_type="dataset"):
+                        if f.startswith("data/"):
+                            api.delete_file(path_in_repo=f, repo_id=repo_id, repo_type="dataset")
+                except Exception as del_err:
+                    log.warning(f"Could not clear old files for {repo_id}: {del_err}")
+                _do_push()
+            else:
+                raise
+
         log.info(f"Successfully pushed to {repo_id}")
         
     except Exception as e:

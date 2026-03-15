@@ -55,7 +55,7 @@ def _get_existing_urls():
         for task_type in SOURCE_MAP.keys():
             repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
             try:
-                ds = load_dataset(repo_id, token=token, split="train", trust_remote_code=True)
+                ds = load_dataset(repo_id, token=token, split="train")
                 all_urls.update(ds["url"])
             except Exception: continue
         return all_urls
@@ -84,7 +84,7 @@ def _get_last_serial_and_id(task_type):
             # Check both splits as data migrates from tasks to train
             for split in ["tasks", "train"]:
                 try:
-                    ds = load_dataset(repo_id, token=token, split=split, trust_remote_code=True)
+                    ds = load_dataset(repo_id, token=token, split=split)
                     if len(ds) > 0:
                         max_serial = max(max_serial, max(ds["serial_number"]))
                 except: pass
