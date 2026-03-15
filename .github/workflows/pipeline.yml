@@ -34,8 +34,6 @@ jobs:
     name: Stage 02 · Pull URLs (${{ matrix.task }})
     needs: lock
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -43,8 +41,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -56,27 +52,45 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           TASK_TYPE: ${{ matrix.task }}
         run: python scripts/pull_new_urls.py
-      - name: Commit Pull Changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data_processing/
-          git pull origin main --rebase
-          if git diff --cached --quiet; then
-            echo "No changes."
-          else
-            git commit -m "chore(pipeline): pull latest ${{ matrix.task }} URLs [skip ci]
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: task-data-${{ matrix.task }}
+          path: data_processing/${{ matrix.task }}.json
 
-            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-            git push origin main
-          fi
-
-  push:
-    name: Stage 03 · Push to HF (${{ matrix.task }})
+  merge-pulls:
+    name: Stage 02b · Merge Data
     needs: pull
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: data_processing/
+          pattern: task-data-*
+          merge-multiple: true
+      - name: Commit all pulled URLs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data_processing/*.json
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore(pipeline): merge parallel URL pulls [skip ci]
+
+            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+            git push
+          fi
+
+  push-hf:
+    name: Stage 03 · Push to HF (${{ matrix.task }})
+    needs: merge-pulls
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -84,8 +98,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -97,24 +109,10 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           TASK_TYPE: ${{ matrix.task }}
         run: python scripts/merge_annotations_to_hf.py
-      - name: Commit Push Changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add annotations/
-          git pull origin main --rebase
-          if git diff --cached --quiet; then
-            echo "No changes."
-          else
-            git commit -m "chore(pipeline): record ${{ matrix.task }} annotations [skip ci]
-
-            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-            git push origin main
-          fi
 
   sync:
     name: Stage 04 · Sync Templates
-    needs: push
+    needs: push-hf
     runs-on: ubuntu-latest
     permissions:
       contents: write
