@@ -58,41 +58,9 @@ jobs:
           name: pull-data-${{ matrix.task }}
           path: data_processing/${{ matrix.task }}.json
 
-  merge-pulls:
-    name: Stage 02b · Merge Data
-    needs: pull
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: data_processing/
-          pattern: pull-data-*
-          merge-multiple: true
-      - name: Commit all pulled URLs
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data_processing/*.json
-          git pull origin main --rebase
-          if git diff --cached --quiet; then
-            echo "No changes."
-          else
-            git commit -m "chore(pipeline): merge parallel URL pulls [skip ci]
-
-            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-            git push origin main
-          fi
-
   push-hf:
     name: Stage 03 · Push to HF (${{ matrix.task }})
-    needs: merge-pulls
+    needs: pull
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -103,14 +71,19 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: pip install requests huggingface_hub datasets
+      - name: Download Pull Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pull-data-${{ matrix.task }}
+          path: data_processing/
       - name: Push to HuggingFace (${{ matrix.task }})
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           TASK_TYPE: ${{ matrix.task }}
         run: python scripts/merge_annotations_to_hf.py
 
-  sync-and-commit:
-    name: Stage 04 · Sync & Commit
+  sync-and-unlock:
+    name: Stage 04-05 · Sync & Unlock
     needs: [pull, push-hf]
     runs-on: ubuntu-latest
     permissions:
@@ -145,41 +118,27 @@ jobs:
               with open(dest_path, "w") as f:
                   json.dump(data, f, indent=2)
           '
-      - name: Final Consolidated Commit
+      - name: Final Consolidated Unlock & Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data_processing/ annotations/
+          
+          # 1. Sync data back to public folder
+          if [ -d "data_processing" ]; then
+            mv data_processing data
+          fi
+          
+          # 2. Add all changes (data/ and annotations/)
+          git add data/ annotations/
+          
+          # 3. Pull latest changes to avoid conflict
           git pull origin main --rebase
+          
+          # 4. Commit and Push
           if git diff --cached --quiet; then
             echo "No changes."
           else
-            git commit -m "chore(pipeline): update tasks and sync templates [skip ci]
-
-            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-            git push origin main
-          fi
-
-  unlock:
-    name: Stage 05 · Unlock
-    needs: sync-and-commit
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Rename data_processing/ back to data/
-        run: |
-          if [ -d "data_processing" ]; then
-            mv data_processing data
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add .
-            git pull origin main --rebase
-            git commit -m "chore(pipeline): unlock system [skip ci]
+            git commit -m "chore(pipeline): refresh tasks and sync templates [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push origin main
