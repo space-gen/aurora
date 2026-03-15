@@ -23,12 +23,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           if [ -d "data" ]; then
-            # Ensure data_processing is clean
-            rm -rf data_processing
+            # Cleanly move to data_processing
+            if [ -d "data_processing" ]; then rm -rf data_processing; fi
             mv data data_processing
-            
+
             git add .
             git commit -m "chore(pipeline): lock system for processing [skip ci]
 
@@ -36,15 +36,16 @@ jobs:
             git push origin main
             echo "System locked."
           else
-            echo "Data folder not found. System might already be locked or in inconsistent state."
-            # Don't fail here, just log
+            echo "Data folder not found. System already locked."
+          fi
+      ...
+      - name: Unlock System (Rename processing -> data)
+        run: |
+          if [ -d "data_processing" ]; then
+            if [ -d "data" ]; then rm -rf data; fi
+            mv data_processing data
           fi
 
-  pull:
-    name: Stage 02 · Pull URLs (${{ matrix.task }})
-    needs: lock
-    runs-on: ubuntu-latest
-    strategy:
       fail-fast: false
       matrix:
         task: [sunspot, magnetogram]
