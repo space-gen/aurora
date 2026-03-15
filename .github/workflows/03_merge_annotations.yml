@@ -39,22 +39,17 @@ jobs:
           # HF_TOKEN must have write access to SpaceGen/solarhub-annotations.
           # Set this secret under Settings → Secrets and variables → Actions.
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          # 1. Update local data files so GitHub has the labels too
-          python scripts/merge_annotations_to_local.py
-          
-          # 2. Push to master HF dataset
-          python scripts/merge_annotations_to_hf.py
+        run: python scripts/merge_annotations_to_hf.py
 
-      - name: Commit updated data and cleared annotation files
+      - name: Commit cleared annotation files
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data_processing/ annotations/
+          git add annotations/
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No annotation files changed."
           else
-            git commit -m "chore(pipeline): merge user annotations to local data and HF [skip ci]
+            git commit -m "chore(pipeline): annotations merged to HuggingFace [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
