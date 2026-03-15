@@ -4,7 +4,7 @@ merge_annotations_to_hf.py
 Pipeline Stage 3 — Merge Annotations
 
 Reads the task-specific JSON files from annotations/ (e.g. sunspot.json)
-and pushes all non-empty annotations to HuggingFace.
+and pushes ALL records (labeled and unlabeled) to HuggingFace.
 """
 
 import json
@@ -26,28 +26,28 @@ def _push_to_hf(task_type: str, records: list[dict], token: str):
         from datasets import Dataset
         repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
         
-        # Only push records that have a user label
-        labeled_records = [r for r in records if r.get("user_label") is not None]
-        if not labeled_records:
-            log.info(f"No labeled records for {task_type}. Skipping push.")
+        if not records:
+            log.info(f"No records for {task_type}. Skipping.")
             return
 
-        log.info(f"Pushing {len(labeled_records)} records to {repo_id}")
+        log.info(f"Pushing all {len(records)} records to {repo_id}")
         
-        # Format for HF
+        # Format for HF - Include all fields as requested
         hf_data = []
-        for r in labeled_records:
+        for r in records:
             hf_data.append({
-                "id": r["id"],
-                "serial_number": r["serial_number"],
-                "url": r["url"],
-                "task_type": r["task_type"],
-                "user_label": r["user_label"],
+                "id": r.get("id"),
+                "serial_number": r.get("serial_number"),
+                "url": r.get("url"),
+                "task_type": r.get("task_type"),
+                "user_label": r.get("user_label"), # Might be None
                 "locations": json.dumps(r.get("locations", [])),
                 "metadata": json.dumps(r.get("metadata", {}))
             })
             
         dataset = Dataset.from_list(hf_data)
+        
+        # We push to the 'train' split as requested to maintain the single-source-of-truth logic
         dataset.push_to_hub(repo_id, token=token, split="train")
         log.info(f"Successfully pushed to {repo_id}")
         

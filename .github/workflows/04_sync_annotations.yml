@@ -28,19 +28,24 @@ jobs:
 
       - name: Sync annotation templates from data_processing/
         run: |
-          # Copy grouped task files from data_processing/ into annotations/
-          # while clearing user-provided labels and locations.
+          # Totally clone data_processing into annotations/
+          # while ensuring user_label and locations are reset to empty.
           python -c '
-          import json, os, glob
+          import json, os, glob, shutil
           from pathlib import Path
           
+          # 1. Clear current annotations folder
+          for f in glob.glob("annotations/*.json"):
+              os.remove(f)
+          
+          # 2. Clone from data_processing
           for src_path in glob.glob("data_processing/*.json"):
               if "model_accuracy.json" in src_path: continue
               
               with open(src_path, "r") as f:
                   data = json.load(f)
               
-              # Clear annotation fields for the template
+              # Reset annotation fields
               for record in data:
                   record["user_label"] = None
                   record["locations"] = []
@@ -49,7 +54,7 @@ jobs:
               with open(dest_path, "w") as f:
                   json.dump(data, f, indent=2)
           '
-          echo "Annotation templates synced and cleared."
+          echo "Annotations folder cloned and cleared."
 
       - name: Commit cleared annotation templates
         run: |
