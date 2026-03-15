@@ -11230,5 +11230,1157 @@
       "source": "JSOC_HMI_JPG",
       "captured_at": "2026-03-14"
     }
+  },
+  {
+    "id": "mg-865",
+    "serial_number": 865,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_000000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-866",
+    "serial_number": 866,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_001500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-867",
+    "serial_number": 867,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_003000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-868",
+    "serial_number": 868,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_004500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-869",
+    "serial_number": 869,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_010000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-870",
+    "serial_number": 870,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_011500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-871",
+    "serial_number": 871,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_013000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-872",
+    "serial_number": 872,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_014500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-873",
+    "serial_number": 873,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_020000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-874",
+    "serial_number": 874,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_021500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-875",
+    "serial_number": 875,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_023000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-876",
+    "serial_number": 876,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_024500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-877",
+    "serial_number": 877,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_030000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-878",
+    "serial_number": 878,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_031500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-879",
+    "serial_number": 879,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_033000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-880",
+    "serial_number": 880,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_034500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-881",
+    "serial_number": 881,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_040000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-882",
+    "serial_number": 882,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_041500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-883",
+    "serial_number": 883,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_043000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-884",
+    "serial_number": 884,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_044500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-885",
+    "serial_number": 885,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_050000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-886",
+    "serial_number": 886,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_051500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-887",
+    "serial_number": 887,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_053000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-888",
+    "serial_number": 888,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_054500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-889",
+    "serial_number": 889,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_060000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-890",
+    "serial_number": 890,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_061500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-891",
+    "serial_number": 891,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_063000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-892",
+    "serial_number": 892,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_064500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-893",
+    "serial_number": 893,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_070000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-894",
+    "serial_number": 894,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_071500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-895",
+    "serial_number": 895,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_073000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-896",
+    "serial_number": 896,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_074500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-897",
+    "serial_number": 897,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_080000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-898",
+    "serial_number": 898,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_081500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-899",
+    "serial_number": 899,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_083000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-900",
+    "serial_number": 900,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_084500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-901",
+    "serial_number": 901,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_090000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-902",
+    "serial_number": 902,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_091500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-903",
+    "serial_number": 903,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_093000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-904",
+    "serial_number": 904,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_094500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-905",
+    "serial_number": 905,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_100000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-906",
+    "serial_number": 906,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_101500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-907",
+    "serial_number": 907,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_103000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-908",
+    "serial_number": 908,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_104500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-909",
+    "serial_number": 909,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_110000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-910",
+    "serial_number": 910,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_111500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-911",
+    "serial_number": 911,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_113000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-912",
+    "serial_number": 912,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_114500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-913",
+    "serial_number": 913,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_120000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-914",
+    "serial_number": 914,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_121500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-915",
+    "serial_number": 915,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_123000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-916",
+    "serial_number": 916,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_124500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-917",
+    "serial_number": 917,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_130000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-918",
+    "serial_number": 918,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_131500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-919",
+    "serial_number": 919,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_133000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-920",
+    "serial_number": 920,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_134500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-921",
+    "serial_number": 921,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_140000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-922",
+    "serial_number": 922,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_141500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-923",
+    "serial_number": 923,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_143000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-924",
+    "serial_number": 924,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_144500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-925",
+    "serial_number": 925,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_150000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-926",
+    "serial_number": 926,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_151500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-927",
+    "serial_number": 927,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_153000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-928",
+    "serial_number": 928,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_154500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-929",
+    "serial_number": 929,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_160000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-930",
+    "serial_number": 930,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_161500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-931",
+    "serial_number": 931,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_163000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-932",
+    "serial_number": 932,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_164500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-933",
+    "serial_number": 933,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_170000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-934",
+    "serial_number": 934,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_171500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-935",
+    "serial_number": 935,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_173000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-936",
+    "serial_number": 936,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_174500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-937",
+    "serial_number": 937,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_180000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-938",
+    "serial_number": 938,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_181500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-939",
+    "serial_number": 939,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_183000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-940",
+    "serial_number": 940,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_184500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-941",
+    "serial_number": 941,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_190000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-942",
+    "serial_number": 942,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_191500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-943",
+    "serial_number": 943,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_193000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-944",
+    "serial_number": 944,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_194500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-945",
+    "serial_number": 945,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_200000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-946",
+    "serial_number": 946,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_201500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-947",
+    "serial_number": 947,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_203000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-948",
+    "serial_number": 948,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_204500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-949",
+    "serial_number": 949,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_210000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-950",
+    "serial_number": 950,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_211500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-951",
+    "serial_number": 951,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_213000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-952",
+    "serial_number": 952,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_214500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-953",
+    "serial_number": 953,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_220000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-954",
+    "serial_number": 954,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_221500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-955",
+    "serial_number": 955,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_223000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-956",
+    "serial_number": 956,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_224500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-957",
+    "serial_number": 957,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_230000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-958",
+    "serial_number": 958,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_231500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-959",
+    "serial_number": 959,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_233000_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
+  },
+  {
+    "id": "mg-960",
+    "serial_number": 960,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/14/20260314_234500_M_1k.jpg",
+    "task_type": "magnetogram",
+    "user_label": null,
+    "locations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-14"
+    }
   }
 ]
