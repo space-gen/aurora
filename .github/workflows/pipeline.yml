@@ -17,21 +17,31 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Rename data/ to data_processing/
+        with:
+          fetch-depth: 0
+      - name: Rename data/ to data_processing/ and Push
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
           if [ -d "data" ]; then
+            # Ensure data_processing is clean
+            rm -rf data_processing
             mv data data_processing
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
+            
             git add .
-            git commit -m "chore(pipeline): lock data for processing [skip ci]
+            git commit -m "chore(pipeline): lock system for processing [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push origin main
+            echo "System locked."
+          else
+            echo "Data folder not found. System might already be locked or in inconsistent state."
+            # Don't fail here, just log
           fi
 
-  process:
-    name: Stage 02-03 · Process (${{ matrix.task }})
+  pull:
+    name: Stage 02 · Pull URLs (${{ matrix.task }})
     needs: lock
     runs-on: ubuntu-latest
     strategy:
@@ -41,36 +51,49 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      
       - name: Install dependencies
         run: pip install requests huggingface_hub datasets
-      
       - name: Pull New URLs (${{ matrix.task }})
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           TASK_TYPE: ${{ matrix.task }}
         run: python scripts/pull_new_urls.py
-      
+      - name: Upload Pull Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pull-data-${{ matrix.task }}
+          path: data_processing/${{ matrix.task }}.json
+
+  push-hf:
+    name: Stage 03 · Push to HF (${{ matrix.task }})
+    needs: lock
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [sunspot, magnetogram]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install requests huggingface_hub datasets
       - name: Push to HuggingFace (${{ matrix.task }})
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           TASK_TYPE: ${{ matrix.task }}
         run: python scripts/merge_annotations_to_hf.py
-      
-      - name: Upload Processed Data
-        uses: actions/upload-artifact@v4
-        with:
-          name: processed-data-${{ matrix.task }}
-          path: data_processing/${{ matrix.task }}.json
 
-  unlock:
+  sync-and-unlock:
     name: Stage 04-05 · Sync & Unlock
-    needs: process
+    needs: [pull, push-hf]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -79,63 +102,53 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Download Parallel Results
+      - name: Download All Pull Data
         uses: actions/download-artifact@v4
         with:
           path: data_processing/
-          pattern: processed-data-*
+          pattern: pull-data-*
           merge-multiple: true
-
-      - name: Sync & Reset Annotation Templates
+      - name: Reset annotation templates
         run: |
           python -c '
           import json, os, glob
           from pathlib import Path
-          
-          # 1. Update templates in annotations/ using data from data_processing/
           for src_path in glob.glob("data_processing/*.json"):
-              if "model_accuracy.json" in src_path: continue
-              
               with open(src_path, "r") as f:
                   data = json.load(f)
-              
-              # Reset fields for the template
               for record in data:
                   record["user_label"] = None
                   record["locations"] = []
-              
               dest_path = Path("annotations") / os.path.basename(src_path)
               with open(dest_path, "w") as f:
                   json.dump(data, f, indent=2)
           '
-
-      - name: Unlock System (Rename processing -> data)
-        run: |
-          if [ -d "data_processing" ]; then
-            mv data_processing data
-          fi
-
-      - name: Final Consolidated Commit
+      - name: Final Consolidated Unlock & Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Add both the data and the fresh templates
+          # 1. Sync data back to public folder
+          if [ -d "data_processing" ]; then
+            rm -rf data
+            mv data_processing data
+          fi
+          
+          # 2. Add all changes (data/ and annotations/)
           git add data/ annotations/
           
-          # Pull latest to be safe (though should be clean)
+          # 3. Pull latest changes to avoid conflict
           git pull origin main --rebase
           
+          # 4. Commit and Push
           if git diff --cached --quiet; then
             echo "No changes."
           else
-            git commit -m "chore(pipeline): nightly data refresh and template sync [skip ci]
+            git commit -m "chore(pipeline): refresh tasks and sync templates [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push origin main
