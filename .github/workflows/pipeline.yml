@@ -1,0 +1,142 @@
+name: "Nightly Pipeline"
+
+on:
+  schedule:
+    - cron: "30 0 * * *"   # 00:30 UTC daily
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  lock:
+    name: Stage 01 · Lock
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Rename data/ to data_processing/
+        run: |
+          if [ -d "data" ]; then
+            mv data data_processing
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(pipeline): lock data for processing [skip ci]
+
+            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+            git push
+          fi
+
+  process:
+    name: Stage 02-03 · Process (${{ matrix.task }})
+    needs: lock
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [sunspot, magnetogram]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install requests huggingface_hub datasets
+      
+      - name: Pull New URLs (${{ matrix.task }})
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/pull_new_urls.py --task ${{ matrix.task }}
+      
+      - name: Push to HuggingFace (${{ matrix.task }})
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/merge_annotations_to_hf.py --task ${{ matrix.task }}
+      
+      - name: Commit changes for ${{ matrix.task }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull origin main --rebase
+          git add data_processing/ annotations/
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore(pipeline): update ${{ matrix.task }} data [skip ci]
+
+            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+            git push origin main
+          fi
+
+  sync:
+    name: Stage 04 · Sync Templates
+    needs: process
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Reset annotation templates
+        run: |
+          python -c '
+          import json, os, glob
+          from pathlib import Path
+          for src_path in glob.glob("data_processing/*.json"):
+              with open(src_path, "r") as f:
+                  data = json.load(f)
+              for record in data:
+                  record["user_label"] = None
+                  record["locations"] = []
+              dest_path = Path("annotations") / os.path.basename(src_path)
+              with open(dest_path, "w") as f:
+                  json.dump(data, f, indent=2)
+          '
+      - name: Commit templates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add annotations/
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore(pipeline): sync cleared templates [skip ci]
+
+            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+            git push
+          fi
+
+  unlock:
+    name: Stage 05 · Unlock
+    needs: sync
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Rename data_processing/ back to data/
+        run: |
+          if [ -d "data_processing" ]; then
+            mv data_processing data
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(pipeline): unlock system [skip ci]
+
+            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+            git push
+          fi

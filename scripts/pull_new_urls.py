@@ -13,6 +13,7 @@ import sys
 import json
 import logging
 import datetime
+import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import requests
@@ -96,8 +97,17 @@ def _fetch_day_urls(task_type, date_obj):
 # Main
 # ---------------------------------------------------------------------------
 
+import argparse
+
+# ... (rest of imports)
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--task", help="Optional: process only a specific task type")
+    args = parser.parse_args()
+
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
+    existing_urls = _get_existing_urls()
     
     # Always pull exactly "yesterday"
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
@@ -105,7 +115,10 @@ def main():
 
     tasks_by_type = defaultdict(list)
     
-    for task_type, cfg in SOURCE_MAP.items():
+    # Filter SOURCE_MAP if --task is provided
+    active_sources = {args.task: SOURCE_MAP[args.task]} if args.task and args.task in SOURCE_MAP else SOURCE_MAP
+
+    for task_type, cfg in active_sources.items():
         log.info(f"Processing {task_type}...")
         
         # Get starting serial number
@@ -114,8 +127,6 @@ def main():
         
         urls = _fetch_day_urls(task_type, yesterday)
         
-        # In a real daily run, we'd also check for duplicates in existing_urls
-        # but for this restructure, we assume fresh IDs for fresh pulls.
         for url in urls:
             current_serial += 1
             tasks_by_type[task_type].append({
@@ -124,7 +135,7 @@ def main():
                 "url": url,
                 "task_type": task_type,
                 "user_label": None,
-                "locations": [], # New field: stores list of {"x": int, "y": int, "label": str}
+                "locations": [],
                 "metadata": {
                     "source": "JSOC_HMI_JPG",
                     "captured_at": yesterday.isoformat()

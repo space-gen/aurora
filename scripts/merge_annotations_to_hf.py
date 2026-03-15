@@ -54,13 +54,27 @@ def _push_to_hf(task_type: str, records: list[dict], token: str):
     except Exception as e:
         log.error(f"Failed to push {task_type}: {e}")
 
+import argparse
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--task", help="Optional: process only a specific task type")
+    args = parser.parse_args()
+
     token = os.environ.get("HF_TOKEN")
     if not token:
         log.error("HF_TOKEN missing.")
         sys.exit(1)
 
-    for task_file in ANNOTATIONS_DIR.glob("*.json"):
+    # Find relevant task files
+    if args.task:
+        target_files = [ANNOTATIONS_DIR / f"{args.task}.json"]
+    else:
+        target_files = list(ANNOTATIONS_DIR.glob("*.json"))
+
+    for task_file in target_files:
+        if not task_file.exists():
+            continue
         task_type = task_file.stem
         try:
             records = json.loads(task_file.read_text())
