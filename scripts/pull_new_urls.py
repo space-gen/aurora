@@ -46,6 +46,21 @@ LINK_REGEX = re.compile(r'href="([^"]+\.jpg)"')
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _get_existing_urls():
+    token = os.environ.get("HF_TOKEN")
+    if not token: return set()
+    try:
+        from datasets import load_dataset
+        all_urls = set()
+        for task_type in SOURCE_MAP.keys():
+            repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
+            try:
+                ds = load_dataset(repo_id, token=token, split="train", trust_remote_code=True)
+                all_urls.update(ds["url"])
+            except Exception: continue
+        return all_urls
+    except ImportError: return set()
+
 def _get_last_serial_and_id(task_type):
     """Find the highest serial number and ID from existing HF and local data."""
     # Start at 0
@@ -97,17 +112,12 @@ def _fetch_day_urls(task_type, date_obj):
 # Main
 # ---------------------------------------------------------------------------
 
-import argparse
-
-# ... (rest of imports)
-
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--task", help="Optional: process only a specific task type")
-    args = parser.parse_args()
-
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
     existing_urls = _get_existing_urls()
+    
+    # Use environment variable for task filtering
+    task_filter = os.environ.get("TASK_TYPE")
     
     # Always pull exactly "yesterday"
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
@@ -115,8 +125,8 @@ def main():
 
     tasks_by_type = defaultdict(list)
     
-    # Filter SOURCE_MAP if --task is provided
-    active_sources = {args.task: SOURCE_MAP[args.task]} if args.task and args.task in SOURCE_MAP else SOURCE_MAP
+    # Filter SOURCE_MAP if TASK_TYPE is provided
+    active_sources = {task_filter: SOURCE_MAP[task_filter]} if task_filter and task_filter in SOURCE_MAP else SOURCE_MAP
 
     for task_type, cfg in active_sources.items():
         log.info(f"Processing {task_type}...")
