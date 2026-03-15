@@ -100,7 +100,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
+          # 0. Pull latest changes before modifying anything
+          git pull origin main --rebase
+
           # 1. Reset annotations folder with latest images
           python -c '
           import json, os, glob, shutil
@@ -124,7 +127,6 @@ jobs:
           
           # 3. Final Consolidated Commit
           git add data/ annotations/
-          git pull origin main --rebase
           if git diff --cached --quiet; then
             echo "No changes."
           else
