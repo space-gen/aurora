@@ -119,6 +119,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -143,13 +145,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add annotations/
+          git pull origin main --rebase
           if git diff --cached --quiet; then
             echo "No changes."
           else
             git commit -m "chore(pipeline): sync cleared templates [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-            git push
+            git push origin main
           fi
 
   unlock:
@@ -161,6 +164,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Rename data_processing/ back to data/
         run: |
           if [ -d "data_processing" ]; then
@@ -168,8 +173,9 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add .
+            git pull origin main --rebase
             git commit -m "chore(pipeline): unlock system [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-            git push
+            git push origin main
           fi
