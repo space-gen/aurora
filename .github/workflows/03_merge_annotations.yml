@@ -41,15 +41,15 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python scripts/merge_annotations_to_hf.py
 
-      - name: Commit cleared annotation files
+      - name: Commit updated annotation task files
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add annotations/
           if git diff --cached --quiet; then
-            echo "No annotation files changed."
+            echo "No annotations to commit."
           else
-            git commit -m "chore(pipeline): annotations merged to HuggingFace [skip ci]
+            git commit -m "chore(pipeline): record user annotations into task files [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
