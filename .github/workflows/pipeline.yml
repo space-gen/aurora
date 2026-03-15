@@ -9,12 +9,71 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  pipeline:
-    name: Continuous Solar Pipeline
+  lock:
+    name: Stage 01 · Lock
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Rename data/ to data_processing/
+        run: |
+          if [ -d "data" ]; then
+            mv data data_processing
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(pipeline): lock data for processing [skip ci]
+
+            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+            git push origin main
+          fi
+
+  process:
+    name: Stage 02-03 · Process (${{ matrix.task }})
+    needs: lock
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [sunspot, magnetogram]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      
+      - name: Install dependencies
+        run: pip install requests huggingface_hub datasets
+      
+      - name: Pull New URLs (${{ matrix.task }})
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          TASK_TYPE: ${{ matrix.task }}
+        run: python scripts/pull_new_urls.py
+      
+      - name: Push to HuggingFace (${{ matrix.task }})
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          TASK_TYPE: ${{ matrix.task }}
+        run: python scripts/merge_annotations_to_hf.py
+      
+      - name: Upload Processed Data
+        uses: actions/upload-artifact@v4
+        with:
+          name: processed-data-${{ matrix.task }}
+          path: data_processing/${{ matrix.task }}.json
+
+  unlock:
+    name: Stage 04-05 · Sync & Unlock
+    needs: process
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,56 +85,55 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install requests huggingface_hub datasets
+      - name: Download Parallel Results
+        uses: actions/download-artifact@v4
+        with:
+          path: data_processing/
+          pattern: processed-data-*
+          merge-multiple: true
 
-      - name: Stage 01 · Lock
-        run: |
-          if [ -d "data" ]; then
-            mv data data_processing
-            echo "Locked: data/ moved to data_processing/"
-          fi
-
-      - name: Stage 02 · Pull New URLs
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/pull_new_urls.py
-
-      - name: Stage 03 · Push to HuggingFace
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/merge_annotations_to_hf.py
-
-      - name: Stage 04 · Sync Templates
+      - name: Sync & Reset Annotation Templates
         run: |
           python -c '
           import json, os, glob
           from pathlib import Path
+          
+          # 1. Update templates in annotations/ using data from data_processing/
           for src_path in glob.glob("data_processing/*.json"):
+              if "model_accuracy.json" in src_path: continue
+              
               with open(src_path, "r") as f:
                   data = json.load(f)
+              
+              # Reset fields for the template
               for record in data:
                   record["user_label"] = None
                   record["locations"] = []
+              
               dest_path = Path("annotations") / os.path.basename(src_path)
               with open(dest_path, "w") as f:
                   json.dump(data, f, indent=2)
           '
 
-      - name: Stage 05 · Unlock
+      - name: Unlock System (Rename processing -> data)
         run: |
           if [ -d "data_processing" ]; then
             mv data_processing data
-            echo "Unlocked: data_processing/ moved back to data/"
           fi
 
       - name: Final Consolidated Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Add both the data and the fresh templates
           git add data/ annotations/
+          
+          # Pull latest to be safe (though should be clean)
+          git pull origin main --rebase
+          
           if git diff --cached --quiet; then
-            echo "No changes detected."
+            echo "No changes."
           else
             git commit -m "chore(pipeline): nightly data refresh and template sync [skip ci]
 
