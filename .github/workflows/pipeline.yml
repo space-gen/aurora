@@ -23,10 +23,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
+          # Safety: data/ and data_processing/ must never coexist
+          if [ -d "data" ] && [ -d "data_processing" ]; then
+            echo "::error::Both data/ and data_processing/ exist simultaneously — inconsistent repository state. Manual intervention required."
+            exit 1
+          fi
+
           if [ -d "data" ]; then
             # Cleanly move to data_processing to lock the public frontend
-            rm -rf data_processing
             mv data data_processing
             
             git add .
@@ -121,7 +126,10 @@ jobs:
           
           # 2. Unlock system (Rename processing -> data)
           if [ -d "data_processing" ]; then
-            rm -rf data
+            if [ -d "data" ]; then
+              echo "::error::Both data/ and data_processing/ exist simultaneously — inconsistent state."
+              exit 1
+            fi
             mv data_processing data
           fi
           
