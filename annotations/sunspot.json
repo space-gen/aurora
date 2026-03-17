@@ -4,11 +4,14 @@
     "serial_number": 97,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/20260316_000000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "user_label": null,
+    "user_label": "quiet_sun",
     "locations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-16"
+      "captured_at": "2026-03-16",
+      "annotator": "soumyadipkarforma",
+      "issue_number": 5,
+      "timestamp": "2026-03-17T14:10:18.030176+00:00"
     },
     "ml_label": null
   },
