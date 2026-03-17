@@ -44,3 +44,15 @@ HuggingFace acts as the permanent storage for all solar data.
 
 ## 5. Model Evaluation
 The `scripts/compute_points.py` script compares user-submitted labels against model predictions to compute real-time accuracy metrics, allowing us to track model performance improvements as the dataset grows.
+
+## Supported Task Types
+
+| Task Type | Scientific Standard | Description |
+|-----------|---------------------|-------------|
+| `sunspot` | **McIntosh** | Modified Zurich white-light morphology. |
+| `solar_flare` | **GOES X-ray** | Peak X-ray flux intensity (A, B, C, M, X). |
+| `magnetogram` | **Mount Wilson** | Magnetic polarity and complexity (Alpha to Delta). |
+| `coronal_hole` | **Latitude** | Polar, Equatorial, or Mid-latitude origin. |
+| `prominence` | **Behavioral** | Stability (Quiescent, Active, Eruptive). |
+| `cme` | **CDAW** | Apparent angular width (Full Halo, Partial, Narrow). |
+| `active_region` | **Structural** | Magnetic topology and spot distribution. |

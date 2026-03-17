@@ -31,15 +31,22 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
-# Valid labels for each task type.
+# Valid labels for each task type based on scientific classification systems.
 VALID_LABELS: dict[str, set[str]] = {
-    "sunspot": {"active_region", "quiet_sun", "sunspot_group", "no_sunspot"},
-    "solar_flare": {"a_class", "b_class", "c_class", "m_class", "x_class", "no_flare"},
-    "magnetogram": {"bipolar_active", "unipolar", "complex", "quiet"},
-    "coronal_hole": {"polar", "equatorial", "mid_latitude", "none"},
-    "prominence": {"eruptive", "quiescent", "active", "none"},
-    "active_region": {"alpha", "beta", "beta_gamma", "beta_gamma_delta", "none"},
-    "cme": {"halo", "partial_halo", "narrow", "none"},
+    # McIntosh Classification (Modified Zurich)
+    "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
+    # GOES X-ray Classification
+    "solar_flare": {"x_class", "m_class", "c_class", "b_class", "a_class", "none"},
+    # Mount Wilson Magnetic Classification
+    "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
+    # Heliographic Latitude Classification
+    "coronal_hole": {"polar", "equatorial", "mid-latitude", "transequatorial", "none"},
+    # Behavioral Classification
+    "prominence": {"quiescent", "active", "eruptive", "intermediate", "none"},
+    # Secondary classification for active regions (often uses Mount Wilson)
+    "active_region": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-gamma-delta", "none"},
+    # Angular Width Classification (CDAW)
+    "cme": {"full_halo", "partial_halo", "normal", "narrow", "none"},
 }
 
 VALID_TASK_TYPES: set[str] = set(VALID_LABELS.keys())

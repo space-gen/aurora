@@ -95,6 +95,19 @@ Comprehensive documentation is available at [space-gen.github.io/aurora/](https:
 | `KAGGLE_USERNAME` | Kaggle API authentication |
 | `KAGGLE_KEY` | Kaggle API authentication |
 
+## Supported Task Types
+
+SolarHub adheres to international scientific standards for solar feature classification:
+
+| Task Type | Scientific Standard | Focus |
+|-----------|---------------------|-------|
+| `sunspot` | **McIntosh** | Modified Zurich white-light morphology. |
+| `solar_flare` | **GOES X-ray** | Peak X-ray flux intensity (A, B, C, M, X). |
+| `magnetogram` | **Mount Wilson** | Magnetic polarity and complexity. |
+| `coronal_hole` | **Latitude** | Heliographic origin (Polar vs Equatorial). |
+| `prominence` | **Behavioral** | Stability (Quiescent vs Eruptive). |
+| `cme` | **CDAW** | Apparent angular width (Halo/Narrow). |
+
 ## License
 
 See [LICENSE](LICENSE).

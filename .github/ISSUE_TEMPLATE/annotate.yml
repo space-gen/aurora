@@ -11,16 +11,15 @@ body:
         Fill in the fields below to submit your annotation.  Your label will be
         used to train and evaluate the SolarHub solar-classification model.
 
-        **Valid labels per task type:**
-        | Task Type | Valid Labels |
+        **Scientific Classification Labels:**
+        | Task Type | Valid Labels (Scientific Standard) |
         |-----------|-------------|
-        | `sunspot` | `active_region` · `quiet_sun` · `sunspot_group` · `no_sunspot` |
-        | `solar_flare` | `a_class` · `b_class` · `c_class` · `m_class` · `x_class` · `no_flare` |
-        | `magnetogram` | `bipolar_active` · `unipolar` · `complex` · `quiet` |
-        | `coronal_hole` | `polar` · `equatorial` · `mid_latitude` · `none` |
-        | `prominence` | `eruptive` · `quiescent` · `active` · `none` |
-        | `active_region` | `alpha` · `beta` · `beta_gamma` · `beta_gamma_delta` · `none` |
-        | `cme` | `halo` · `partial_halo` · `narrow` · `none` |
+        | `sunspot` | `class_a` · `class_b` · `class_c` · `class_d` · `class_e` · `class_f` · `class_h` (McIntosh/Zurich) |
+        | `solar_flare` | `x_class` · `m_class` · `c_class` · `b_class` · `a_class` (GOES X-ray) |
+        | `magnetogram` | `alpha` · `beta` · `gamma` · `beta-gamma` · `delta` · `beta-gamma-delta` (Mount Wilson) |
+        | `coronal_hole`| `polar` · `equatorial` · `mid-latitude` · `transequatorial` |
+        | `prominence`  | `quiescent` · `active` · `eruptive` · `intermediate` |
+        | `cme`         | `full_halo` · `partial_halo` · `normal` · `narrow` (CDAW) |
 
   - type: input
     id: image_url

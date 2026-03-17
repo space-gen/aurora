@@ -44,13 +44,16 @@ Once your issue is submitted and labeled as `annotation`:
 
 ## Valid Labels
 
-To ensure high data quality, please use only these predefined labels:
+SolarHub uses standard scientific classification systems for solar features. To ensure high data quality, please use only these predefined labels:
 
-| Task Type | Valid Labels |
-|-----------|--------------|
-| **Sunspot** | `active_region`, `quiet_sun`, `sunspot_group`, `no_sunspot` |
-| **Magnetogram** | `bipolar_active`, `unipolar`, `complex`, `quiet` |
-| **Solar Flare** | `a_class`, `b_class`, `c_class`, `m_class`, `x_class`, `no_flare` |
+| Task Type | Valid Labels (Standard System) | Description |
+|-----------|-------------------------------|-------------|
+| **Sunspot** | `class_a` to `class_h` | **McIntosh/Modified Zurich**: Visual morphology. |
+| **Magnetogram**| `alpha`, `beta`, `gamma`, `delta`, `beta-gamma-delta` | **Mount Wilson**: Magnetic polarity. |
+| **Solar Flare**| `x_class`, `m_class`, `c_class`, `b_class`, `a_class` | **GOES X-ray**: Flare peak intensity. |
+| **Coronal Hole**| `polar`, `equatorial`, `mid-latitude`, `transequatorial` | **Heliographic latitude**. |
+| **Prominence** | `quiescent`, `active`, `eruptive`, `intermediate` | **Behavioral/Stability**. |
+| **CME** | `full_halo`, `partial_halo`, `normal`, `narrow` | **CDAW**: Apparent angular width. |
 
 ---
 
