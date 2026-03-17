@@ -97,16 +97,16 @@ Comprehensive documentation is available at [space-gen.github.io/aurora/](https:
 
 ## Supported Task Types
 
-SolarHub adheres to international scientific standards for solar feature classification:
+SolarHub supports both rigorous scientific standards (for ML training) and descriptive states (for citizen science):
 
-| Task Type | Scientific Standard | Focus |
-|-----------|---------------------|-------|
-| `sunspot` | **McIntosh** | Modified Zurich white-light morphology. |
-| `solar_flare` | **GOES X-ray** | Peak X-ray flux intensity (A, B, C, M, X). |
-| `magnetogram` | **Mount Wilson** | Magnetic polarity and complexity. |
-| `coronal_hole` | **Latitude** | Heliographic origin (Polar vs Equatorial). |
-| `prominence` | **Behavioral** | Stability (Quiescent vs Eruptive). |
-| `cme` | **CDAW** | Apparent angular width (Halo/Narrow). |
+| Task Type | Scientific Standard | Descriptive Aliases |
+|-----------|---------------------|---------------------|
+| `sunspot` | **McIntosh** | `single_spot`, `cluster`, `quiet` |
+| `solar_flare` | **GOES X-ray** | `flare_region`, `microflare` |
+| `magnetogram` | **Mount Wilson** | `bipolar`, `complex` |
+| `coronal_hole` | **Latitude** | `calm_region`, `isolated_hole` |
+| `prominence` | **Behavioral** | `filament`, `loop` |
+| `cme` | **CDAW** | `jet`, `streamer_blowout` |
 
 ## License
 

@@ -31,22 +31,43 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
-# Valid labels for each task type based on scientific classification systems.
+# Valid labels for each task type based on scientific classification and descriptive states.
 VALID_LABELS: dict[str, set[str]] = {
-    # McIntosh Classification (Modified Zurich)
-    "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
-    # GOES X-ray Classification
-    "solar_flare": {"x_class", "m_class", "c_class", "b_class", "a_class", "none"},
-    # Mount Wilson Magnetic Classification
-    "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
-    # Heliographic Latitude Classification
-    "coronal_hole": {"polar", "equatorial", "mid-latitude", "transequatorial", "none"},
-    # Behavioral Classification
-    "prominence": {"quiescent", "active", "eruptive", "intermediate", "none"},
-    # Secondary classification for active regions (often uses Mount Wilson)
-    "active_region": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-gamma-delta", "none"},
-    # Angular Width Classification (CDAW)
-    "cme": {"full_halo", "partial_halo", "normal", "narrow", "none"},
+    # McIntosh Classification (Modified Zurich) + Descriptive Aliases
+    "sunspot": {
+        "class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", 
+        "quiet_sun", "single_spot", "spot_cluster", "none"
+    },
+    # GOES X-ray Classification + Descriptive Aliases
+    "solar_flare": {
+        "x_class", "m_class", "c_class", "b_class", "a_class", 
+        "no_flare", "microflare", "flare_region", "none"
+    },
+    # Mount Wilson Magnetic Classification + Descriptive Aliases
+    "magnetogram": {
+        "alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", 
+        "quiet", "bipolar_region", "complex_magnetic", "none"
+    },
+    # Heliographic Latitude Classification + Descriptive Aliases
+    "coronal_hole": {
+        "polar", "equatorial", "mid-latitude", "transequatorial", 
+        "calm_region", "isolated_hole", "none"
+    },
+    # Behavioral Classification + Descriptive Aliases
+    "prominence": {
+        "quiescent", "active", "eruptive", "intermediate", 
+        "no_prominence", "filament", "prominence_loop", "none"
+    },
+    # Structural complexity
+    "active_region": {
+        "alpha", "beta", "gamma", "beta-gamma", "delta", "beta-gamma-delta", 
+        "quiet_region", "active_group", "emerging_flux", "none"
+    },
+    # Angular Width Classification (CDAW) + Descriptive Aliases
+    "cme": {
+        "full_halo", "partial_halo", "normal", "narrow", 
+        "quiet_corona", "jet", "streamer_blowout", "none"
+    },
 }
 
 VALID_TASK_TYPES: set[str] = set(VALID_LABELS.keys())

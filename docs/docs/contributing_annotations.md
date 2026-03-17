@@ -44,16 +44,16 @@ Once your issue is submitted and labeled as `annotation`:
 
 ## Valid Labels
 
-SolarHub uses standard scientific classification systems for solar features. To ensure high data quality, please use only these predefined labels:
+SolarHub supports both **scientific classifications** (for experts) and **descriptive states** (for general contributors).
 
-| Task Type | Valid Labels (Standard System) | Description |
-|-----------|-------------------------------|-------------|
-| **Sunspot** | `class_a` to `class_h` | **McIntosh/Modified Zurich**: Visual morphology. |
-| **Magnetogram**| `alpha`, `beta`, `gamma`, `delta`, `beta-gamma-delta` | **Mount Wilson**: Magnetic polarity. |
-| **Solar Flare**| `x_class`, `m_class`, `c_class`, `b_class`, `a_class` | **GOES X-ray**: Flare peak intensity. |
-| **Coronal Hole**| `polar`, `equatorial`, `mid-latitude`, `transequatorial` | **Heliographic latitude**. |
-| **Prominence** | `quiescent`, `active`, `eruptive`, `intermediate` | **Behavioral/Stability**. |
-| **CME** | `full_halo`, `partial_halo`, `normal`, `narrow` | **CDAW**: Apparent angular width. |
+| Task Type | Scientific Labels | Descriptive Aliases |
+|-----------|-------------------|---------------------|
+| **Sunspot** | `class_a` to `class_h` | `quiet_sun`, `single_spot`, `spot_cluster` |
+| **Magnetogram**| `alpha`, `beta`, `gamma`, `delta` | `quiet`, `bipolar_region`, `complex_magnetic` |
+| **Solar Flare**| `x_class`, `m_class`, `c_class`... | `no_flare`, `microflare`, `flare_region` |
+| **Coronal Hole**| `polar`, `equatorial`, `mid-latitude` | `calm_region`, `isolated_hole` |
+| **Prominence** | `quiescent`, `active`, `eruptive` | `no_prominence`, `filament`, `prominence_loop` |
+| **CME** | `full_halo`, `partial_halo`, `normal` | `quiet_corona`, `jet`, `streamer_blowout` |
 
 ---
 

@@ -47,12 +47,12 @@ The `scripts/compute_points.py` script compares user-submitted labels against mo
 
 ## Supported Task Types
 
-| Task Type | Scientific Standard | Description |
-|-----------|---------------------|-------------|
-| `sunspot` | **McIntosh** | Modified Zurich white-light morphology. |
-| `solar_flare` | **GOES X-ray** | Peak X-ray flux intensity (A, B, C, M, X). |
-| `magnetogram` | **Mount Wilson** | Magnetic polarity and complexity (Alpha to Delta). |
-| `coronal_hole` | **Latitude** | Polar, Equatorial, or Mid-latitude origin. |
-| `prominence` | **Behavioral** | Stability (Quiescent, Active, Eruptive). |
-| `cme` | **CDAW** | Apparent angular width (Full Halo, Partial, Narrow). |
-| `active_region` | **Structural** | Magnetic topology and spot distribution. |
+| Task Type | Scientific Standard | Descriptive States |
+|-----------|---------------------|--------------------|
+| `sunspot` | **McIntosh** | `single_spot`, `cluster`, `quiet` |
+| `solar_flare` | **GOES X-ray** | `flare_region`, `microflare` |
+| `magnetogram` | **Mount Wilson** | `bipolar`, `complex` |
+| `coronal_hole` | **Latitude** | `calm_region`, `isolated_hole` |
+| `prominence` | **Behavioral** | `filament`, `loop` |
+| `cme` | **CDAW** | `jet`, `streamer_blowout` |
+| `active_region` | **Structural** | `active_group`, `emerging_flux` |

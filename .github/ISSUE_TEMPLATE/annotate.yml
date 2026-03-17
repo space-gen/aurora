@@ -11,15 +11,15 @@ body:
         Fill in the fields below to submit your annotation.  Your label will be
         used to train and evaluate the SolarHub solar-classification model.
 
-        **Scientific Classification Labels:**
-        | Task Type | Valid Labels (Scientific Standard) |
-        |-----------|-------------|
-        | `sunspot` | `class_a` · `class_b` · `class_c` · `class_d` · `class_e` · `class_f` · `class_h` (McIntosh/Zurich) |
-        | `solar_flare` | `x_class` · `m_class` · `c_class` · `b_class` · `a_class` (GOES X-ray) |
-        | `magnetogram` | `alpha` · `beta` · `gamma` · `beta-gamma` · `delta` · `beta-gamma-delta` (Mount Wilson) |
-        | `coronal_hole`| `polar` · `equatorial` · `mid-latitude` · `transequatorial` |
-        | `prominence`  | `quiescent` · `active` · `eruptive` · `intermediate` |
-        | `cme`         | `full_halo` · `partial_halo` · `normal` · `narrow` (CDAW) |
+        **Scientific & Descriptive Classification Labels:**
+        | Task Type | Scientific System | Descriptive States (Aliases) |
+        |-----------|-------------------|-----------------------------|
+        | `sunspot` | McIntosh (`class_a` - `class_h`) | `quiet_sun`, `single_spot`, `spot_cluster` |
+        | `solar_flare` | GOES (`x_class` - `a_class`) | `no_flare`, `microflare`, `flare_region` |
+        | `magnetogram` | Mount Wilson (`alpha` - `delta`) | `quiet`, `bipolar_region`, `complex_magnetic` |
+        | `coronal_hole`| Heliographic (`polar`, `equatorial`) | `calm_region`, `isolated_hole` |
+        | `prominence`  | Stability (`quiescent`, `active`) | `no_prominence`, `filament`, `prominence_loop` |
+        | `cme`         | CDAW (`full_halo`, `partial_halo`) | `quiet_corona`, `jet`, `streamer_blowout` |
 
   - type: input
     id: image_url
