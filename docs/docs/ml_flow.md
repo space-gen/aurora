@@ -2,92 +2,45 @@
 
 > Support Aurora: [GitHub Sponsors](https://github.com/sponsors/soumyadipkarforma) · [Buy Me a Coffee](https://buymeacoffee.com/soumyadipkarforma)
 
-## Overview
+## Core Strategy
 
-Machine-learning training and inference run exclusively on **Kaggle**.
-HuggingFace acts as the dataset and model registry.
-GitHub Actions orchestrates the trigger sequence.
+SolarHub employs a hybrid ML architecture. Community-labeled data from **GitHub** is continuously pushed to **HuggingFace**, which serves as the data lake for **Kaggle**-based model training and inference.
 
-```
-  HuggingFace dataset           Kaggle kernel
-  SpaceGen/solarhub-annotations ──► solarhub-training
-                                         │
-                                         ▼ (trained model)
-  HuggingFace model hub         SpaceGen/solarhub-model
-  SpaceGen/solarhub-model ◄────────────────┘
+## The Data Life Cycle
 
-  data_processing/ URLs ─────► solarhub-inference
-                                         │
-                                         ▼ (predictions.json)
-                               GitHub (import_kaggle_predictions.py)
+```mermaid
+graph LR
+    User[Citizen Scientists] -- GitHub Issues --> GitHub[GitHub Repo]
+    GitHub -- merge_annotations_to_hf.py --> HF_DS[HuggingFace Datasets]
+    HF_DS -- fetch --> Kaggle[Kaggle Kernels]
+    Kaggle -- train --> Model[HuggingFace Models]
+    Kaggle -- inference --> GitHub
 ```
 
-## Training Pipeline
+## 1. Data Collection & Labeling
+1. **Raw SDO Imagery**: Daily image URLs are crawled from JSOC by `pull_new_urls.py`.
+2. **Community Labeling**: Users submit labels and coordinates via GitHub Issues using the predefined template.
+3. **Processing**: `parse_issue_annotation.py` validates and writes these labels into local JSON files in `annotations/`.
 
-1. **Data source:** The `SpaceGen/solarhub-annotations` HuggingFace dataset, which is
-   updated nightly by `merge_annotations_to_hf.py`.
+## 2. Dataset Management (HuggingFace)
+HuggingFace acts as the permanent storage for all solar data.
+- **Repository**: `SpaceGen/solarhub-{task_type}` (e.g., `solarhub-sunspot`).
+- **Synchronization**: `merge_annotations_to_hf.py` handles schema reconciliation. It uses a non-destructive "union merge" strategy to ensure that even if the metadata schema changes over time, old labels are never lost.
 
-2. **Trigger:** The `05_trigger_kaggle_training.yml` GitHub Actions workflow calls the
-   Kaggle API using `KAGGLE_USERNAME` + `KAGGLE_KEY` secrets to run the
-   `solarhub-training` kernel.
+## 3. Model Training (Kaggle)
+*Note: Training kernels live outside this repository.*
+1. **Trigger**: Training is manually triggered or scheduled on Kaggle via the Kaggle API.
+2. **Execution**:
+   - Downloads the latest dataset from HuggingFace.
+   - Performs data augmentation on solar images (rotation, scaling, noise).
+   - Trains deep learning models (e.g., Vision Transformers or CNNs) to detect solar features.
+3. **Storage**: The resulting model weights are pushed to the HuggingFace Model Hub (`SpaceGen/solarhub-model-{task_type}`).
 
-3. **Kernel responsibilities:**
-   - Pull the latest HuggingFace dataset using the `datasets` library and `HF_TOKEN`.
-   - Fine-tune the solar-classification model.
-   - Push the updated model to `SpaceGen/solarhub-model` on HuggingFace model hub.
+## 4. Daily Inference (Kaggle)
+1. **Execution**:
+   - Loads the latest model from HuggingFace.
+   - Predicts labels for the new image URLs fetched in the last 24 hours.
+2. **Feedback Loop**: Predictions are pushed back to the GitHub repository to be displayed to users in the frontend.
 
-4. **Output:** A versioned model artifact on HuggingFace.
-
-## Inference Pipeline
-
-1. **Data source:** The Kaggle dataset `solarhub-dataset` (uploaded by
-   `prepare_kaggle_dataset.py`) containing current solar-observation URLs.
-
-2. **Trigger:** The `06_trigger_kaggle_inference.yml` GitHub Actions workflow calls the
-   Kaggle API to run the `solarhub-inference` kernel.
-
-3. **Kernel responsibilities:**
-   - Pull the latest model from `SpaceGen/solarhub-model` on HuggingFace.
-   - Pull the latest task URLs from the Kaggle dataset.
-   - Run inference on each observation image.
-   - Produce `predictions.json` in the format:
-     ```json
-     {
-       "https://solar-data-source/img.jpg": {
-         "ml_prediction": "active_region",
-         "confidence": 0.92
-       }
-     }
-     ```
-   - Push `predictions.json` back to this GitHub repository using a scoped
-     `GH_TOKEN` stored as a Kaggle Secret.
-
-4. **Output:** `predictions.json` committed to this repository (read by Stage 7).
-
-## Supported Task Types
-
-| Task Type | Description |
-|-----------|-------------|
-| `sunspot` | Classify sunspot activity regions |
-| `solar_flare` | Detect and classify solar flare events |
-| `magnetogram` | Classify magnetic polarity features |
-| `coronal_hole` | Identify coronal holes from EUV imagery |
-| `prominence` | Detect solar prominences and filaments |
-| `active_region` | Identify active solar regions |
-| `cme` | Detect coronal mass ejection events |
-
-## Secrets Required
-
-| Secret | Where set | Purpose |
-|--------|-----------|---------|
-| `HF_TOKEN` | GitHub Actions | Read/write HuggingFace datasets and models |
-| `KAGGLE_USERNAME` | GitHub Actions | Kaggle API authentication |
-| `KAGGLE_KEY` | GitHub Actions | Kaggle API authentication |
-| `GH_TOKEN` | Kaggle Secrets | Push predictions.json back to GitHub |
-
-## Isolation Guarantee
-
-`data_processing/` content and HuggingFace datasets are **never mixed automatically**.
-Annotation data flows from `annotations/` → HuggingFace only through the explicit
-`merge_annotations_to_hf.py` script called in Stage 3.  Task processing files in
-`data_processing/` are uploaded to Kaggle independently, never directly to HuggingFace.
+## 5. Model Evaluation
+The `scripts/compute_points.py` script compares user-submitted labels against model predictions to compute real-time accuracy metrics, allowing us to track model performance improvements as the dataset grows.

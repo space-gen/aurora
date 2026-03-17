@@ -5,17 +5,18 @@
 ## Overview
 
 SolarHub (codename **Aurora**) is the backend orchestration layer for the SolarHub
-citizen-science platform.  It manages task data, user annotations, machine-learning pipelines,
-and data synchronisation across three external platforms: **GitHub**, **HuggingFace**, and **Kaggle**.
+citizen-science platform. It manages solar observation data, user annotations, 
+machine-learning pipelines, and data synchronization across external platforms: 
+**GitHub**, **HuggingFace**, and **Kaggle**.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         GitHub (Repo B)                         │
 │                                                                 │
-│  data/            ← task JSON files served to Repo A (UI)      │
-│  annotations/     ← pending user annotations                   │
-│  data_processing/ ← nightly pipeline workspace                 │
-│  scripts/         ← Python pipeline scripts                    │
+│  data/            ← active task JSON files                     │
+│  annotations/     ← pending user annotations & templates       │
+│  data_processing/ ← temporary nightly pipeline workspace        │
+│  scripts/         ← Python automation scripts                  │
 │  .github/workflows/ ← GitHub Actions orchestration             │
 └───────────┬─────────────────────────┬───────────────────────────┘
             │                         │
@@ -27,54 +28,43 @@ and data synchronisation across three external platforms: **GitHub**, **HuggingF
  └──────────────────┘      └──────────────────────┘
 ```
 
-## Components
+## Core Components
 
-### Repo A (UI) — not in this repository
-A separate frontend application that reads task files from `data/` and submits annotations
-as GitHub Issues.
+### 1. Data Hub (GitHub)
+The central repository for task orchestration. It stores image URLs and serves as the bridge between citizen scientists (via GitHub Issues) and the ML pipeline.
 
-### GitHub Actions — `.github/workflows/`
-Nine sequential workflow files execute the nightly pipeline at 00:00 UTC.  They are the
-sole orchestration layer; no other scheduler is used.
+### 2. Automation Engine (GitHub Actions)
+Manages the lifecycle of data and annotations:
+- **Nightly Pipeline (`pipeline.yml`)**: Daily synchronization of data with JSOC and HuggingFace.
+- **Annotation Parser (`parse_annotation_issue.yml`)**: Real-time processing of user contributions from GitHub Issues.
 
-### Python Scripts — `scripts/`
-Modular, single-responsibility scripts invoked by the GitHub Actions workflows.
+### 3. Processing Scripts (`scripts/`)
+Modular Python scripts that handle specific stages of the data lifecycle.
 
 | Script | Responsibility |
 |--------|----------------|
-| `pull_new_urls.py` | Fetch new solar-observation URLs from official APIs |
-| `merge_annotations_to_hf.py` | Push pending annotations to the HuggingFace dataset |
-| `prepare_kaggle_dataset.py` | Build and upload the Kaggle training/inference dataset |
-| `import_kaggle_predictions.py` | Pull prediction output from Kaggle and write it to task files |
-| `compute_points.py` | Evaluate model accuracy against user annotations |
+| `pull_new_urls.py` | Crawls JSOC/HMI for the latest solar imagery. |
+| `parse_issue_annotation.py` | Extracts annotations from GitHub Issue bodies. |
+| `merge_annotations_to_hf.py` | Synchronizes local annotations with HuggingFace datasets. |
+| `compute_points.py` | (Work in Progress) Evaluates ML model accuracy. |
 
-### HuggingFace
-Stores the labelled annotation dataset (`SpaceGen/solarhub-annotations`) and trained models
-(`SpaceGen/solarhub-model`).  Access requires the `HF_TOKEN` GitHub Actions secret.
-
-### Kaggle
-Runs training and daily inference kernels against the HuggingFace dataset.  Predictions are
-pushed back to this repository as `predictions.json` using a Kaggle secret containing a
-scoped GitHub token.  Access requires the `KAGGLE_USERNAME` and `KAGGLE_KEY` GitHub Actions
-secrets.
+### 4. External Integrations
+- **HuggingFace**: The primary storage for labeled datasets (`SpaceGen/solarhub-*`) and trained models.
+- **Kaggle**: Provides the compute environment for training models and running inference on new solar data.
 
 ## Security Model
 
-All external service credentials are stored **exclusively** as GitHub Actions secrets:
+Security is maintained through GitHub Actions secrets. No credentials are stored in the codebase:
 
-| Secret | Used by | Purpose |
-|--------|---------|---------|
-| `HF_TOKEN` | `merge_annotations_to_hf.py`, `pull_new_urls.py` | HuggingFace write access |
-| `KAGGLE_USERNAME` | `prepare_kaggle_dataset.py`, `import_kaggle_predictions.py` | Kaggle authentication |
-| `KAGGLE_KEY` | `prepare_kaggle_dataset.py`, `import_kaggle_predictions.py` | Kaggle authentication |
-| `GH_TOKEN` | Kaggle inference kernel (external) | Push predictions back to GitHub |
+| Secret | Purpose |
+|--------|---------|
+| `HF_TOKEN` | Write access to HuggingFace datasets and models. |
+| `KAGGLE_USERNAME` | Authentication for the Kaggle API. |
+| `KAGGLE_KEY` | Authentication for the Kaggle API. |
+| `GITHUB_TOKEN` | Default token for repository operations (commits/pushes). |
 
-No credentials are ever committed to source code or configuration files.
+## Key Design Principles
 
-## Design Constraints
-
-1. No real scientific data is stored in this repository — only URLs.
-2. `data_processing/` and HuggingFace datasets must never mix automatically.
-3. ML training happens exclusively on Kaggle.
-4. HuggingFace stores datasets and trained models only.
-5. GitHub Actions is the sole workflow orchestrator.
+1. **URL-Only Storage**: We store only the URLs to high-resolution solar data (e.g., from JSOC) to keep the repository lightweight.
+2. **Schema Resilience**: `merge_annotations_to_hf.py` uses a union-schema approach to handle evolving data structures without data loss.
+3. **Citizen-Science First**: The system is built to process human-labeled data from GitHub Issues as the primary source of truth for training.
