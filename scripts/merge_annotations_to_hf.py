@@ -1,16 +1,19 @@
 """
 merge_annotations_to_hf.py
-===========================
+==========================
 Pipeline Stage 3 — Merge Annotations
 
-Reads the task-specific JSON files from annotations/ (e.g. sunspot.json)
-and pushes ALL records (labeled and unlabeled) to HuggingFace.
-
-Schema changes are handled gracefully: if the HF repo has an incompatible
-schema, old records are downloaded, migrated to the new schema (matching
-fields are preserved, new fields default to None, removed fields are
-dropped), merged with local records, and pushed as a single dataset.
+Non-destructive schema reconciliation between local annotation files and
+HuggingFace dataset splits, triggered only when a schema mismatch is detected:
+1) Try normal train push first
+2) If features/schema mismatch appears, pull existing HF data (all splits)
+3) Build a union schema across HF + local records
+4) Fill missing fields on both sides with blank values (None)
+5) Merge train split records (local wins on id/url collision)
+6) Push reconciled splits back to HF without deleting repository files
 """
+
+from __future__ import annotations
 
 import json
 import logging
@@ -26,128 +29,149 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
-# The canonical schema for a formatted HF record.  All keys must be present.
-CANONICAL_KEYS = ["id", "serial_number", "url", "task_type", "user_label", "locations", "metadata"]
+PREFERRED_KEY_ORDER = ["id", "serial_number", "url", "task_type", "user_label", "locations", "metadata"]
 
 
-def _format_record(r: dict) -> dict:
-    """Convert a raw annotation dict into the canonical HF record format."""
-    return {
-        "id": r.get("id"),
-        "serial_number": r.get("serial_number"),
-        "url": r.get("url"),
-        "task_type": r.get("task_type"),
-        "user_label": r.get("user_label"),      # May be None
-        "locations": json.dumps(r.get("locations", [])),
-        "metadata": json.dumps(r.get("metadata", {})),
-    }
+def _safe_value(value: Any) -> Any:
+    """Keep scalar values as-is; normalise dict/list into JSON strings."""
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, sort_keys=True)
+    return value
 
 
-def _migrate_old_record(old: dict) -> dict:
-    """
-    Migrate a record from an old HF schema to the current canonical schema.
-
-    - Fields present in both schemas keep their values.
-    - Fields new to the canonical schema default to None.
-    - Fields no longer in the canonical schema are dropped.
-    - 'locations' and 'metadata' are normalised to JSON strings if needed.
-    """
-    migrated: dict = {k: None for k in CANONICAL_KEYS}
-    for key in CANONICAL_KEYS:
-        if key in old:
-            migrated[key] = old[key]
-    # Ensure locations / metadata are always stored as JSON strings
-    if not isinstance(migrated.get("locations"), str):
-        migrated["locations"] = json.dumps(migrated.get("locations") or [])
-    if not isinstance(migrated.get("metadata"), str):
-        migrated["metadata"] = json.dumps(migrated.get("metadata") or {})
-    return migrated
+def _normalise_record(record: dict[str, Any]) -> dict[str, Any]:
+    return {k: _safe_value(v) for k, v in record.items()}
 
 
-def _fetch_old_records(repo_id: str, token: str) -> list[dict]:
-    """Download all existing records from an HF dataset repo, ignoring schema errors."""
+def _load_hf_splits(repo_id: str, token: str) -> dict[str, list[dict[str, Any]]]:
+    """Load all existing HF splits (if any)."""
     try:
         from datasets import load_dataset
-        ds = load_dataset(repo_id, token=token, split="train", download_mode="force_redownload")
-        return [dict(row) for row in ds]
-    except Exception as e:
-        log.warning(f"Could not fetch old records from {repo_id}: {e}")
-        return []
+        ds_dict = load_dataset(repo_id, token=token, download_mode="force_redownload")
+        splits: dict[str, list[dict[str, Any]]] = {}
+        for split_name, ds in ds_dict.items():
+            splits[split_name] = [_normalise_record(dict(row)) for row in ds]
+        return splits
+    except Exception as exc:
+        log.info("HF repo %s unavailable or empty (%s). Creating/refreshing from local.", repo_id, exc)
+        return {}
 
 
-def _push_to_hf(task_type: str, records: list[dict], token: str):
-    try:
-        from datasets import Dataset
-        from huggingface_hub import HfApi
-        repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
+def _union_keys(*record_sets: list[dict[str, Any]]) -> list[str]:
+    keys: set[str] = set()
+    for records in record_sets:
+        for record in records:
+            keys.update(record.keys())
+    ordered = [k for k in PREFERRED_KEY_ORDER if k in keys]
+    ordered.extend(sorted(k for k in keys if k not in ordered))
+    return ordered
 
-        if not records:
-            log.info(f"No records for {task_type}. Skipping.")
+
+def _align_schema(records: list[dict[str, Any]], keys: list[str]) -> list[dict[str, Any]]:
+    aligned: list[dict[str, Any]] = []
+    for record in records:
+        row = {k: None for k in keys}
+        for k, v in record.items():
+            row[k] = _safe_value(v)
+        aligned.append(row)
+    return aligned
+
+
+def _merge_train_records(
+    hf_train: list[dict[str, Any]],
+    local_train: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """
+    Merge train records non-destructively.
+    Local records override matching HF records by id/url.
+    """
+    by_id: dict[str, dict[str, Any]] = {}
+    by_url: dict[str, dict[str, Any]] = {}
+    remainder: list[dict[str, Any]] = []
+
+    def upsert(record: dict[str, Any]) -> None:
+        rec_id = record.get("id")
+        rec_url = record.get("url")
+        if rec_id is not None:
+            by_id[str(rec_id)] = record
             return
+        if rec_url is not None:
+            by_url[str(rec_url)] = record
+            return
+        remainder.append(record)
 
-        log.info(f"Pushing {len(records)} records to {repo_id}")
+    for rec in hf_train:
+        upsert(rec)
+    for rec in local_train:
+        upsert(rec)
 
-        new_hf_data = [_format_record(r) for r in records]
-        dataset = Dataset.from_list(new_hf_data)
-
-        try:
-            dataset.push_to_hub(repo_id, token=token, split="train")
-
-        except Exception as push_err:
-            if "don't match the features" in str(push_err) or "features" in str(push_err).lower():
-                log.warning(
-                    f"Schema mismatch on {repo_id} — migrating old records to new schema "
-                    f"to avoid data loss, then re-pushing..."
-                )
-                # 1. Download and migrate old records
-                old_raw = _fetch_old_records(repo_id, token)
-                old_migrated = [_migrate_old_record(r) for r in old_raw]
-                log.info(f"Fetched {len(old_migrated)} old records from {repo_id} for migration.")
-
-                # 2. Merge: new records win on id/url collision
-                new_ids  = {r["id"] for r in new_hf_data if r.get("id")}
-                new_urls = {r["url"] for r in new_hf_data if r.get("url")}
-                kept_old = [
-                    r for r in old_migrated
-                    if r.get("id") not in new_ids and r.get("url") not in new_urls
-                ]
-                merged = kept_old + new_hf_data
-                log.info(
-                    f"Merged dataset: {len(kept_old)} preserved old + "
-                    f"{len(new_hf_data)} new = {len(merged)} total records."
-                )
-
-                # 3. Wipe stale parquet files so push_to_hub can write fresh ones
-                api = HfApi(token=token)
-                try:
-                    for f in api.list_repo_files(repo_id=repo_id, repo_type="dataset"):
-                        if f.startswith("data/"):
-                            api.delete_file(
-                                path_in_repo=f, repo_id=repo_id, repo_type="dataset",
-                                commit_message="chore: clear old parquet for schema migration [skip ci]",
-                            )
-                except Exception as del_err:
-                    log.warning(f"Could not clear old parquet for {repo_id}: {del_err}")
-
-                # 4. Push merged dataset with new schema
-                Dataset.from_list(merged).push_to_hub(repo_id, token=token, split="train")
-            else:
-                raise
-
-        log.info(f"Successfully pushed to {repo_id}")
-
-    except Exception as e:
-        log.error(f"Failed to push {task_type}: {e}")
+    return list(by_id.values()) + list(by_url.values()) + remainder
 
 
-def main():
+def _push_splits(repo_id: str, token: str, splits: dict[str, list[dict[str, Any]]]) -> None:
+    from datasets import Dataset
+
+    # Push train first, then others, to keep behavior predictable.
+    split_names = sorted(splits.keys(), key=lambda s: (s != "train", s))
+    for split_name in split_names:
+        rows = splits[split_name]
+        if not rows:
+            log.info("Skipping empty split '%s' for %s", split_name, repo_id)
+            continue
+        Dataset.from_list(rows).push_to_hub(repo_id, token=token, split=split_name)
+        log.info("Pushed %d rows to %s split '%s'", len(rows), repo_id, split_name)
+
+
+def _is_schema_mismatch_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return "features" in text and ("mismatch" in text or "don't match" in text)
+
+
+def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str) -> None:
+    from datasets import Dataset
+
+    repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
+    local_records = [_normalise_record(r) for r in local_records_raw]
+
+    # Fast path: normal push when schemas are already compatible.
+    try:
+        Dataset.from_list(local_records).push_to_hub(repo_id, token=token, split="train")
+        log.info("Pushed %d rows to %s split 'train' (no schema mismatch).", len(local_records), repo_id)
+        return
+    except Exception as exc:
+        if not _is_schema_mismatch_error(exc):
+            raise
+        log.warning("Schema mismatch detected for %s. Starting non-destructive reconciliation...", repo_id)
+
+    # Slow path: mismatch-only, non-destructive reconciliation.
+    hf_splits = _load_hf_splits(repo_id, token)
+    hf_train = hf_splits.get("train", [])
+    merged_train = _merge_train_records(hf_train, local_records)
+
+    all_hf_records: list[dict[str, Any]] = []
+    for split_rows in hf_splits.values():
+        all_hf_records.extend(split_rows)
+    keys = _union_keys(all_hf_records, local_records)
+    if not keys:
+        keys = PREFERRED_KEY_ORDER.copy()
+
+    reconciled_splits: dict[str, list[dict[str, Any]]] = {}
+    for split_name, split_rows in hf_splits.items():
+        if split_name != "train":
+            reconciled_splits[split_name] = _align_schema(split_rows, keys)
+    reconciled_splits["train"] = _align_schema(merged_train, keys)
+
+    log.info("Reconciled schema for %s with %d fields.", repo_id, len(keys))
+    _push_splits(repo_id, token, reconciled_splits)
+
+
+def main() -> None:
     token = os.environ.get("HF_TOKEN")
     if not token:
         log.error("HF_TOKEN missing.")
         sys.exit(1)
 
     task_filter = os.environ.get("TASK_TYPE")
-
     if task_filter:
         target_files = [ANNOTATIONS_DIR / f"{task_filter}.json"]
     else:
@@ -161,8 +185,8 @@ def main():
             records = json.loads(task_file.read_text())
             if isinstance(records, list):
                 _push_to_hf(task_type, records, token)
-        except Exception as e:
-            log.warning(f"Error reading {task_file.name}: {e}")
+        except Exception as exc:
+            log.warning("Error processing %s: %s", task_file.name, exc)
 
 
 if __name__ == "__main__":
