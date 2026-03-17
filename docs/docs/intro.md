@@ -42,7 +42,7 @@ npm ci
 npm run start
 ```
 
-Open `http://localhost:3000/docs/` to preview the documentation portal.
+Open `http://localhost:3000/aurora/` to preview the documentation portal.
 
 ## Production Deployment
 
