@@ -1,4 +1,4 @@
-name: "00 · Parse Annotation Issue"
+name: "Parse Annotation Issue"
 
 on:
   schedule:
