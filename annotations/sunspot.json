@@ -20,11 +20,27 @@
     "serial_number": 98,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/20260316_001500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "user_label": null,
-    "locations": [],
+    "user_label": "sunspot_group",
+    "locations": [
+      {
+        "x": 291,
+        "y": 589,
+        "radius": 0,
+        "label": "sunspot_group"
+      },
+      {
+        "x": 199,
+        "y": 516,
+        "radius": 0,
+        "label": "sunspot_group"
+      }
+    ],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-16"
+      "captured_at": "2026-03-16",
+      "annotator": "soumyadipkarforma",
+      "issue_number": 6,
+      "timestamp": "2026-03-17T17:11:50.675938+00:00"
     },
     "ml_label": null
   },
