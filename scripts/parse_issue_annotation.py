@@ -128,8 +128,11 @@ def main() -> None:
     if coords_raw and coords_raw.lower() != "none":
         for pair in coords_raw.split(";"):
             try:
-                x, y = pair.strip().split(",")
-                locations.append({"x": int(x), "y": int(y), "label": user_label})
+                parts = [p.strip() for p in pair.strip().split(",")]
+                if len(parts) >= 2:
+                    x, y = int(parts[0]), int(parts[1])
+                    radius = int(parts[2]) if len(parts) >= 3 else 0
+                    locations.append({"x": x, "y": y, "radius": radius, "label": user_label})
             except: pass
 
     ann = {

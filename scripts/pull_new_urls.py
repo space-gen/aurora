@@ -145,6 +145,7 @@ def main():
                 "url": url,
                 "task_type": task_type,
                 "user_label": None,
+                "ml_label": None,
                 "locations": [],
                 "metadata": {
                     "source": "JSOC_HMI_JPG",

@@ -13,6 +13,7 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
   "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/000000_Ic_1k.jpg",
   "task_type": "sunspot",
   "user_label": null,
+  "ml_label": null,
   "locations": [],
   "metadata": {
     "source": "JSOC_HMI_JPG",
@@ -30,6 +31,7 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
 | `url` | `string` | Direct link to the solar observation image. |
 | `task_type` | `string` | One of `sunspot`, `magnetogram`, `solar_flare`, etc. |
 | `user_label` | `string` | The classification label assigned by a user (defaults to `null`). |
+| `ml_label` | `string` | The classification label assigned by the ML model (defaults to `null`). |
 | `locations` | `list` | A list of coordinate objects for localized features. |
 | `metadata` | `object` | Contextual information like capture date and source API. |
 
@@ -45,11 +47,13 @@ When a user submits an annotation via a GitHub Issue, it is parsed and merged in
 {
   "x": 450,
   "y": 210,
+  "radius": 15,
   "label": "active_region"
 }
 ```
 
 - **`x`, `y`**: Pixel coordinates relative to the 1024x1024 source image.
+- **`radius`**: The radius (in pixels) of the identified feature (defaults to 0).
 - **`label`**: The specific class for this coordinate.
 
 ### Updated Metadata

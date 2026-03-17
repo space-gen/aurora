@@ -119,6 +119,7 @@ jobs:
                   data = json.load(f)
               for record in data:
                   record["user_label"] = None
+                  record["ml_label"] = None
                   record["locations"] = []
               dest_path = Path("annotations") / os.path.basename(src_path)
               with open(dest_path, "w") as f:
