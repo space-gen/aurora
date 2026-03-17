@@ -1,8 +1,17 @@
 # SolarHub — Aurora
 
 > **Backend orchestration system for the SolarHub citizen-science platform.**
+>
+> I’m [Soumyadip Karforma](https://github.com/soumyadipkarforma), founder of SolarHub. Aurora is the backend engine I designed to run our contributor-powered solar science pipeline.
 
 [![Nightly Pipeline](https://github.com/space-gen/aurora/actions/workflows/01_lock_and_prepare.yml/badge.svg)](https://github.com/space-gen/aurora/actions)
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-ff69b4)](https://github.com/sponsors/soumyadipkarforma)
+[![Buy Me a Coffee](https://img.shields.io/badge/Support-Buy%20Me%20a%20Coffee-orange)](https://buymeacoffee.com/soumyadipkarforma)
+
+## Funding
+
+- GitHub Sponsors: https://github.com/sponsors/soumyadipkarforma
+- Buy Me a Coffee: https://buymeacoffee.com/soumyadipkarforma
 
 ## Overview
 
@@ -12,6 +21,15 @@ HuggingFace, and Kaggle.
 
 Repo A (the user-facing UI) is maintained separately and reads task files from
 the `data/` directory of this repository.
+
+## Tech Stack
+
+- **Language:** Python 3.11 (automation scripts)
+- **Orchestration:** GitHub Actions
+- **Data + Model Hub:** HuggingFace (`spacegen` organization)
+- **Training/Inference Compute:** Kaggle kernels
+- **Documentation Portal:** Docusaurus (under `/docs`, deployed to GitHub Pages `/docs`)
+- **Interfaces:** GitHub Issue Forms + JSON task files
 
 ## Repository Structure
 
@@ -106,9 +124,10 @@ The Kaggle inference kernel also requires a `GH_TOKEN` **Kaggle Secret** to push
 
 ## Documentation
 
-- [Architecture](docs/architecture.md)
-- [Pipeline Details](docs/pipeline.md)
-- [ML Flow](docs/ml_flow.md)
+- [Docusaurus Docs Source](docs/)
+- [Architecture](docs/docs/architecture.md)
+- [Pipeline Details](docs/docs/pipeline.md)
+- [ML Flow](docs/docs/ml_flow.md)
 - [Nightly Pipeline Docs](workflows/nightly_pipeline_docs.md)
 
 ## Design Principles
