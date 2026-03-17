@@ -76,8 +76,8 @@ body:
     id: coordinates
     attributes:
       label: "Pixel Coordinates (optional)"
-      description: "The (x, y) location of the feature. Multiple features separated by semicolon."
-      placeholder: "e.g. 450,320 ; 890,110"
+      description: "The (x, y) or (x, y, radius) location of the feature. Multiple features separated by semicolon."
+      placeholder: "e.g. 450,320,15 ; 890,110,10"
     validations:
       required: false
 
