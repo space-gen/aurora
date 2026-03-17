@@ -26,12 +26,12 @@ the `data/` directory of this repository.
 
 ## Tech Stack
 
-- **Language:** Python 3.11 (automation scripts)
-- **Orchestration:** GitHub Actions
-- **Data + Model Hub:** HuggingFace (`spacegen` organization)
-- **Training/Inference Compute:** Kaggle kernels
-- **Documentation Portal:** Docusaurus (deployed to GitHub Pages at `/aurora/`)
-- **Interfaces:** GitHub Issue Forms + JSON task files
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
+![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Datasets-yellow?style=for-the-badge)
+![Kaggle](https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=Kaggle&logoColor=white)
+![Docusaurus](https://img.shields.io/badge/Docusaurus-3EE6AF?style=for-the-badge&logo=docusaurus&logoColor=white)
+![JSON](https://img.shields.io/badge/json-5E5E5E?style=for-the-badge&logo=json&logoColor=white)
 
 ## Repository Structure
 
