@@ -77,13 +77,40 @@ def _align_schema(records: list[dict[str, Any]], keys: list[str]) -> list[dict[s
     return aligned
 
 
+def _is_blank(value: Any) -> bool:
+    return value is None or value == ""
+
+
+def _merge_values_union(left: Any, right: Any) -> Any:
+    """
+    Merge two values with no precedence/winner.
+    - If one side is blank, keep the other.
+    - If both equal, keep the value.
+    - If both differ and non-blank, preserve both as a stable JSON array string.
+    """
+    if _is_blank(left):
+        return right
+    if _is_blank(right):
+        return left
+    if left == right:
+        return left
+    return json.dumps(sorted({str(left), str(right)}))
+
+
+def _merge_records_union(base: dict[str, Any], incoming: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for key in set(base.keys()) | set(incoming.keys()):
+        merged[key] = _merge_values_union(base.get(key), incoming.get(key))
+    return merged
+
+
 def _merge_train_records(
     hf_train: list[dict[str, Any]],
     local_train: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """
     Merge train records non-destructively.
-    Local records override matching HF records by id/url.
+    No side wins on collisions: values are union-merged field-by-field.
     """
     by_id: dict[str, dict[str, Any]] = {}
     by_url: dict[str, dict[str, Any]] = {}
@@ -93,10 +120,14 @@ def _merge_train_records(
         rec_id = record.get("id")
         rec_url = record.get("url")
         if rec_id is not None:
-            by_id[str(rec_id)] = record
+            key = str(rec_id)
+            existing = by_id.get(key)
+            by_id[key] = _merge_records_union(existing, record) if existing else record
             return
         if rec_url is not None:
-            by_url[str(rec_url)] = record
+            key = str(rec_url)
+            existing = by_url.get(key)
+            by_url[key] = _merge_records_union(existing, record) if existing else record
             return
         remainder.append(record)
 
