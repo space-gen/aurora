@@ -1,5 +1,7 @@
 # GitHub Actions Workflows
 
+> Support Aurora: [GitHub Sponsors](https://github.com/sponsors/soumyadipkarforma) · [Patreon](https://www.patreon.com/SoumyadipKarforma) · [Buy Me a Coffee](https://buymeacoffee.com/soumyadipkarforma)
+
 SolarHub is an entirely automated platform. All orchestration—from data collection to model evaluation—is handled by GitHub Actions.
 
 ---

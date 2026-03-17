@@ -1,5 +1,7 @@
 # Contributing Annotations
 
+> Support Aurora: [GitHub Sponsors](https://github.com/sponsors/soumyadipkarforma) · [Patreon](https://www.patreon.com/SoumyadipKarforma) · [Buy Me a Coffee](https://buymeacoffee.com/soumyadipkarforma)
+
 SolarHub relies on citizen scientists to provide the ground-truth data needed to train our machine-learning models. Contributing is easy and handled entirely through GitHub Issues.
 
 ## How to Contribute

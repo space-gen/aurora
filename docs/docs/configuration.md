@@ -1,5 +1,7 @@
 # Configuration Reference
 
+> Support Aurora: [GitHub Sponsors](https://github.com/sponsors/soumyadipkarforma) · [Patreon](https://www.patreon.com/SoumyadipKarforma) · [Buy Me a Coffee](https://buymeacoffee.com/soumyadipkarforma)
+
 The SolarHub system is configured through a centralized YAML file located at `configs/system_config.yaml`. This file defines everything from our task types to our machine learning platforms.
 
 ---

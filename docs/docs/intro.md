@@ -1,5 +1,7 @@
 ---
 sidebar_position: 1
+> Support Aurora: [GitHub Sponsors](https://github.com/sponsors/soumyadipkarforma) · [Patreon](https://www.patreon.com/SoumyadipKarforma) · [Buy Me a Coffee](https://buymeacoffee.com/soumyadipkarforma)
+
 ---
 
 # SolarHub Aurora Documentation

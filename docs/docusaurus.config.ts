@@ -78,6 +78,11 @@ const config: Config = {
           position: 'left',
         },
         {
+          href: 'https://www.patreon.com/SoumyadipKarforma',
+          label: 'Patreon',
+          position: 'left',
+        },
+        {
           href: 'https://github.com/space-gen/aurora',
           label: 'GitHub',
           position: 'right',
@@ -102,6 +107,10 @@ const config: Config = {
             {
               label: 'GitHub Sponsors',
               href: 'https://github.com/sponsors/soumyadipkarforma',
+            },
+            {
+              label: 'Patreon',
+              href: 'https://www.patreon.com/SoumyadipKarforma',
             },
             {
               label: 'Buy Me a Coffee',

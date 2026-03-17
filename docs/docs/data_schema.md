@@ -1,5 +1,7 @@
 # Data Schema
 
+> Support Aurora: [GitHub Sponsors](https://github.com/sponsors/soumyadipkarforma) · [Patreon](https://www.patreon.com/SoumyadipKarforma) · [Buy Me a Coffee](https://buymeacoffee.com/soumyadipkarforma)
+
 SolarHub uses a standardized JSON format for all solar task and annotation data. This ensures compatibility across GitHub, HuggingFace, and the frontend UI.
 
 ## Task Record Schema
