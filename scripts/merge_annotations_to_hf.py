@@ -29,7 +29,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
-PREFERRED_KEY_ORDER = ["id", "serial_number", "url", "task_type", "user_label", "ml_label", "locations", "metadata"]
+PREFERRED_KEY_ORDER = ["id", "serial_number", "url", "task_type", "user_label", "ml_label", "locations", "annotations", "metadata"]
 
 
 def _safe_value(value: Any) -> Any:
@@ -97,10 +97,43 @@ def _merge_values_union(left: Any, right: Any) -> Any:
     return json.dumps(sorted({str(left), str(right)}))
 
 
+def _merge_annotations_list(left_str: str | None, right_str: str | None) -> str:
+    """
+    Deserializes two JSON-stringified lists, merges them, deduplicates by content,
+    and returns a sorted JSON string.
+    """
+    def parse_list(s):
+        if not s: return []
+        try:
+            val = json.loads(s)
+            return val if isinstance(val, list) else [val]
+        except: return []
+
+    l_list = parse_list(left_str)
+    r_list = parse_list(right_str)
+    
+    # Merge and deduplicate based on JSON string representation of each item
+    seen = set()
+    merged = []
+    for item in l_list + r_list:
+        s_item = json.dumps(item, sort_keys=True)
+        if s_item not in seen:
+            seen.add(s_item)
+            merged.append(item)
+            
+    return json.dumps(merged, sort_keys=True)
+
+
 def _merge_records_union(base: dict[str, Any], incoming: dict[str, Any]) -> dict[str, Any]:
     merged = dict(base)
     for key in set(base.keys()) | set(incoming.keys()):
-        merged[key] = _merge_values_union(base.get(key), incoming.get(key))
+        val_base = base.get(key)
+        val_incoming = incoming.get(key)
+        
+        if key == "annotations":
+            merged[key] = _merge_annotations_list(val_base, val_incoming)
+        else:
+            merged[key] = _merge_values_union(val_base, val_incoming)
     return merged
 
 

@@ -121,6 +121,7 @@ jobs:
                   record["user_label"] = None
                   record["ml_label"] = None
                   record["locations"] = []
+                  record["annotations"] = []
               dest_path = Path("annotations") / os.path.basename(src_path)
               with open(dest_path, "w") as f:
                   json.dump(data, f, indent=2)

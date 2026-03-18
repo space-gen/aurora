@@ -147,6 +147,7 @@ def main():
                 "user_label": None,
                 "ml_label": None,
                 "locations": [],
+                "annotations": [],
                 "metadata": {
                     "source": "JSOC_HMI_JPG",
                     "captured_at": yesterday.isoformat()

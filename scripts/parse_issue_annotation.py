@@ -84,8 +84,23 @@ def _merge_to_task_file(ann: dict):
         found = False
         for task in tasks:
             if task.get("id") == record_id:
+                # 1. Append to history
+                if "annotations" not in task:
+                    task["annotations"] = []
+                
+                new_entry = {
+                    "user_label": ann["user_label"],
+                    "locations": ann["locations"],
+                    "annotator": ann["metadata"]["annotator"],
+                    "issue_number": ann["metadata"]["issue_number"],
+                    "timestamp": ann["metadata"]["timestamp"]
+                }
+                task["annotations"].append(new_entry)
+
+                # 2. Update top-level "latest" state (backward compatibility)
                 task["user_label"] = ann["user_label"]
                 task["locations"] = ann["locations"]
+                
                 # Store extra metadata in the record itself
                 task["metadata"]["annotator"] = ann["metadata"]["annotator"]
                 task["metadata"]["issue_number"] = ann["metadata"]["issue_number"]
