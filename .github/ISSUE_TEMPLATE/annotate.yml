@@ -72,14 +72,63 @@ body:
       required: true
 
   - type: input
-    id: coordinates
+    id: image_url
     attributes:
-      label: "Pixel Coordinates (optional)"
-      description: "The (x, y) or (x, y, radius) location of the feature. Multiple features separated by semicolon."
+      label: "Image URL"
+      description: "The full HTTPS URL of the solar observation image you are labelling."
+      placeholder: "https://solar-data-source/image.jpg"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: "Task Type"
+      description: "The type of solar observation task."
+      options:
+        - sunspot
+        - solar_flare
+        - magnetogram
+        - coronal_hole
+        - prominence
+        - active_region
+        - cme
+    validations:
+      required: true
+
+  - type: input
+    id: record_id
+    attributes:
+      label: "Record ID"
+      description: "The unique ID of this record (e.g. sp-123). Found in the task JSON."
+    validations:
+      required: true
+
+  - type: input
+    id: serial_number
+    attributes:
+      label: "Serial Number"
+      description: "The serial number of this record. Found in the task JSON."
+    validations:
+      required: true
+
+  - type: input
+    id: your_label
+    attributes:
+      label: "Label for this annotation"
+      description: "The scientific classification for this annotation (e.g., class_a, beta-gamma, polar, quiescent, x_class, full_halo). This label will apply to all specified locations."
+      placeholder: "e.g. class_f"
+    validations:
+      required: true
+
+  - type: textarea
+    id: pixel_coordinates
+    attributes:
+      label: "Pixel Coordinates (Required)"
+      description: "Provide the (x, y) coordinates of the feature. You can optionally include a radius (x,y,radius). Multiple features should be separated by a semicolon (;). Each location will inherit the 'Label for this annotation' from above. Example: `450,320,15 ; 890,110,10`"
       placeholder: "e.g. 450,320,15 ; 890,110,10"
     validations:
-      required: false
-
+      required: true
 
   - type: textarea
     id: notes
