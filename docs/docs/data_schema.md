@@ -14,28 +14,32 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
   "serial_number": 1234,
   "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/000000_Ic_1k.jpg",
   "task_type": "sunspot",
-  "ml_label": null,
-  "locations": [],
-  "annotations": [],
-  "metadata": {
-    "source": "JSOC_HMI_JPG",
-    "captured_at": "2026-03-16"
+  ```json
+  {
+    "id": "sp-1234",
+    "serial_number": 1234,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/000000_Ic_1k.jpg",
+    "task_type": "sunspot",
+    "ml_label": null,
+    "annotations": [],
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-16"
+    }
   }
-}
-```
+  ```
 
-### Field Definitions
+  ### Field Definitions
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Unique identifier (e.g., `mg-` prefix for magnetograms). |
-| `serial_number` | `integer` | Global incrementing number for the task type. |
-| `url` | `string` | Direct link to the solar observation image. |
-| `task_type` | `string` | One of `sunspot`, `magnetogram`, `solar_flare`, etc. |
-| `ml_label` | `string` | The classification label assigned by the ML model (defaults to `null`). |
-| `locations` | `list` | A list of coordinate objects for localized features. |
-| `annotations` | `list` | Full history of all user contributions (label, locations, author). |
-| `metadata` | `object` | Contextual information like capture date and source API. |
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | `id` | `string` | Unique identifier (e.g., `mg-` prefix for magnetograms). |
+  | `serial_number` | `integer` | Global incrementing number for the task type. |
+  | `url` | `string` | Direct link to the solar observation image. |
+  | `task_type` | `string` | One of `sunspot`, `magnetogram`, `solar_flare`, etc. |
+  | `ml_label` | `string` | The classification label assigned by the ML model (defaults to `null`). |
+  | `annotations` | `list` | A list of user annotation entries. Each entry contains `locations`, `annotator`, `issue_number`, and `timestamp`. |
+  | `metadata` | `object` | Contextual information like capture date and source API. |
 
 ---
 
@@ -90,7 +94,7 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
   "annotations": [
     {
       "locations": [
-        { "x": 450, "y": 210, "radius": 15, "label": "active_region" }
+        { "x": 450, "y": 210, "radius": 11, "label": "active_region" }
       ],
       "annotator": "github_username",
       "issue_number": 42,
