@@ -1,8 +1,7 @@
 name: "Nightly Pipeline"
 
 on:
-  schedule:
-    - cron: "30 0 * * *"   # 00:30 UTC daily
+  repository_dispatch  # 00:30 UTC daily
   workflow_dispatch:
 
 env:
