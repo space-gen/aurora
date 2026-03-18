@@ -89,8 +89,7 @@ def _merge_to_task_file(ann: dict):
                     task["annotations"] = []
                 
                 new_entry = {
-                    "user_label": ann["user_label"],
-                    "locations": ann["locations"],
+                    "locations": ann["locations"], # This list already contains {x, y, radius, label} for each point
                     "annotator": ann["metadata"]["annotator"],
                     "issue_number": ann["metadata"]["issue_number"],
                     "timestamp": ann["metadata"]["timestamp"]
@@ -98,8 +97,6 @@ def _merge_to_task_file(ann: dict):
                 task["annotations"].append(new_entry)
 
                 # 2. Update metadata
-                
-                # Store extra metadata in the record itself
                 task["metadata"]["annotator"] = ann["metadata"]["annotator"]
                 task["metadata"]["issue_number"] = ann["metadata"]["issue_number"]
                 task["metadata"]["timestamp"] = ann["metadata"]["timestamp"]
@@ -155,19 +152,25 @@ def main() -> None:
                     locations.append({"x": x, "y": y, "radius": radius, "label": user_label})
             except: pass
 
-    ann = {
-        "task_type": task_type,
-        "user_label": user_label,
-        "id": record_id,
-        "locations": locations,
-        "metadata": {
-            "annotator": issue_author,
-            "issue_number": int(issue_number),
-            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
-        }
+    ann_entry_data = {
+        "locations": ann["locations"], # This list already contains {x, y, radius, label} for each point
+        "annotator": ann["metadata"]["annotator"],
+        "issue_number": ann["metadata"]["issue_number"],
+        "timestamp": ann["metadata"]["timestamp"]
     }
-
-    _merge_to_task_file(ann)
+    task["annotations"].append(ann_entry_data)
+    
+    # The top-level 'user_label' and 'locations' fields are no longer updated directly,
+    # as all data is now within the 'annotations' list.
+    # task["user_label"] = ann["user_label"] # REMOVED
+    # task["locations"] = ann["locations"]   # REMOVED
+    
+    # Store extra metadata in the record itself
+    task["metadata"]["annotator"] = ann["metadata"]["annotator"]
+    task["metadata"]["issue_number"] = ann["metadata"]["issue_number"]
+    task["metadata"]["timestamp"] = ann["metadata"]["timestamp"]
+    found = True
+    break
 
 if __name__ == "__main__":
     main()
