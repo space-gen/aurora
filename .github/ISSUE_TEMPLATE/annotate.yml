@@ -1,140 +1,109 @@
-name: "Submit Solar Observation Annotation"
-description: "Label a solar observation image for the SolarHub citizen-science dataset."
-labels:
-  - annotation
 body:
-  - type: markdown
-    attributes:
-      value: |
-        ## Annotate a Solar Observation
+- attributes:
+    value: '## Annotate a Solar Observation
 
-        Fill in the fields below to submit your annotation.  Your label will be
-        used to train and evaluate the SolarHub solar-classification model.
 
-        **Scientific Classification Labels:**
-        | Task Type | Scientific System |
-        |-----------|-------------------|
-        | `sunspot` | McIntosh (`class_a` - `class_h`) |
-        | `solar_flare` | GOES (`x_class` - `a_class`) |
-        | `magnetogram` | Mount Wilson (`alpha` - `delta`) |
-        | `coronal_hole`| Heliographic (`polar`, `equatorial`) |
-        | `prominence`  | Stability (`quiescent`, `active`) |
-        | `cme`         | CDAW (`full_halo`, `partial_halo`) |
+      Fill in the fields below to submit your annotation.  Your label will be
 
-  - type: input
-    id: image_url
-    attributes:
-      label: "Image URL"
-      description: "The full HTTPS URL of the solar observation image you are labelling."
-      placeholder: "https://solar-data-source/image.jpg"
-    validations:
-      required: true
+      used to train and evaluate the SolarHub solar-classification model.
 
-  - type: dropdown
-    id: task_type
-    attributes:
-      label: "Task Type"
-      description: "The type of solar observation task."
-      options:
-        - sunspot
-        - solar_flare
-        - magnetogram
-        - coronal_hole
-        - prominence
-        - active_region
-        - cme
-    validations:
-      required: true
 
-  - type: input
-    id: record_id
-    attributes:
-      label: "Record ID"
-      description: "The unique ID of this record (e.g. sp-123). Found in the task JSON."
-    validations:
-      required: true
+      **Scientific Classification Labels:**
 
-  - type: input
-    id: serial_number
-    attributes:
-      label: "Serial Number"
-      description: "The serial number of this record. Found in the task JSON."
-    validations:
-      required: true
+      | Task Type | Scientific System |
 
-  - type: input
-    id: user_label
-    attributes:
-      label: "Your Label"
-      description: "Your classification for this image (see the table above for valid values)."
-      placeholder: "e.g. active_region"
-    validations:
-      required: true
+      |-----------|-------------------|
 
-  - type: input
-    id: image_url
-    attributes:
-      label: "Image URL"
-      description: "The full HTTPS URL of the solar observation image you are labelling."
-      placeholder: "https://solar-data-source/image.jpg"
-    validations:
-      required: true
+      | `sunspot` | McIntosh (`class_a` - `class_h`) |
 
-  - type: dropdown
-    id: task_type
-    attributes:
-      label: "Task Type"
-      description: "The type of solar observation task."
-      options:
-        - sunspot
-        - solar_flare
-        - magnetogram
-        - coronal_hole
-        - prominence
-        - active_region
-        - cme
-    validations:
-      required: true
+      | `solar_flare` | GOES (`x_class` - `a_class`) |
 
-  - type: input
-    id: record_id
-    attributes:
-      label: "Record ID"
-      description: "The unique ID of this record (e.g. sp-123). Found in the task JSON."
-    validations:
-      required: true
+      | `magnetogram` | Mount Wilson (`alpha` - `delta`) |
 
-  - type: input
-    id: serial_number
-    attributes:
-      label: "Serial Number"
-      description: "The serial number of this record. Found in the task JSON."
-    validations:
-      required: true
+      | `coronal_hole`| Heliographic (`polar`, `equatorial`) |
 
-  - type: input
-    id: your_label
-    attributes:
-      label: "Label for this annotation"
-      description: "The scientific classification for this annotation (e.g., class_a, beta-gamma, polar, quiescent, x_class, full_halo). This label will apply to all specified locations."
-      placeholder: "e.g. class_f"
-    validations:
-      required: true
+      | `prominence`  | Stability (`quiescent`, `active`) |
 
-  - type: textarea
-    id: pixel_coordinates
-    attributes:
-      label: "Pixel Coordinates (Required)"
-      description: "Provide the (x, y) coordinates of the feature. You can optionally include a radius (x,y,radius). Multiple features should be separated by a semicolon (;). Each location will inherit the 'Label for this annotation' from above. Example: `450,320,15 ; 890,110,10`"
-      placeholder: "e.g. 450,320,15 ; 890,110,10"
-    validations:
-      required: true
+      | `cme`         | CDAW (`full_halo`, `partial_halo`) |
 
-  - type: textarea
-    id: notes
-    attributes:
-      label: "Notes (optional)"
-      description: "Any additional observations or comments about this image."
-      placeholder: "Optional notes..."
-    validations:
-      required: false
+      '
+  type: markdown
+- attributes:
+    description: The full HTTPS URL of the solar observation image you are labelling.
+    label: Image URL
+    placeholder: https://solar-data-source/image.jpg
+  id: image_url
+  type: input
+  validations:
+    required: true
+- attributes:
+    description: The type of solar observation task.
+    label: Task Type
+    options:
+    - sunspot
+    - solar_flare
+    - magnetogram
+    - coronal_hole
+    - prominence
+    - active_region
+    - cme
+  id: task_type
+  type: dropdown
+  validations:
+    required: true
+- attributes:
+    description: The unique ID of this record (e.g. sp-123). Found in the task JSON.
+    label: Record ID
+  id: record_id
+  type: input
+  validations:
+    required: true
+- attributes:
+    description: The serial number of this record. Found in the task JSON.
+    label: Serial Number
+  id: serial_number
+  type: input
+  validations:
+    required: true
+- attributes:
+    description: Your classification for this image (see the table above for valid
+      values).
+    label: Your Label
+    placeholder: e.g. active_region
+  id: user_label
+  type: input
+  validations:
+    required: true
+- attributes:
+    description: The scientific classification for this annotation (e.g., class_a,
+      beta-gamma, polar, quiescent, x_class, full_halo). This label will apply to
+      all specified locations.
+    label: Label for this annotation
+    placeholder: e.g. class_f
+  id: your_label
+  type: input
+  validations:
+    required: true
+- attributes:
+    description: 'Provide the (x, y) coordinates of the feature. You can optionally
+      include a radius (x,y,radius). Multiple features should be separated by a semicolon
+      (;). Each location will inherit the ''Label for this annotation'' from above.
+      Example: `450,320,15 ; 890,110,10`'
+    label: Pixel Coordinates (Required)
+    placeholder: e.g. 450,320,15 ; 890,110,10
+  id: pixel_coordinates
+  type: textarea
+  validations:
+    required: true
+- attributes:
+    description: Any additional observations or comments about this image.
+    label: Notes (optional)
+    placeholder: Optional notes...
+  id: notes
+  type: textarea
+  validations:
+    required: false
+description: Label a solar observation image for the SolarHub citizen-science dataset.
+labels:
+- annotation
+name: Submit Solar Observation Annotation
