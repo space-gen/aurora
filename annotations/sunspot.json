@@ -4,12 +4,34 @@
     "serial_number": 1,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/17/20260317_000000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "user_label": null,
+    "user_label": "active_region",
     "ml_label": null,
-    "locations": [],
+    "locations": [
+      {
+        "x": 390,
+        "y": 581,
+        "radius": 0,
+        "label": "active_region"
+      },
+      {
+        "x": 288,
+        "y": 505,
+        "radius": 0,
+        "label": "active_region"
+      },
+      {
+        "x": 644,
+        "y": 340,
+        "radius": 0,
+        "label": "active_region"
+      }
+    ],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-17"
+      "captured_at": "2026-03-17",
+      "annotator": "soumyadipkarforma",
+      "issue_number": 8,
+      "timestamp": "2026-03-18T01:02:32.784339+00:00"
     }
   },
   {
