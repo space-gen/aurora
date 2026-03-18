@@ -247,8 +247,60 @@
     "locations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-17"
-    }
+      "captured_at": "2026-03-17",
+      "last_annotator": "soumyadipkarforma",
+      "last_issue_number": "17",
+      "last_timestamp": "2026-03-18T14:45:05.668602+00:00"
+    },
+    "annotations_by_user": {
+      "soumyadipkarforma": [
+        {
+          "label": "class_a",
+          "x": 389.0,
+          "y": 593.0,
+          "radius": 10.0
+        },
+        {
+          "label": "class_a",
+          "x": 657.0,
+          "y": 355.0,
+          "radius": 10.0
+        },
+        {
+          "label": "class_a",
+          "x": 304.0,
+          "y": 491.0,
+          "radius": 10.0
+        }
+      ]
+    },
+    "annotation_history": [
+      {
+        "annotator": "soumyadipkarforma",
+        "issue_number": "17",
+        "timestamp": "2026-03-18T14:45:05.668602+00:00",
+        "regions": [
+          {
+            "label": "class_a",
+            "x": 389.0,
+            "y": 593.0,
+            "radius": 10.0
+          },
+          {
+            "label": "class_a",
+            "x": 657.0,
+            "y": 355.0,
+            "radius": 10.0
+          },
+          {
+            "label": "class_a",
+            "x": 304.0,
+            "y": 491.0,
+            "radius": 10.0
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "sp-8",
