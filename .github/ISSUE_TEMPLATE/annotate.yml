@@ -45,7 +45,7 @@ body:
     label: Regions (label,x,y,r ; label2,x2,y2,r2)
     description: |
       Specify one or more labeled regions using the format `label,x,y,r`. Separate multiple regions with a semicolon (`;`).
-      Example: `sunspot,450,320,15 ; sunspot,890,110,10`.
+      Example: `class_a,450,320,15 ; class_h,890,110,10`.
       Labels must be valid for the selected Task Type (see table above). Coordinates may be integers or floats. Radius is optional; omit or set to 0 for point annotations.
     placeholder: e.g. sunspot,450,320,15 ; sunspot,890,110,10
   validations:
