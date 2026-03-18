@@ -1,8 +1,9 @@
 """
 parse_issue_annotation.py
 =========================
-Parses a GitHub issue body and merges the annotation (label + locations)
-directly into the corresponding task JSON file within annotations/.
+Parses a GitHub issue body and merges the annotation (regions) into the corresponding
+task JSON file within annotations/. New format stores per-annotator region lists
+under `annotations_by_user` in each task record.
 """
 
 from __future__ import annotations
@@ -14,110 +15,92 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlparse
 
-# ---------------------------------------------------------------------------
 # Logging
-# ---------------------------------------------------------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
+# Config
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
-# Valid labels for each task type based on scientific classification systems.
+# Valid labels for each task type
 VALID_LABELS: dict[str, set[str]] = {
-    # McIntosh Classification (Modified Zurich)
-    "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
-    # GOES X-ray Classification
+    "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none", "sunspot"},
     "solar_flare": {"x_class", "m_class", "c_class", "b_class", "a_class", "none"},
-    # Mount Wilson Magnetic Classification
     "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
-    # Heliographic Latitude Classification
     "coronal_hole": {"polar", "equatorial", "mid-latitude", "transequatorial", "none"},
-    # Behavioral Classification
     "prominence": {"quiescent", "active", "eruptive", "intermediate", "none"},
-    # Secondary classification for active regions (often uses Mount Wilson)
     "active_region": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-gamma-delta", "none"},
-    # Angular Width Classification (CDAW)
     "cme": {"full_halo", "partial_halo", "normal", "narrow", "none"},
 }
+VALID_TASK_TYPES = set(VALID_LABELS.keys())
 
-VALID_TASK_TYPES: set[str] = set(VALID_LABELS.keys())
-
-# ---------------------------------------------------------------------------
 # Helpers
-# ---------------------------------------------------------------------------
-
 def _parse_issue_body(body: str) -> dict[str, str]:
     fields: dict[str, str] = {}
+    # Expect GitHub issue form uses headings or simple key: value pairs.
+    # Try to capture both `### Heading` sections and `FieldName:\nvalue` styles.
     sections = re.split(r"^###\s+", body, flags=re.MULTILINE)
     for section in sections:
-        if not section.strip(): continue
+        if not section.strip():
+            continue
         lines = section.splitlines()
-        if not lines: continue
+        if not lines:
+            continue
         heading = lines[0].strip()
         value = "\n".join(lines[1:]).strip()
-        if value in ("_No response_", "_No response_\n"): value = ""
+        if value in ("_No response_", "_No response_\n"):
+            value = ""
         key = heading.lower().replace(" ", "_").replace("(optional)", "").rstrip("_").strip("_")
         fields[key] = value
+    # Fallback: parse simple `Field: value` pairs
+    for m in re.finditer(r"(?m)^([A-Za-z _]+):\s*\n([^\n][\s\S]*?)(?=^\w+:|\Z)", body):
+        k = m.group(1).strip().lower().replace(" ", "_")
+        if k not in fields:
+            fields[k] = m.group(2).strip()
     return fields
 
-def _merge_to_task_file(ann: dict):
-    """Finds the record in the task file and updates it."""
-    task_type = ann["task_type"]
-    record_id = ann["id"]
-    file_path = ANNOTATIONS_DIR / f"{task_type}.json"
-    
-    if not file_path.exists():
-        log.error(f"Task file {file_path.name} not found in annotations/")
-        sys.exit(1)
-        
-    try:
-        tasks = json.loads(file_path.read_text())
-        found = False
-        for task in tasks:
-            if task.get("id") == record_id:
-                # 1. Append to history
-                if "annotations" not in task:
-                    task["annotations"] = []
-                
-                new_entry = {
-                    "locations": ann["locations"], # This list already contains {x, y, radius, label} for each point
-                    "annotator": ann["metadata"]["annotator"],
-                    "issue_number": ann["metadata"]["issue_number"],
-                    "timestamp": ann["metadata"]["timestamp"]
-                }
-                task["annotations"].append(new_entry)
 
-                # 2. Update metadata
-                task["metadata"]["annotator"] = ann["metadata"]["annotator"]
-                task["metadata"]["issue_number"] = ann["metadata"]["issue_number"]
-                task["metadata"]["timestamp"] = ann["metadata"]["timestamp"]
-                found = True
-                break
-        
-        if not found:
-            log.error(f"Record {record_id} not found in {file_path.name}")
-            sys.exit(1)
-            
-        file_path.write_text(json.dumps(tasks, indent=2))
-        log.info(f"Merged annotation into {file_path.name} for record {record_id}")
-        
-    except Exception as e:
-        log.error(f"Failed to merge to file: {e}")
-        sys.exit(1)
+def _parse_regions(regions_raw: str) -> list[dict]:
+    regions = []
+    if not regions_raw:
+        return regions
+    for part in regions_raw.split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        pieces = [p.strip() for p in part.split(",") if p.strip()]
+        if len(pieces) < 3:
+            # Need at least label,x,y
+            continue
+        label = pieces[0]
+        try:
+            x = float(pieces[1])
+            y = float(pieces[2])
+            r = float(pieces[3]) if len(pieces) >= 4 else 0.0
+        except ValueError:
+            continue
+        regions.append({"label": label, "x": x, "y": y, "radius": r})
+    return regions
 
-# ---------------------------------------------------------------------------
+
+def _merge_annotations_by_user(task: dict, annotator: str, regions: list[dict], issue_number: str, timestamp: str) -> None:
+    # Ensure structure
+    if "annotations_by_user" not in task or not isinstance(task["annotations_by_user"], dict):
+        task["annotations_by_user"] = {}
+    user_map = task["annotations_by_user"]
+    user_list = user_map.get(annotator, [])
+    # append regions as provided (no dedup) but keep as list
+    user_list.extend(regions)
+    user_map[annotator] = user_list
+    # Also maintain a shallow history list for convenience
+    if "annotation_history" not in task or not isinstance(task["annotation_history"], list):
+        task["annotation_history"] = []
+    task["annotation_history"].append({"annotator": annotator, "issue_number": issue_number, "timestamp": timestamp, "regions": regions})
+
+
 # Main
-# ---------------------------------------------------------------------------
-
 def main() -> None:
     issue_number = os.environ.get("ISSUE_NUMBER", "").strip()
     issue_body = os.environ.get("ISSUE_BODY", "").strip()
@@ -128,49 +111,73 @@ def main() -> None:
         sys.exit(1)
 
     fields = _parse_issue_body(issue_body)
-    
-    # Extract
     task_type = fields.get("task_type", "").strip().lower()
-    user_label = fields.get("your_label", "").strip().lower()
     record_id = fields.get("record_id", "").strip()
-    
-    # Simple validation
+    image_url = fields.get("image_url", "").strip()
+    regions_raw = fields.get("regions", "").strip()
+    notes = fields.get("notes", "").strip()
+
     if task_type not in VALID_TASK_TYPES:
         log.error(f"Invalid task_type: {task_type}")
         sys.exit(1)
+    if not record_id:
+        log.error("record_id is required")
+        sys.exit(1)
+    if not image_url:
+        log.error("image_url is required")
+        sys.exit(1)
 
-    # Locations parsing
-    locations = []
-    coords_raw = fields.get("pixel_coordinates", "").strip()
-    if coords_raw and coords_raw.lower() != "none":
-        for pair in coords_raw.split(";"):
-            try:
-                parts = [p.strip() for p in pair.strip().split(",")]
-                if len(parts) >= 2:
-                    x, y = int(parts[0]), int(parts[1])
-                    radius = int(parts[2]) if len(parts) >= 3 else 0
-                    locations.append({"x": x, "y": y, "radius": radius, "label": user_label})
-            except: pass
+    regions = _parse_regions(regions_raw)
+    if not regions:
+        log.error("No valid regions parsed from 'regions' field")
+        sys.exit(1)
 
-    ann_entry_data = {
-        "locations": ann["locations"], # This list already contains {x, y, radius, label} for each point
-        "annotator": ann["metadata"]["annotator"],
-        "issue_number": ann["metadata"]["issue_number"],
-        "timestamp": ann["metadata"]["timestamp"]
-    }
-    task["annotations"].append(ann_entry_data)
-    
-    # The top-level 'user_label' and 'locations' fields are no longer updated directly,
-    # as all data is now within the 'annotations' list.
-    # task["user_label"] = ann["user_label"] # REMOVED
-    # task["locations"] = ann["locations"]   # REMOVED
-    
-    # Store extra metadata in the record itself
-    task["metadata"]["annotator"] = ann["metadata"]["annotator"]
-    task["metadata"]["issue_number"] = ann["metadata"]["issue_number"]
-    task["metadata"]["timestamp"] = ann["metadata"]["timestamp"]
-    found = True
-    break
+    file_path = ANNOTATIONS_DIR / f"{task_type}.json"
+    if not file_path.exists():
+        log.error(f"Task file {file_path.name} not found in annotations/")
+        sys.exit(1)
+
+    try:
+        tasks = json.loads(file_path.read_text())
+    except Exception as exc:
+        log.error(f"Failed to read {file_path}: {exc}")
+        sys.exit(1)
+
+    found = False
+    timestamp = datetime.now(timezone.utc).isoformat()
+    for task in tasks:
+        if str(task.get("id")) == record_id:
+            found = True
+            # Update image_url if missing
+            if "url" not in task or not task.get("url"):
+                task["url"] = image_url
+            # Ensure metadata exists
+            if "metadata" not in task or not isinstance(task["metadata"], dict):
+                task["metadata"] = {}
+            task["metadata"].setdefault("last_annotator", issue_author)
+            task["metadata"]["last_issue_number"] = issue_number
+            task["metadata"]["last_timestamp"] = timestamp
+
+            # Merge per-annotator regions
+            _merge_annotations_by_user(task, issue_author, regions, issue_number, timestamp)
+
+            # Optionally store notes
+            if notes:
+                task.setdefault("notes", "")
+                task["notes"] = (task.get("notes", "") + "\n" + notes).strip()
+            break
+
+    if not found:
+        log.error(f"Record {record_id} not found in {file_path.name}")
+        sys.exit(1)
+
+    try:
+        file_path.write_text(json.dumps(tasks, indent=2))
+        log.info(f"Merged annotation by {issue_author} into {file_path.name} for record {record_id}")
+    except Exception as exc:
+        log.error(f"Failed to write {file_path}: {exc}")
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
