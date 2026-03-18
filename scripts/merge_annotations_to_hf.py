@@ -29,7 +29,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
-PREFERRED_KEY_ORDER = ["id", "serial_number", "url", "task_type", "user_label", "ml_label", "locations", "annotations", "metadata"]
+PREFERRED_KEY_ORDER = ["id", "serial_number", "url", "task_type", "ml_label", "locations", "annotations", "metadata"]
 
 
 def _safe_value(value: Any) -> Any:

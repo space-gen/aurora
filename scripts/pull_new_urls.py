@@ -144,7 +144,6 @@ def main():
                 "serial_number": current_serial,
                 "url": url,
                 "task_type": task_type,
-                "user_label": None,
                 "ml_label": None,
                 "locations": [],
                 "annotations": [],

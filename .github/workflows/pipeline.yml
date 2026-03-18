@@ -118,7 +118,6 @@ jobs:
               with open(src_path, "r") as f:
                   data = json.load(f)
               for record in data:
-                  record["user_label"] = None
                   record["ml_label"] = None
                   record["locations"] = []
                   record["annotations"] = []

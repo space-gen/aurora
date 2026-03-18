@@ -97,9 +97,7 @@ def _merge_to_task_file(ann: dict):
                 }
                 task["annotations"].append(new_entry)
 
-                # 2. Update top-level "latest" state (backward compatibility)
-                task["user_label"] = ann["user_label"]
-                task["locations"] = ann["locations"]
+                # 2. Update metadata
                 
                 # Store extra metadata in the record itself
                 task["metadata"]["annotator"] = ann["metadata"]["annotator"]

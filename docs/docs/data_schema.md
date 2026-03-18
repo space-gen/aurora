@@ -14,7 +14,6 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
   "serial_number": 1234,
   "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/000000_Ic_1k.jpg",
   "task_type": "sunspot",
-  "user_label": null,
   "ml_label": null,
   "locations": [],
   "annotations": [],
@@ -33,9 +32,8 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
 | `serial_number` | `integer` | Global incrementing number for the task type. |
 | `url` | `string` | Direct link to the solar observation image. |
 | `task_type` | `string` | One of `sunspot`, `magnetogram`, `solar_flare`, etc. |
-| `user_label` | `string` | The latest classification label (consensus/most recent). |
-| `ml_label` | `string` | The classification label assigned by the ML model. |
-| `locations` | `list` | The latest list of coordinate objects. |
+| `ml_label` | `string` | The classification label assigned by the ML model (defaults to `null`). |
+| `locations` | `list` | A list of coordinate objects for localized features. |
 | `annotations` | `list` | Full history of all user contributions (label, locations, author). |
 | `metadata` | `object` | Contextual information like capture date and source API. |
 

@@ -111,6 +111,18 @@ def _load_task_index() -> dict[str, dict[str, Any]]:
     return index
 
 
+def _get_latest_label(ann: dict[str, Any]) -> str | None:
+    """Extract the latest user label from the annotations list or legacy field."""
+    # 1. Prefer the annotations history
+    history = ann.get("annotations")
+    if history and isinstance(history, list) and len(history) > 0:
+        last_entry = history[-1]
+        if isinstance(last_entry, dict) and "user_label" in last_entry:
+            return last_entry["user_label"]
+            
+    # 2. Fallback to legacy top-level field
+    return ann.get("user_label")
+
 def _load_annotations() -> list[dict[str, Any]]:
     """Return all non-empty annotation records from annotations/."""
     records: list[dict[str, Any]] = []
@@ -129,7 +141,8 @@ def _load_annotations() -> list[dict[str, Any]]:
             continue
         
         for ann in anns:
-            if ann.get("url") and ann.get("user_label"):
+            label = _get_latest_label(ann)
+            if ann.get("url") and label:
                 records.append(ann)
     log.info("Loaded %d annotation record(s).", len(records))
     return records
@@ -146,13 +159,6 @@ def _compute_accuracy(
 ) -> dict[str, Any]:
     """
     Compare each annotation against its corresponding ML prediction.
-
-    Returns an accuracy report dict containing:
-      - timestamp: ISO-8601 UTC timestamp of this evaluation run
-      - total_compared: number of annotation/prediction pairs evaluated
-      - correct: number of pairs where prediction matches annotation
-      - accuracy: overall accuracy as a float in [0, 1]
-      - per_task_type: per-task-type breakdown of the same metrics
     """
     total = 0
     correct = 0
@@ -166,7 +172,8 @@ def _compute_accuracy(
 
         task: dict[str, Any] = task_index[url]["task"]
         ml_prediction: str = task.get("ml_prediction", "")
-        user_label: str = ann.get("user_label", "")
+        
+        user_label = _get_latest_label(ann) or ""
         task_type: str = task.get("task_type", "unknown")
 
         match = _is_correct_prediction(ml_prediction, user_label)
