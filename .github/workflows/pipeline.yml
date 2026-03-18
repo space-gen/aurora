@@ -1,7 +1,8 @@
 name: "Nightly Pipeline"
 
 on:
-  repository_dispatch:  # 00:30 UTC daily
+  repository_dispatch: # 00:30 UTC daily
+   types: [cronjob]
   workflow_dispatch:
 
 env:
