@@ -55,7 +55,7 @@ aurora/
 ## Data Schema
 
 Each task record includes:
-- `user_label`: Human-provided classification.
+- `annotations`: List of human-provided classifications (includes label, author, timestamp).
 - `ml_label`: Machine-learning model prediction.
 - `locations`: Array of coordinate objects `{x, y, radius, label}`.
 

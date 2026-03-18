@@ -39,7 +39,7 @@ active_region
 Once your issue is submitted and labeled as `annotation`:
 1. The **`Parse Annotation Issue`** workflow is triggered.
 2. `scripts/parse_issue_annotation.py` validates your input.
-3. If valid, your contribution is merged into the local `annotations/` directory.
+3. If valid, your contribution is *appended* to the `annotations` list for the corresponding task in the local `annotations/` directory.
 4. The issue is automatically acknowledged and closed.
 
 ## Valid Labels
@@ -58,4 +58,4 @@ SolarHub uses standard scientific classification systems for solar features. To 
 ---
 
 ## What Happens Next?
-Your contribution is stored locally in the `annotations/` directory. During the next **Nightly Pipeline** run (00:30 UTC), it will be merged into the master HuggingFace dataset and used to retrain our solar prediction models.
+Your contribution is appended to the `annotations` list for the task in the local `annotations/` directory. During the next **Nightly Pipeline** run (00:30 UTC), all annotations are merged into the master HuggingFace dataset, preserving the history of each contribution. This data is then used to retrain our solar prediction models.

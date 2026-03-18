@@ -47,7 +47,7 @@ The `scripts/` directory contains modular Python automation that powers the Sola
 
 **Purpose**: (Work in Progress) Evaluates machine learning model accuracy.
 
-- **Responsibility**: Compares the `user_label` (ground truth) against `ml_prediction` (model output) for all labeled records.
+- **Responsibility**: Compares the latest label from `annotations` (ground truth) against `ml_label` (model output) for all labeled records.
 - **Metric**: Computes overall accuracy and per-task-type performance.
 - **Output**: Writes a summary report used for model auditing and progress tracking.
 
