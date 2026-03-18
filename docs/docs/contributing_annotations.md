@@ -44,16 +44,16 @@ Once your issue is submitted and labeled as `annotation`:
 
 ## Valid Labels
 
-SolarHub supports both **scientific classifications** (for experts) and **descriptive states** (for general contributors).
+SolarHub uses standard scientific classification systems for solar features. To ensure high data quality, please use only these predefined labels:
 
-| Task Type | Scientific Labels | Descriptive Aliases |
-|-----------|-------------------|---------------------|
-| **Sunspot** | `class_a` to `class_h` | `quiet_sun`, `single_spot`, `spot_cluster` |
-| **Magnetogram**| `alpha`, `beta`, `gamma`, `delta` | `quiet`, `bipolar_region`, `complex_magnetic` |
-| **Solar Flare**| `x_class`, `m_class`, `c_class`... | `no_flare`, `microflare`, `flare_region` |
-| **Coronal Hole**| `polar`, `equatorial`, `mid-latitude` | `calm_region`, `isolated_hole` |
-| **Prominence** | `quiescent`, `active`, `eruptive` | `no_prominence`, `filament`, `prominence_loop` |
-| **CME** | `full_halo`, `partial_halo`, `normal` | `quiet_corona`, `jet`, `streamer_blowout` |
+| Task Type | Scientific Labels |
+|-----------|-------------------|
+| **Sunspot** | `class_a` to `class_h` |
+| **Magnetogram**| `alpha`, `beta`, `gamma`, `delta` |
+| **Solar Flare**| `x_class`, `m_class`, `c_class`... |
+| **Coronal Hole**| `polar`, `equatorial`, `mid-latitude` |
+| **Prominence** | `quiescent`, `active`, `eruptive` |
+| **CME** | `full_halo`, `partial_halo`, `normal` |
 
 ---
 

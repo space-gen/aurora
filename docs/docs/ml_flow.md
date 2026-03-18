@@ -47,12 +47,12 @@ The `scripts/compute_points.py` script compares user-submitted labels against mo
 
 ## Supported Task Types
 
-| Task Type | Scientific Standard | Descriptive States |
-|-----------|---------------------|--------------------|
-| `sunspot` | **McIntosh** | `single_spot`, `cluster`, `quiet` |
-| `solar_flare` | **GOES X-ray** | `flare_region`, `microflare` |
-| `magnetogram` | **Mount Wilson** | `bipolar`, `complex` |
-| `coronal_hole` | **Latitude** | `calm_region`, `isolated_hole` |
-| `prominence` | **Behavioral** | `filament`, `loop` |
-| `cme` | **CDAW** | `jet`, `streamer_blowout` |
-| `active_region` | **Structural** | `active_group`, `emerging_flux` |
+| Task Type | Scientific Standard |
+|-----------|---------------------|
+| `sunspot` | **McIntosh** |
+| `solar_flare` | **GOES X-ray** |
+| `magnetogram` | **Mount Wilson** |
+| `coronal_hole` | **Latitude** |
+| `prominence` | **Behavioral** |
+| `cme` | **CDAW** |
+| `active_region` | **Structural** |

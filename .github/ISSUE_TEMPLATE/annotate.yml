@@ -11,15 +11,15 @@ body:
         Fill in the fields below to submit your annotation.  Your label will be
         used to train and evaluate the SolarHub solar-classification model.
 
-        **Scientific & Descriptive Classification Labels:**
-        | Task Type | Scientific System | Descriptive States (Aliases) |
-        |-----------|-------------------|-----------------------------|
-        | `sunspot` | McIntosh (`class_a` - `class_h`) | `quiet_sun`, `single_spot`, `spot_cluster` |
-        | `solar_flare` | GOES (`x_class` - `a_class`) | `no_flare`, `microflare`, `flare_region` |
-        | `magnetogram` | Mount Wilson (`alpha` - `delta`) | `quiet`, `bipolar_region`, `complex_magnetic` |
-        | `coronal_hole`| Heliographic (`polar`, `equatorial`) | `calm_region`, `isolated_hole` |
-        | `prominence`  | Stability (`quiescent`, `active`) | `no_prominence`, `filament`, `prominence_loop` |
-        | `cme`         | CDAW (`full_halo`, `partial_halo`) | `quiet_corona`, `jet`, `streamer_blowout` |
+        **Scientific Classification Labels:**
+        | Task Type | Scientific System |
+        |-----------|-------------------|
+        | `sunspot` | McIntosh (`class_a` - `class_h`) |
+        | `solar_flare` | GOES (`x_class` - `a_class`) |
+        | `magnetogram` | Mount Wilson (`alpha` - `delta`) |
+        | `coronal_hole`| Heliographic (`polar`, `equatorial`) |
+        | `prominence`  | Stability (`quiescent`, `active`) |
+        | `cme`         | CDAW (`full_halo`, `partial_halo`) |
 
   - type: input
     id: image_url
