@@ -99,10 +99,38 @@
     "metadata": {
       "source": "JSOC_HMI_JPG",
       "captured_at": "2026-03-17",
-      "annotator": "soumyadipkarforma",
-      "issue_number": 10,
-      "timestamp": "2026-03-18T01:07:51.023074+00:00"
-    }
+      "annotator": "anonymous-sk-02",
+      "issue_number": 16,
+      "timestamp": "2026-03-18T09:14:47.153177+00:00"
+    },
+    "annotations": [
+      {
+        "user_label": "class_b",
+        "locations": [
+          {
+            "x": 399,
+            "y": 585,
+            "radius": 0,
+            "label": "class_b"
+          },
+          {
+            "x": 641,
+            "y": 343,
+            "radius": 0,
+            "label": "class_b"
+          },
+          {
+            "x": 298,
+            "y": 514,
+            "radius": 0,
+            "label": "class_b"
+          }
+        ],
+        "annotator": "anonymous-sk-02",
+        "issue_number": 16,
+        "timestamp": "2026-03-18T09:14:47.153177+00:00"
+      }
+    ]
   },
   {
     "id": "sp-4",
