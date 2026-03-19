@@ -2,30 +2,22 @@
 
 > Support Aurora: [GitHub Sponsors](https://github.com/sponsors/soumyadipkarforma) · [Patreon](https://www.patreon.com/SoumyadipKarforma) · [Buy Me a Coffee](https://buymeacoffee.com/soumyadipkarforma)
 
-SolarHub uses a standardized JSON format for all solar task and annotation data.
+SolarHub uses a standardized **JSON Lines (JSONL)** format for all solar task and annotation data.
 
-## File Wrapper Structure
+## Format: Compressed JSONL
 
-Every JSON data file in the repository follows a wrapper structure to include file-level metadata (such as the creation date) while maintaining JSON compatibility.
+Every data file in the repository (under `data/` and `annotations/`) is a `.jsonl` file. Each line is a single, independent, and minified JSON object representing one solar observation record.
 
-```json
-{
-  "_comment": "Created on 2026-03-19 10:30:00 UTC",
-  "data": [
-    { 
-      "id": "sp-1234",
-      ...
-    }
-  ]
-}
-```
+**Key Benefits:**
+- **Git Friendly**: Append-only structure prevents merge conflicts between contributors.
+- **High Compression**: Zero whitespace and minified separators for minimal file size.
+- **Streaming Ready**: Optimized for machine learning pipelines (HuggingFace/Kaggle).
 
-- **`_comment`**: A string containing metadata about the file (e.g., creation timestamp).
-- **`data`**: An array of task records.
+---
 
 ## Task Record Schema
 
-Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object within the `data` list.
+A single line in a `.jsonl` file looks like this (pretty-printed here for readability):
 
 ```json
 {
@@ -60,7 +52,7 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
 | `url` | `string` | Direct link to the solar observation image. |
 | `task_type` | `string` | One of `sunspot`, `magnetogram`, `solar_flare`, etc. |
 | `created_at` | `string` | ISO-8601 timestamp when the record was created. |
-| `annotations` | `list` | A list of user annotation entries. |
+| `annotations` | `list` | A list of user annotation entries (history). |
 | `metadata` | `object` | Contextual information like capture date and source API. |
 
 ---
@@ -79,12 +71,7 @@ Each entry in the `annotations` list represents a contribution from a single use
 ### Location Object
 
 ```json
-{
-  "x": 450,
-  "y": 210,
-  "radius": 15,
-  "label": "class_f"
-}
+{ "x": 450, "y": 210, "radius": 15, "label": "class_f" }
 ```
 
 - **`x`, `y`**: Pixel coordinates relative to the 1024x1024 source image.

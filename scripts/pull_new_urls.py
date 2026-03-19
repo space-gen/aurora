@@ -4,7 +4,7 @@ pull_new_urls.py
 Stage 2 — Daily Solar Data Crawler
 
 Fetches sunspot and magnetogram JPG URLs from the previous day.
-Each record includes a unique ID (sp-N, mg-N) and serial number.
+Writes output in compressed JSONL format.
 """
 
 import os
@@ -14,23 +14,15 @@ import json
 import logging
 import datetime
 import argparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import requests
 from collections import defaultdict
 
-# ---------------------------------------------------------------------------
 # Logging
-# ---------------------------------------------------------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
+# Config
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
@@ -42,48 +34,51 @@ SOURCE_MAP = {
 
 LINK_REGEX = re.compile(r'href="([^"]+\.jpg)"')
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _get_existing_urls():
     token = os.environ.get("HF_TOKEN")
-    if not token: return set()
+    all_urls = set()
+    
+    # Check local JSONL files first
+    for p in REPO_ROOT.glob("**/*.jsonl"):
+        if "data_processing" in str(p): continue
+        try:
+            with open(p, "r") as f:
+                for line in f:
+                    if not line.strip(): continue
+                    all_urls.add(json.loads(line)["url"])
+        except: pass
+
+    if not token: return all_urls
+    
     try:
         from datasets import load_dataset
-        all_urls = set()
         for task_type in SOURCE_MAP.keys():
             repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
             try:
                 ds = load_dataset(repo_id, token=token, split="train")
                 all_urls.update(ds["url"])
-            except Exception: continue
-        return all_urls
-    except ImportError: return set()
+            except: continue
+    except ImportError: pass
+    return all_urls
 
-def _get_last_serial_and_id(task_type):
-    """Find the highest serial number and ID from existing HF and local data."""
-    # Start at 0
+def _get_last_serial(task_type):
     max_serial = 0
-    
-    # 1. Check local file if it exists
-    local_file = DATA_PROCESSING_DIR / f"{task_type}.json"
-    if local_file.exists():
+    # Search all local jsonl files for the highest serial for this task type
+    for p in REPO_ROOT.glob("**/*.jsonl"):
         try:
-            content = json.loads(local_file.read_text())
-            # Handle wrapped format
-            data = content["data"] if isinstance(content, dict) and "data" in content else content
-            if data:
-                max_serial = max(max_serial, max(item.get("serial_number", 0) for item in data))
+            with open(p, "r") as f:
+                for line in f:
+                    if not line.strip(): continue
+                    item = json.loads(line)
+                    if item.get("task_type") == task_type:
+                        max_serial = max(max_serial, item.get("serial_number", 0))
         except: pass
 
-    # 2. Check HF
     token = os.environ.get("HF_TOKEN")
     if token:
         try:
             from datasets import load_dataset
             repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
-            # Check both splits as data migrates from tasks to train
             for split in ["tasks", "train"]:
                 try:
                     ds = load_dataset(repo_id, token=token, split=split)
@@ -91,14 +86,12 @@ def _get_last_serial_and_id(task_type):
                         max_serial = max(max_serial, max(ds["serial_number"]))
                 except: pass
         except: pass
-        
     return max_serial
 
 def _fetch_day_urls(task_type, date_obj):
     y, m, d = date_obj.strftime("%Y"), date_obj.strftime("%m"), date_obj.strftime("%d")
     cfg = SOURCE_MAP[task_type]
     url = cfg["path"].format(Y=y, M=m, D=d)
-    
     results = []
     try:
         response = requests.get(url, timeout=15)
@@ -110,80 +103,48 @@ def _fetch_day_urls(task_type, date_obj):
     except: pass
     return results
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--days-back", type=int, default=1, help="Pull data for N days ago")
+    parser.add_argument("--days-back", type=int, default=1)
     args = parser.parse_args()
 
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
     existing_urls = _get_existing_urls()
-    
-    # Use environment variable for task filtering
-    task_filter = os.environ.get("TASK_TYPE")
-    
-    # Calculate target date
     target_date = datetime.date.today() - datetime.timedelta(days=args.days_back)
-    log.info(f"Crawling JSOC for date: {target_date} (days back: {args.days_back})")
+    log.info(f"Target date: {target_date}")
 
-    tasks_by_type = defaultdict(list)
-    
-    # Filter SOURCE_MAP if TASK_TYPE is provided
-    active_sources = {task_filter: SOURCE_MAP[task_filter]} if task_filter and task_filter in SOURCE_MAP else SOURCE_MAP
-
-    for task_type, cfg in active_sources.items():
+    for task_type, cfg in SOURCE_MAP.items():
         log.info(f"Processing {task_type}...")
-        
-        # Get starting serial number
-        current_serial = _get_last_serial_and_id(task_type)
+        current_serial = _get_last_serial(task_type)
         prefix = cfg["prefix"]
-        
         urls = _fetch_day_urls(task_type, target_date)
         
-        for url in urls:
-            if url in existing_urls: continue
-            
-            current_serial += 1
-            tasks_by_type[task_type].append({
-                "id": f"{prefix}-{current_serial}",
-                "serial_number": current_serial,
-                "url": url,
-                "task_type": task_type,
-                "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "annotations": [],
-                "metadata": {
-                    "source": "JSOC_HMI_JPG",
-                    "captured_at": target_date.isoformat()
+        file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
+        new_count = 0
+        
+        # Open in append mode for JSONL
+        with open(file_path, "a", encoding="utf-8") as f:
+            for url in urls:
+                if url in existing_urls: continue
+                current_serial += 1
+                new_count += 1
+                record = {
+                    "id": f"{prefix}-{current_serial}",
+                    "serial_number": current_serial,
+                    "url": url,
+                    "task_type": task_type,
+                    "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "annotations": [],
+                    "metadata": {
+                        "source": "JSOC_HMI_JPG",
+                        "captured_at": target_date.isoformat()
+                    }
                 }
-            })
-
-    # Write files
-    for task_type, tasks in tasks_by_type.items():
-        if not tasks: continue
-        file_path = DATA_PROCESSING_DIR / f"{task_type}.json"
+                # Minified JSONL line
+                f.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
         
-        # Append to existing or create new
-        existing_data = []
-        if file_path.exists():
-            try:
-                content = json.loads(file_path.read_text())
-                existing_data = content["data"] if isinstance(content, dict) and "data" in content else content
-            except: pass
-        
-        existing_data.extend(tasks)
-        
-        # Wrapped structure with comment
-        date_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-        wrapped = {
-            "_comment": f"Created on {date_str}",
-            "data": existing_data
-        }
-        
-        file_path.write_text(json.dumps(wrapped, indent=2))
-        log.info(f"Saved {len(tasks)} new tasks to {file_path.name}")
+        if new_count > 0:
+            log.info(f"Saved {new_count} new tasks to {file_path.name}")
 
 if __name__ == "__main__":
     main()

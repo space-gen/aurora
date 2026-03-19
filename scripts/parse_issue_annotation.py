@@ -2,23 +2,9 @@
 parse_issue_annotation.py
 =========================
 Parses a GitHub issue body and merges the annotation (regions) into the corresponding
-task JSON file within annotations/. 
+task JSONL file within annotations/. 
 
-Format: 
-{
-  "_comment": "Created on ...",
-  "data": [
-    {
-      "id": "...",
-      "annotations": [
-        {
-          "user": "username",
-          "locations": [{"label": "...", "x": ..., "y": ..., "radius": ...}]
-        }
-      ]
-    }
-  ]
-}
+Format: compressed JSONL
 """
 
 from __future__ import annotations
@@ -115,57 +101,53 @@ def main() -> None:
         log.error("No valid regions provided.")
         sys.exit(1)
 
-    file_path = ANNOTATIONS_DIR / f"{task_type}.json"
+    file_path = ANNOTATIONS_DIR / f"{task_type}.jsonl"
     if not file_path.exists():
         log.error(f"Task file {file_path.name} not found")
         sys.exit(1)
 
-    try:
-        content = json.loads(file_path.read_text())
-        if isinstance(content, dict) and "data" in content:
-            tasks = content["data"]
-            comment = content.get("_comment", "")
-        else:
-            tasks = content
-            comment = ""
-    except Exception as exc:
-        log.error(f"Failed to read {file_path}: {exc}")
-        sys.exit(1)
-
+    # JSONL Processing: read all, modify one, write all
+    tasks = []
     found = False
-    for task in tasks:
-        if str(task.get("id")) == record_id:
-            found = True
-            
-            if "annotations" not in task or not isinstance(task["annotations"], list):
-                task["annotations"] = []
-            
-            task["annotations"].append({
-                "user": issue_author,
-                "locations": regions,
-                "issue_number": int(issue_number) if issue_number.isdigit() else issue_number,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
-
-            if "metadata" not in task: task["metadata"] = {}
-            task["metadata"]["last_user"] = issue_author
-            task["metadata"]["last_timestamp"] = task["annotations"][-1]["timestamp"]
-            break
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip(): continue
+                task = json.loads(line)
+                if str(task.get("id")) == record_id:
+                    found = True
+                    if "annotations" not in task or not isinstance(task["annotations"], list):
+                        task["annotations"] = []
+                    
+                    task["annotations"].append({
+                        "user": issue_author,
+                        "locations": regions,
+                        "issue_number": int(issue_number) if issue_number.isdigit() else issue_number,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    })
+                    
+                    if "metadata" not in task: task["metadata"] = {}
+                    task["metadata"]["last_user"] = issue_author
+                    task["metadata"]["last_timestamp"] = task["annotations"][-1]["timestamp"]
+                
+                tasks.append(task)
+    except Exception as exc:
+        log.error(f"Failed to process {file_path}: {exc}")
+        sys.exit(1)
 
     if not found:
-        log.error(f"Record {record_id} not found")
+        log.error(f"Record {record_id} not found in {file_path.name}")
         sys.exit(1)
 
-    # Wrap output
-    if comment:
-        output = {"_comment": comment, "data": tasks}
-    else:
-        # Generate new comment if it was somehow missing
-        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-        output = {"_comment": f"Created on {date_str}", "data": tasks}
-
-    file_path.write_text(json.dumps(output, indent=2))
-    log.info(f"Updated {record_id} with annotation from {issue_author}")
+    # Write back minified JSONL
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            for t in tasks:
+                f.write(json.dumps(t, separators=(",", ":"), sort_keys=True) + "\n")
+        log.info(f"Updated {record_id} with annotation from {issue_author}")
+    except Exception as exc:
+        log.error(f"Failed to write {file_path}: {exc}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

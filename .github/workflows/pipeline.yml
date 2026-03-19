@@ -112,32 +112,17 @@ jobs:
 
           # 1. Reset annotations folder with latest images
           python -c '
-          import json, os, glob, shutil
+          import json, os, glob
           from pathlib import Path
-          from datetime import datetime, timezone
-          for src_path in glob.glob("data_processing/*.json"):
-              with open(src_path, "r") as f:
-                  content = json.load(f)
-              
-              if isinstance(content, dict) and "data" in content:
-                  data = content["data"]
-                  comment = content.get("_comment", "")
-              else:
-                  data = content
-                  comment = ""
-
-              for record in data:
-                  record.pop("ml_label", None)
-                  record.pop("locations", None)
-                  record["annotations"] = []
-              
-              if not comment:
-                  comment = "Created on " + datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-              
-              output = {"_comment": comment, "data": data}
+          for src_path in glob.glob("data_processing/*.jsonl"):
               dest_path = Path("annotations") / os.path.basename(src_path)
-              with open(dest_path, "w") as f:
-                  json.dump(output, f, indent=2)
+              with open(src_path, "r", encoding="utf-8") as fin, open(dest_path, "w", encoding="utf-8") as fout:
+                  for line in fin:
+                      if not line.strip(): continue
+                      record = json.loads(line)
+                      record["annotations"] = [] # Reset for new template
+                      # Minified JSONL
+                      fout.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
           '
           
           # 2. Unlock system (Rename processing -> data)
