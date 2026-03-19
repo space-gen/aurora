@@ -1,4 +1,7 @@
 name: "Nightly Pipeline"
+concurrency:
+  group: aurora-nightly
+  cancel-in-progress: false
 
 on:
   repository_dispatch: # 00:30 UTC daily
