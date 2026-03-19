@@ -13,24 +13,36 @@ This directory holds annotation files produced from user-submitted GitHub issues
 3. After a successful merge the annotation content is cleared, but the files themselves remain
    as empty placeholders ready for the next cycle.
 
-## File Format
+## File Format (NEW)
 
-Annotation files mirror the task JSON format and add a `user_label` field:
+Annotation files now follow the per-annotator region format. Each task record keeps an
+`annotations_by_user` map of annotator -> list of region objects, and an `annotation_history`
+list for chronological records.
+
+Example task record:
 
 ```json
 {
-  "url": "https://solar-data-source/file.jpg",
+  "id": "sp-1",
+  "url": "https://.../file.jpg",
   "task_type": "sunspot",
-  "user_label": "active_region",
-  "metadata": {
-    "annotator": "github_username",
-    "timestamp": "2026-01-01T00:00:00Z"
-  }
+  "annotations_by_user": {
+    "alice": [ { "label":"sunspot", "x":450, "y":320, "radius":15 } ],
+    "bob":   [ { "label":"sunspot", "x":452, "y":318, "radius":14 } ]
+  },
+  "annotation_history": [
+    { "annotator":"alice", "issue_number": 12, "timestamp":"2026-03-18T00:00:00Z", "regions":[...] }
+  ],
+  "metadata": { "source": "JSOC_HMI_JPG", "captured_at": "2026-03-17" }
 }
 ```
 
-## Notes
-
+Notes:
+- The old top-level `user_label` and `locations` fields are migrated into the new
+  `annotations_by_user` and `annotation_history` fields by the migration script
+  `scripts/migrate_annotations_schema.py` (non-destructive backup created).
+- `image_url` remains a required field in the issue form; pixel coordinates and label are
+  now submitted together in the `regions` field (format: `label,x,y,r ; label2,x2,y2,r2`).
 - Annotation files are **never** pushed directly to HuggingFace without passing through the
-  `merge_annotations_to_hf.py` script.
-- `data_processing/` and HuggingFace datasets must never mix automatically.
+  `scripts/merge_annotations_to_hf.py` script which performs schema reconciliation when
+  needed.

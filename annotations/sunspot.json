@@ -4,1208 +4,1100 @@
     "serial_number": 1,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_000000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17",
+      "annotator": "anonymous-sk-02",
+      "issue_number": 14,
+      "timestamp": "2026-03-18T08:12:41.231467+00:00"
+    },
+    "annotations": []
   },
   {
     "id": "sp-2",
     "serial_number": 2,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_001500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17",
+      "annotator": "anonymous-sk-02",
+      "issue_number": 15,
+      "timestamp": "2026-03-18T08:12:59.417830+00:00"
+    },
+    "annotations": []
   },
   {
     "id": "sp-3",
     "serial_number": 3,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_003000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17",
+      "annotator": "anonymous-sk-02",
+      "issue_number": 16,
+      "timestamp": "2026-03-18T09:14:47.153177+00:00"
+    },
+    "annotations": [
+      {
+        "user_label": "class_b",
+        "locations": [
+          {
+            "x": 399,
+            "y": 585,
+            "radius": 0,
+            "label": "class_b"
+          },
+          {
+            "x": 641,
+            "y": 343,
+            "radius": 0,
+            "label": "class_b"
+          },
+          {
+            "x": 298,
+            "y": 514,
+            "radius": 0,
+            "label": "class_b"
+          }
+        ],
+        "issue_number": 16,
+        "timestamp": "2026-03-18T09:14:47.153177+00:00",
+        "user": "anonymous-sk-02"
+      }
+    ]
   },
   {
     "id": "sp-4",
     "serial_number": 4,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_004500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17",
+      "annotator": "soumyadipkarforma",
+      "issue_number": 11,
+      "timestamp": "2026-03-18T01:08:25.989054+00:00"
+    },
+    "annotations": []
   },
   {
     "id": "sp-5",
     "serial_number": 5,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_010000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17",
+      "annotator": "soumyadipkarforma",
+      "issue_number": 12,
+      "timestamp": "2026-03-18T01:08:46.814517+00:00"
+    },
+    "annotations": []
   },
   {
     "id": "sp-6",
     "serial_number": 6,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_011500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17",
+      "annotator": "soumyadipkarforma",
+      "issue_number": 13,
+      "timestamp": "2026-03-18T08:04:01.480771+00:00"
+    },
+    "annotations": []
   },
   {
     "id": "sp-7",
     "serial_number": 7,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_013000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-8",
     "serial_number": 8,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_014500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-9",
     "serial_number": 9,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_020000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-10",
     "serial_number": 10,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_021500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-11",
     "serial_number": 11,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_023000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-12",
     "serial_number": 12,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_024500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-13",
     "serial_number": 13,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_030000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-14",
     "serial_number": 14,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_031500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-15",
     "serial_number": 15,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_033000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-16",
     "serial_number": 16,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_034500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-17",
     "serial_number": 17,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_040000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-18",
     "serial_number": 18,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_041500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-19",
     "serial_number": 19,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_043000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-20",
     "serial_number": 20,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_044500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-21",
     "serial_number": 21,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_050000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-22",
     "serial_number": 22,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_051500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-23",
     "serial_number": 23,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_053000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-24",
     "serial_number": 24,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_054500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-25",
     "serial_number": 25,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_060000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-26",
     "serial_number": 26,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_061500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-27",
     "serial_number": 27,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_063000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-28",
     "serial_number": 28,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_064500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-29",
     "serial_number": 29,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_070000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-30",
     "serial_number": 30,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_071500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-31",
     "serial_number": 31,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_073000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-32",
     "serial_number": 32,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_074500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-33",
     "serial_number": 33,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_080000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-34",
     "serial_number": 34,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_081500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-35",
     "serial_number": 35,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_083000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-36",
     "serial_number": 36,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_084500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-37",
     "serial_number": 37,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_090000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-38",
     "serial_number": 38,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_091500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-39",
     "serial_number": 39,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_093000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-40",
     "serial_number": 40,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_094500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-41",
     "serial_number": 41,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_100000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-42",
     "serial_number": 42,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_101500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-43",
     "serial_number": 43,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_103000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-44",
     "serial_number": 44,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_104500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-45",
     "serial_number": 45,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_110000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-46",
     "serial_number": 46,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_111500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-47",
     "serial_number": 47,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_113000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-48",
     "serial_number": 48,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_114500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-49",
     "serial_number": 49,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_120000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-50",
     "serial_number": 50,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_121500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-51",
     "serial_number": 51,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_123000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-52",
     "serial_number": 52,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_124500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-53",
     "serial_number": 53,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_130000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-54",
     "serial_number": 54,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_131500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-55",
     "serial_number": 55,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_133000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-56",
     "serial_number": 56,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_134500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-57",
     "serial_number": 57,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_144500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-58",
     "serial_number": 58,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_150000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-59",
     "serial_number": 59,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_151500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-60",
     "serial_number": 60,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_153000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-61",
     "serial_number": 61,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_154500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-62",
     "serial_number": 62,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_160000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-63",
     "serial_number": 63,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_161500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-64",
     "serial_number": 64,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_163000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-65",
     "serial_number": 65,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_164500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-66",
     "serial_number": 66,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_170000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-67",
     "serial_number": 67,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_171500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-68",
     "serial_number": 68,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_173000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-69",
     "serial_number": 69,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_174500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-70",
     "serial_number": 70,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_180000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-71",
     "serial_number": 71,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_181500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-72",
     "serial_number": 72,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_183000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-73",
     "serial_number": 73,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_184500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-74",
     "serial_number": 74,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_190000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-75",
     "serial_number": 75,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_191500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-76",
     "serial_number": 76,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_193000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-77",
     "serial_number": 77,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_194500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-78",
     "serial_number": 78,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_200000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-79",
     "serial_number": 79,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_201500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-80",
     "serial_number": 80,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_203000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-81",
     "serial_number": 81,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_204500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-82",
     "serial_number": 82,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_210000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-83",
     "serial_number": 83,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_211500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-84",
     "serial_number": 84,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_213000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-85",
     "serial_number": 85,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_214500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-86",
     "serial_number": 86,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_220000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-87",
     "serial_number": 87,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_221500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-88",
     "serial_number": 88,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_223000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-89",
     "serial_number": 89,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_224500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-90",
     "serial_number": 90,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_230000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-91",
     "serial_number": 91,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_231500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-92",
     "serial_number": 92,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_233000_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   },
   {
     "id": "sp-93",
     "serial_number": 93,
     "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/18/20260318_234500_Ic_1k.jpg",
     "task_type": "sunspot",
-    "ml_label": null,
-    "locations": [],
-    "annotations": [],
     "metadata": {
       "source": "JSOC_HMI_JPG",
-      "captured_at": "2026-03-18"
-    }
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
+  },
+  {
+    "id": "sp-94",
+    "serial_number": 94,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/17/20260317_231500_Ic_1k.jpg",
+    "task_type": "sunspot",
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
+  },
+  {
+    "id": "sp-95",
+    "serial_number": 95,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/17/20260317_233000_Ic_1k.jpg",
+    "task_type": "sunspot",
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
+  },
+  {
+    "id": "sp-96",
+    "serial_number": 96,
+    "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/17/20260317_234500_Ic_1k.jpg",
+    "task_type": "sunspot",
+    "metadata": {
+      "source": "JSOC_HMI_JPG",
+      "captured_at": "2026-03-17"
+    },
+    "annotations": []
   }
 ]

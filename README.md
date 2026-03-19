@@ -55,9 +55,8 @@ aurora/
 ## Data Schema
 
 Each task record includes:
-- `annotations`: List of human-provided classifications (includes label, author, timestamp).
-- `ml_label`: Machine-learning model prediction.
-- `locations`: Array of coordinate objects `{x, y, radius, label}`.
+- `annotations`: List of user contributions. Each entry contains the GitHub `user`, a list of `locations` (points/regions), and submission metadata.
+- `metadata`: Source information and capture timestamps.
 
 ## Submitting Annotations
 

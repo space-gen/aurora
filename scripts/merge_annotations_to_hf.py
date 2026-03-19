@@ -4,7 +4,7 @@ merge_annotations_to_hf.py
 Pipeline Stage 3 — Merge Annotations
 
 Non-destructive schema reconciliation between local annotation files and
-HuggingFace dataset splits, triggered only when a schema mismatch is detected.
+HuggingFace dataset splits.
 """
 
 from __future__ import annotations
@@ -23,8 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
-# Include annotations_by_user as a preferred key
-PREFERRED_KEY_ORDER = ["id", "serial_number", "url", "task_type", "ml_label", "locations", "annotations_by_user", "annotation_history", "metadata"]
+PREFERRED_KEY_ORDER = ["id", "serial_number", "url", "task_type", "annotations", "metadata"]
 
 
 def _safe_value(value: Any) -> Any:
@@ -92,35 +91,30 @@ def _merge_values_union(left: Any, right: Any) -> Any:
     return json.dumps(sorted({str(left), str(right)}))
 
 
-def _merge_annotations_by_user(left_str: str | None, right_str: str | None) -> str:
+def _merge_annotations_list(left_str: str | None, right_str: str | None) -> str:
     """
-    Merge two JSON-stringified dicts of {annotator: [regions]} into a combined dict JSON string.
-    Deduplicate regions per annotator by JSON representation.
+    Merge two JSON-stringified lists of annotations.
+    Deduplicate by JSON representation.
     """
-    def parse_map(s):
+    def parse_list(s):
         if not s:
-            return {}
+            return []
         try:
             val = json.loads(s)
-            return val if isinstance(val, dict) else {}
+            return val if isinstance(val, list) else [val]
         except Exception:
-            return {}
+            return []
 
-    left_map = parse_map(left_str)
-    right_map = parse_map(right_str)
-    merged: dict[str, list] = {}
-
-    for user in set(left_map.keys()) | set(right_map.keys()):
-        l_list = left_map.get(user, []) or []
-        r_list = right_map.get(user, []) or []
-        seen = set()
-        out = []
-        for item in (l_list + r_list):
-            s_item = json.dumps(item, sort_keys=True)
-            if s_item not in seen:
-                seen.add(s_item)
-                out.append(item)
-        merged[user] = out
+    left_list = parse_list(left_str)
+    right_list = parse_list(right_str)
+    
+    seen = set()
+    merged = []
+    for item in (left_list + right_list):
+        s_item = json.dumps(item, sort_keys=True)
+        if s_item not in seen:
+            seen.add(s_item)
+            merged.append(item)
 
     return json.dumps(merged, sort_keys=True)
 
@@ -133,11 +127,8 @@ def _merge_records_union(base: dict[str, Any], incoming: dict[str, Any]) -> dict
         val_base = base.get(key)
         val_incoming = incoming.get(key)
 
-        if key == "annotations_by_user":
-            merged[key] = _merge_annotations_by_user(val_base, val_incoming)
-        elif key == "annotation_history":
-            # histories are lists; merge and dedupe
-            merged[key] = _merge_values_union(val_base, val_incoming)
+        if key == "annotations":
+            merged[key] = _merge_annotations_list(val_base, val_incoming)
         else:
             merged[key] = _merge_values_union(val_base, val_incoming)
     return merged
@@ -200,7 +191,7 @@ def _is_schema_mismatch_error(exc: Exception) -> bool:
 def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str) -> None:
     from datasets import Dataset
 
-    repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-') }"
+    repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
     local_records = [_normalise_record(r) for r in local_records_raw]
 
     # Fast path: normal push when schemas are already compatible.
