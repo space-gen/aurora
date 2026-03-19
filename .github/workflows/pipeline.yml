@@ -4,8 +4,8 @@ concurrency:
   cancel-in-progress: false
 
 on:
-  repository_dispatch: # 00:30 UTC daily
-   types: [cronjob]
+  repository_dispatch: 
+   types: [cronjob] # 00:00 UTC daily
   workflow_dispatch:
 
 env:
