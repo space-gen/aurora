@@ -33,16 +33,9 @@ body:
   validations:
     required: true
 - type: input
-  id: serial_number
+  id: label
   attributes:
-    label: Serial Number
-    description: The serial number of this record. Found in the task JSON.
-  validations:
-    required: true
-- type: input
-  id: regions
-  attributes:
-    label: Regions (label,x,y,r ; label2,x2,y2,r2)
+    label: Your Label (label,x,y,r ; label2,x2,y2,r2)
     description: |
       Specify one or more labeled regions using the format `label,x,y,r`. Separate multiple regions with a semicolon (`;`).
       Example: `class_a,450,320,15 ; class_h,890,110,10`.
@@ -60,7 +53,8 @@ body:
     required: true
 
 - type: textarea
-  id: notes  attributes:
+  id: notes  
+  attributes:
     label: Notes (optional)
     description: Any additional observations or comments about this image.
     placeholder: Optional notes...
