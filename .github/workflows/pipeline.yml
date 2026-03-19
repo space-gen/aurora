@@ -112,8 +112,15 @@ jobs:
 
           # 1. Reset annotations folder with latest images
           python -c '
-          import json, os, glob
+          import json, os, glob, shutil
           from pathlib import Path
+
+          # Clean annotations/ but keep README.md
+          for p in glob.glob("annotations/*"):
+              if os.path.basename(p) == "README.md": continue
+              if os.path.isfile(p): os.remove(p)
+              elif os.path.isdir(p): shutil.rmtree(p)
+
           for src_path in glob.glob("data_processing/*.jsonl"):
               dest_path = Path("annotations") / os.path.basename(src_path)
               with open(src_path, "r", encoding="utf-8") as fin, open(dest_path, "w", encoding="utf-8") as fout:
