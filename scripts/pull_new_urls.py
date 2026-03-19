@@ -115,15 +115,19 @@ def _fetch_day_urls(task_type, date_obj):
 # ---------------------------------------------------------------------------
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--days-back", type=int, default=1, help="Pull data for N days ago")
+    args = parser.parse_args()
+
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
     existing_urls = _get_existing_urls()
     
     # Use environment variable for task filtering
     task_filter = os.environ.get("TASK_TYPE")
     
-    # Always pull exactly "yesterday"
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    log.info(f"Crawling JSOC for yesterday: {yesterday}")
+    # Calculate target date
+    target_date = datetime.date.today() - datetime.timedelta(days=args.days_back)
+    log.info(f"Crawling JSOC for date: {target_date} (days back: {args.days_back})")
 
     tasks_by_type = defaultdict(list)
     
@@ -137,9 +141,11 @@ def main():
         current_serial = _get_last_serial_and_id(task_type)
         prefix = cfg["prefix"]
         
-        urls = _fetch_day_urls(task_type, yesterday)
+        urls = _fetch_day_urls(task_type, target_date)
         
         for url in urls:
+            if url in existing_urls: continue
+            
             current_serial += 1
             tasks_by_type[task_type].append({
                 "id": f"{prefix}-{current_serial}",
@@ -150,7 +156,7 @@ def main():
                 "annotations": [],
                 "metadata": {
                     "source": "JSOC_HMI_JPG",
-                    "captured_at": yesterday.isoformat()
+                    "captured_at": target_date.isoformat()
                 }
             })
 
