@@ -18,8 +18,8 @@
 ## Overview
 
 This repository is **Repo B** of the SolarHub platform. It manages task data,
-user annotations, machine-learning pipelines, and synchronisation between GitHub,
-HuggingFace, and Kaggle.
+user annotations, solar observation data pipelines, and synchronisation between GitHub
+and HuggingFace.
 
 Repo A (the user-facing UI) is maintained separately and reads task files from
 the `data/` directory of this repository.
@@ -29,7 +29,6 @@ the `data/` directory of this repository.
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Datasets-yellow?style=for-the-badge)
-![Kaggle](https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=Kaggle&logoColor=white)
 ![Docusaurus](https://img.shields.io/badge/Docusaurus-3EE6AF?style=for-the-badge&logo=docusaurus&logoColor=white)
 ![JSON](https://img.shields.io/badge/json-5E5E5E?style=for-the-badge&logo=json&logoColor=white)
 
@@ -44,8 +43,7 @@ aurora/
 │   ├── pull_new_urls.py          # Daily solar data crawler
 │   ├── merge_annotations_to_hf.py # Push annotations to HuggingFace (Schema reconciled)
 │   ├── parse_issue_annotation.py  # Parse GitHub issue bodies into annotation JSON
-│   ├── compute_points.py          # Evaluate model accuracy
-│   └── setup_platforms.py         # One-time HuggingFace + Kaggle initialisation
+│   └── setup_platforms.py         # One-time HuggingFace initialisation
 ├── configs/                 # System configuration (YAML)
 ├── docs/                    # Docusaurus documentation source
 ├── .github/ISSUE_TEMPLATE/  # GitHub issue forms for annotation submission

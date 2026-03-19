@@ -3,56 +3,24 @@ system:
   codename: Aurora
   version: 1.0
 
-ml:
-  training_platform: kaggle
-  dataset_platform: huggingface
-
 workflow:
-  nightly_time: "00:00 UTC every 3 days"
+  nightly_time: "00:30 UTC daily"
 
 huggingface:
   # Per-task-type annotation dataset prefix.
   # Full dataset repo: {dataset_repo_prefix}{task_type_hyphenated}
   # e.g. SpaceGen/solarhub-sunspot, SpaceGen/solarhub-solar-flare, …
   dataset_repo_prefix: SpaceGen/solarhub-
-  # Per-task-type model repository prefix.
-  # Full model repo: {model_repo_prefix}{task_type_hyphenated}
-  # e.g. SpaceGen/solarhub-model-sunspot, SpaceGen/solarhub-model-solar-flare, …
-  model_repo_prefix: SpaceGen/solarhub-model-
   # Name of the GitHub Actions secret that holds the HF write token.
   token_secret: HF_TOKEN
-
-kaggle:
-  # Kaggle is used only for compute (training & inference kernels).
-  # No datasets are stored in Kaggle — all data lives in HuggingFace.
-  # Credentials are supplied at runtime via the KAGGLE_USERNAME and KAGGLE_KEY secrets.
-  username_secret: KAGGLE_USERNAME
-  key_secret: KAGGLE_KEY
-  kernel_name: solarhub-training
-  inference_kernel: solarhub-inference
 
 data:
   task_types:
     - sunspot
-    - solar_flare
     - magnetogram
-    - coronal_hole
-    - prominence
-    - active_region
-    - cme
   source_apis:
-    - name: NASA SDAC
-      base_url: https://umbra.nascom.nasa.gov/
-    - name: SOHO LASCO
-      base_url: https://lasco-www.nrl.navy.mil/
     - name: SDO HMI
       base_url: https://jsoc.stanford.edu/
-    - name: NSO
-      base_url: https://www.nso.edu/
-    - name: SolarMonitor
-      base_url: https://www.solarmonitor.org/
-    - name: NASA CDAW
-      base_url: https://cdaw.gsfc.nasa.gov/
 
 annotations:
   merge_strategy: append
