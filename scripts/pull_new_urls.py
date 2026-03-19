@@ -144,6 +144,7 @@ def main():
                 "serial_number": current_serial,
                 "url": url,
                 "task_type": task_type,
+                "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "annotations": [],
                 "metadata": {
                     "source": "JSOC_HMI_JPG",

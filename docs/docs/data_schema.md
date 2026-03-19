@@ -14,6 +14,7 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
   "serial_number": 1234,
   "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/000000_Ic_1k.jpg",
   "task_type": "sunspot",
+  "created_at": "2026-03-17T00:30:00Z",
   "annotations": [
     {
       "user": "github_username",
@@ -39,6 +40,7 @@ Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object
 | `serial_number` | `integer` | Global incrementing number for the task type. |
 | `url` | `string` | Direct link to the solar observation image. |
 | `task_type` | `string` | One of `sunspot`, `magnetogram`, `solar_flare`, etc. |
+| `created_at` | `string` | ISO-8601 timestamp when the record was created. |
 | `annotations` | `list` | A list of user annotation entries. |
 | `metadata` | `object` | Contextual information like capture date and source API. |
 
