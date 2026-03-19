@@ -159,7 +159,11 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
 def main() -> None:
     token = os.environ.get("HF_TOKEN")
     if not token: sys.exit(1)
+    
+    # Strictly process only the annotations folder
     target_files = list(ANNOTATIONS_DIR.glob("*.jsonl"))
+    log.info("Starting synchronization for %d annotation file(s).", len(target_files))
+    
     for task_file in target_files:
         task_type = task_file.stem
         records = []
@@ -167,8 +171,17 @@ def main() -> None:
             with open(task_file, "r") as f:
                 for line in f:
                     if line.strip(): records.append(json.loads(line))
-            if records: _push_to_hf(task_type, records, token)
-        except Exception as exc: log.warning("Error %s: %s", task_file.name, exc)
+            
+            # Only push if there are actual annotations provided by users
+            labeled_records = [r for r in records if r.get("annotations")]
+            
+            if labeled_records:
+                log.info("Pushing %d labeled records for %s to HF...", len(labeled_records), task_type)
+                _push_to_hf(task_type, labeled_records, token)
+            else:
+                log.info("No labeled annotations found in %s. Skipping HF push.", task_file.name)
+        except Exception as exc: 
+            log.warning("Error processing %s: %s", task_file.name, exc)
 
 if __name__ == "__main__":
     main()

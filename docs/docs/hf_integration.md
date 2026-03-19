@@ -22,11 +22,14 @@ Each task type in SolarHub corresponds to a separate HuggingFace dataset reposit
 
 ## Synchronization Workflow
 
-Local changes from this GitHub repository are synchronized to HuggingFace during the **Nightly Pipeline**.
+Local changes from the **`annotations/`** directory are synchronized to HuggingFace during the **Nightly Pipeline**. 
 
-1. **Detection**: `merge_annotations_to_hf.py` identifies updated JSON files in `annotations/`.
-2. **Reconciliation**: If the local schema has new fields (e.g., a new metadata attribute), the script automatically updates the HuggingFace dataset schema.
-3. **Merging**: New records are appended, and existing records are updated using a "union merge" strategy—ensuring that data from both the GitHub user and any ML-pre-predictions are preserved.
+> **Important**: Only records that contain actual user-submitted annotations are pushed to HuggingFace. Raw image URLs without labels remain exclusively in the GitHub repository buffer for 24 hours.
+
+1. **Detection**: `merge_annotations_to_hf.py` identifies updated `.jsonl` files in `annotations/`.
+2. **Filtering**: The script filters for records where the `annotations` list is not empty.
+3. **Reconciliation**: If the local schema has new fields, the script automatically updates the HuggingFace dataset schema.
+4. **Merging**: New records are **appended** to the master dataset. If a record with the same ID/URL already exists on HuggingFace, its `annotations` list is merged and deduplicated, ensuring a complete historical record.
 
 ## Model Hub
 
