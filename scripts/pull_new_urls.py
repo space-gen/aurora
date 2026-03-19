@@ -4,7 +4,7 @@ pull_new_urls.py
 Stage 2 — Daily Solar Data Crawler
 
 Fetches sunspot and magnetogram JPG URLs for a specific day.
-Prioritizes unique global IDs and removes serial numbers.
+Prioritizes unique global IDs based on the local repository state.
 """
 
 import os
@@ -25,7 +25,6 @@ log = logging.getLogger(__name__)
 # Config
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
-HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 SOURCE_MAP = {
     "sunspot": {"path": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/", "filter": "_Ic_1k.jpg", "prefix": "sp"},
@@ -35,44 +34,25 @@ SOURCE_MAP = {
 LINK_REGEX = re.compile(r'href="([^"]+\.jpg)"')
 
 def _get_last_id_numeric(task_type):
-    """Find the highest numeric part of the ID from existing HF and local data."""
+    """Find the highest numeric part of the ID from existing local data."""
     max_id = 0
     prefix = SOURCE_MAP[task_type]["prefix"]
     
-    # 1. Search all local jsonl files
+    # Search all local jsonl files (data/ and data_processing/)
+    # During the pipeline, data/ has been renamed to data_processing/
     for p in REPO_ROOT.glob("**/*.jsonl"):
         try:
-            with open(p, "r") as f:
+            with open(p, "r", encoding="utf-8") as f:
                 for line in f:
                     if not line.strip(): continue
                     item = json.loads(line)
                     if item.get("task_type") == task_type:
-                        # Extract N from prefix-N
                         id_str = item.get("id", "")
                         if id_str.startswith(f"{prefix}-"):
                             try:
                                 num = int(id_str.split("-")[1])
                                 max_id = max(max_id, num)
                             except: pass
-        except: pass
-
-    # 2. Check HF
-    token = os.environ.get("HF_TOKEN")
-    if token:
-        try:
-            from datasets import load_dataset
-            repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
-            for split in ["tasks", "train"]:
-                try:
-                    ds = load_dataset(repo_id, token=token, split=split)
-                    if len(ds) > 0:
-                        for id_val in ds["id"]:
-                            if id_val.startswith(f"{prefix}-"):
-                                try:
-                                    num = int(id_val.split("-")[1])
-                                    max_id = max(max_id, num)
-                                except: pass
-                except: pass
         except: pass
     return max_id
 
@@ -106,7 +86,7 @@ def main():
         last_num = _get_last_id_numeric(task_type)
         prefix = cfg["prefix"]
         
-        # Fetch ALL URLs for the day (No local deduplication per requirements)
+        # Fetch ALL URLs for the day
         urls = _fetch_day_urls(task_type, target_date)
         
         new_records = []
@@ -127,6 +107,7 @@ def main():
         
         if new_records:
             file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
+            # Overwrite processing file with ONLY this day's data
             with open(file_path, "w", encoding="utf-8") as f:
                 for record in new_records:
                     f.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
