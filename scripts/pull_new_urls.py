@@ -70,7 +70,9 @@ def _get_last_serial_and_id(task_type):
     local_file = DATA_PROCESSING_DIR / f"{task_type}.json"
     if local_file.exists():
         try:
-            data = json.loads(local_file.read_text())
+            content = json.loads(local_file.read_text())
+            # Handle wrapped format
+            data = content["data"] if isinstance(content, dict) and "data" in content else content
             if data:
                 max_serial = max(max_serial, max(item.get("serial_number", 0) for item in data))
         except: pass
@@ -160,11 +162,21 @@ def main():
         # Append to existing or create new
         existing_data = []
         if file_path.exists():
-            try: existing_data = json.loads(file_path.read_text())
+            try:
+                content = json.loads(file_path.read_text())
+                existing_data = content["data"] if isinstance(content, dict) and "data" in content else content
             except: pass
         
         existing_data.extend(tasks)
-        file_path.write_text(json.dumps(existing_data, indent=2))
+        
+        # Wrapped structure with comment
+        date_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        wrapped = {
+            "_comment": f"Created on {date_str}",
+            "data": existing_data
+        }
+        
+        file_path.write_text(json.dumps(wrapped, indent=2))
         log.info(f"Saved {len(tasks)} new tasks to {file_path.name}")
 
 if __name__ == "__main__":

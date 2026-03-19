@@ -114,16 +114,30 @@ jobs:
           python -c '
           import json, os, glob, shutil
           from pathlib import Path
+          from datetime import datetime, timezone
           for src_path in glob.glob("data_processing/*.json"):
               with open(src_path, "r") as f:
-                  data = json.load(f)
+                  content = json.load(f)
+              
+              if isinstance(content, dict) and "data" in content:
+                  data = content["data"]
+                  comment = content.get("_comment", "")
+              else:
+                  data = content
+                  comment = ""
+
               for record in data:
                   record.pop("ml_label", None)
                   record.pop("locations", None)
                   record["annotations"] = []
+              
+              if not comment:
+                  comment = "Created on " + datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+              
+              output = {"_comment": comment, "data": data}
               dest_path = Path("annotations") / os.path.basename(src_path)
               with open(dest_path, "w") as f:
-                  json.dump(data, f, indent=2)
+                  json.dump(output, f, indent=2)
           '
           
           # 2. Unlock system (Rename processing -> data)

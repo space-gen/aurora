@@ -5,13 +5,20 @@ Parses a GitHub issue body and merges the annotation (regions) into the correspo
 task JSON file within annotations/. 
 
 Format: 
-"annotations": [
-  {
-    "user": "username",
-    "locations": [{"label": "...", "x": ..., "y": ..., "radius": ...}]
-  },
-  ...
-]
+{
+  "_comment": "Created on ...",
+  "data": [
+    {
+      "id": "...",
+      "annotations": [
+        {
+          "user": "username",
+          "locations": [{"label": "...", "x": ..., "y": ..., "radius": ...}]
+        }
+      ]
+    }
+  ]
+}
 """
 
 from __future__ import annotations
@@ -114,7 +121,13 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        tasks = json.loads(file_path.read_text())
+        content = json.loads(file_path.read_text())
+        if isinstance(content, dict) and "data" in content:
+            tasks = content["data"]
+            comment = content.get("_comment", "")
+        else:
+            tasks = content
+            comment = ""
     except Exception as exc:
         log.error(f"Failed to read {file_path}: {exc}")
         sys.exit(1)
@@ -124,14 +137,6 @@ def main() -> None:
         if str(task.get("id")) == record_id:
             found = True
             
-            # Remove old ML/label fields if present
-            task.pop("ml_label", None)
-            task.pop("user_label", None)
-            task.pop("locations", None)
-            task.pop("annotations_by_user", None)
-            task.pop("annotation_history", None)
-
-            # New structure
             if "annotations" not in task or not isinstance(task["annotations"], list):
                 task["annotations"] = []
             
@@ -142,7 +147,6 @@ def main() -> None:
                 "timestamp": datetime.now(timezone.utc).isoformat()
             })
 
-            # Update metadata
             if "metadata" not in task: task["metadata"] = {}
             task["metadata"]["last_user"] = issue_author
             task["metadata"]["last_timestamp"] = task["annotations"][-1]["timestamp"]
@@ -152,7 +156,15 @@ def main() -> None:
         log.error(f"Record {record_id} not found")
         sys.exit(1)
 
-    file_path.write_text(json.dumps(tasks, indent=2))
+    # Wrap output
+    if comment:
+        output = {"_comment": comment, "data": tasks}
+    else:
+        # Generate new comment if it was somehow missing
+        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        output = {"_comment": f"Created on {date_str}", "data": tasks}
+
+    file_path.write_text(json.dumps(output, indent=2))
     log.info(f"Updated {record_id} with annotation from {issue_author}")
 
 if __name__ == "__main__":

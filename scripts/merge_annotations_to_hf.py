@@ -243,7 +243,13 @@ def main() -> None:
             continue
         task_type = task_file.stem
         try:
-            records = json.loads(task_file.read_text())
+            content = json.loads(task_file.read_text())
+            # Handle wrapped format
+            if isinstance(content, dict) and "data" in content:
+                records = content["data"]
+            else:
+                records = content
+                
             if isinstance(records, list):
                 _push_to_hf(task_type, records, token)
         except Exception as exc:

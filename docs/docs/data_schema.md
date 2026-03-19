@@ -4,9 +4,28 @@
 
 SolarHub uses a standardized JSON format for all solar task and annotation data.
 
+## File Wrapper Structure
+
+Every JSON data file in the repository follows a wrapper structure to include file-level metadata (such as the creation date) while maintaining JSON compatibility.
+
+```json
+{
+  "_comment": "Created on 2026-03-19 10:30:00 UTC",
+  "data": [
+    { 
+      "id": "sp-1234",
+      ...
+    }
+  ]
+}
+```
+
+- **`_comment`**: A string containing metadata about the file (e.g., creation timestamp).
+- **`data`**: An array of task records.
+
 ## Task Record Schema
 
-Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object within a list.
+Each task (e.g., a sunspot or magnetogram image) is represented as a JSON object within the `data` list.
 
 ```json
 {
