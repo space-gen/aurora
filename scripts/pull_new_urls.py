@@ -122,8 +122,8 @@ def main():
         file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
         new_count = 0
         
-        # Open in append mode for JSONL
-        with open(file_path, "a", encoding="utf-8") as f:
+        # Open in write mode ('w') to keep only one day of data in the repository
+        with open(file_path, "w", encoding="utf-8") as f:
             for url in urls:
                 if url in existing_urls: continue
                 current_serial += 1
