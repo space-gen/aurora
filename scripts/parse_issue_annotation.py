@@ -4,7 +4,10 @@ parse_issue_annotation.py
 Parses a GitHub issue body and merges the annotation (regions) into the corresponding
 task JSONL file within annotations/. 
 
-Format: compressed JSONL
+Strict Schema:
+- Top-level metadata is for system/source info only.
+- All user data (username, locations, labels, timestamps) lives inside the 'annotations' list.
+- Each location has its own label; no top-level user_label.
 """
 
 from __future__ import annotations
@@ -41,37 +44,30 @@ def _parse_issue_body(body: str) -> dict[str, str]:
     fields: dict[str, str] = {}
     sections = re.split(r"^###\s+", body, flags=re.MULTILINE)
     for section in sections:
-        if not section.strip():
-            continue
+        if not section.strip(): continue
         lines = section.splitlines()
-        if not lines:
-            continue
+        if not lines: continue
         heading = lines[0].strip()
         value = "\n".join(lines[1:]).strip()
-        if value in ("_No response_", "_No response_\n"):
-            value = ""
+        if value in ("_No response_", "_No response_\n"): value = ""
         key = heading.lower().replace(" ", "_").replace("(optional)", "").rstrip("_").strip("_")
         fields[key] = value
     return fields
 
 def _parse_regions(regions_raw: str) -> list[dict]:
     regions = []
-    if not regions_raw:
-        return regions
+    if not regions_raw: return regions
     for part in regions_raw.split(";"):
         part = part.strip()
-        if not part:
-            continue
+        if not part: continue
         pieces = [p.strip() for p in part.split(",") if p.strip()]
-        if len(pieces) < 3:
-            continue
+        if len(pieces) < 3: continue # Need label,x,y
         label = pieces[0].lower()
         try:
             x = float(pieces[1])
             y = float(pieces[2])
             r = float(pieces[3]) if len(pieces) >= 4 else 0.0
-        except ValueError:
-            continue
+        except ValueError: continue
         regions.append({"label": label, "x": x, "y": y, "radius": r})
     return regions
 
@@ -106,7 +102,6 @@ def main() -> None:
         log.error(f"Task file {file_path.name} not found")
         sys.exit(1)
 
-    # JSONL Processing: read all, modify one, write all
     tasks = []
     found = False
     try:
@@ -116,38 +111,42 @@ def main() -> None:
                 task = json.loads(line)
                 if str(task.get("id")) == record_id:
                     found = True
+                    
+                    # Remove any leftover top-level user fields
+                    task.pop("user_label", None)
+                    task.pop("ml_label", None)
+                    task.pop("locations", None)
+                    
+                    # Clean system metadata from user info
+                    if "metadata" in task:
+                        task["metadata"].pop("last_user", None)
+                        task["metadata"].pop("last_annotator", None)
+                        task["metadata"].pop("last_timestamp", None)
+                        task["metadata"].pop("last_issue_number", None)
+
                     if "annotations" not in task or not isinstance(task["annotations"], list):
                         task["annotations"] = []
                     
+                    # Append new clean annotation entry
                     task["annotations"].append({
                         "user": issue_author,
                         "locations": regions,
                         "issue_number": int(issue_number) if issue_number.isdigit() else issue_number,
                         "timestamp": datetime.now(timezone.utc).isoformat()
                     })
-                    
-                    if "metadata" not in task: task["metadata"] = {}
-                    task["metadata"]["last_user"] = issue_author
-                    task["metadata"]["last_timestamp"] = task["annotations"][-1]["timestamp"]
-                
                 tasks.append(task)
     except Exception as exc:
         log.error(f"Failed to process {file_path}: {exc}")
         sys.exit(1)
 
     if not found:
-        log.error(f"Record {record_id} not found in {file_path.name}")
+        log.error(f"Record {record_id} not found")
         sys.exit(1)
 
-    # Write back minified JSONL
-    try:
-        with open(file_path, "w", encoding="utf-8") as f:
-            for t in tasks:
-                f.write(json.dumps(t, separators=(",", ":"), sort_keys=True) + "\n")
-        log.info(f"Updated {record_id} with annotation from {issue_author}")
-    except Exception as exc:
-        log.error(f"Failed to write {file_path}: {exc}")
-        sys.exit(1)
+    with open(file_path, "w", encoding="utf-8") as f:
+        for t in tasks:
+            f.write(json.dumps(t, separators=(",", ":"), sort_keys=True) + "\n")
+    log.info(f"Updated {record_id} with annotation from {issue_author}")
 
 if __name__ == "__main__":
     main()

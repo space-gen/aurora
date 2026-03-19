@@ -17,13 +17,13 @@ Every data file in the repository (under `data/` and `annotations/`) is a `.json
 
 ## Task Record Schema
 
-A single line in a `.jsonl` file looks like this (pretty-printed here for readability):
+Each task is represented as a single minified line in a `.jsonl` file.
 
 ```json
 {
   "id": "sp-1234",
   "serial_number": 1234,
-  "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/000000_Ic_1k.jpg",
+  "url": "http://...",
   "task_type": "sunspot",
   "created_at": "2026-03-17T00:30:00Z",
   "annotations": [
@@ -47,26 +47,26 @@ A single line in a `.jsonl` file looks like this (pretty-printed here for readab
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `string` | Unique identifier (e.g., `sp-` prefix for sunspots). |
-| `serial_number` | `integer` | Global incrementing number for the task type. |
-| `url` | `string` | Direct link to the solar observation image. |
-| `task_type` | `string` | One of `sunspot`, `magnetogram`, `solar_flare`, etc. |
-| `created_at` | `string` | ISO-8601 timestamp when the record was created. |
-| `annotations` | `list` | A list of user annotation entries (history). |
-| `metadata` | `object` | Contextual information like capture date and source API. |
+| `id` | `string` | Unique identifier. |
+| `serial_number` | `integer` | Incremental serial. |
+| `url` | `string` | Image URL. |
+| `task_type` | `string` | Scientific category. |
+| `created_at` | `string` | Record creation timestamp. |
+| `annotations` | `list` | **User Contributions**: Contains all user data (username, points, labels). |
+| `metadata` | `object` | **System Only**: Reserved for backend metadata (source, capture date). No user information. |
 
 ---
 
 ## Annotation Entry Structure
 
-Each entry in the `annotations` list represents a contribution from a single user:
+Each entry in the `annotations` list represents a contribution from a single user. All identifying information and scientific labels must be contained here.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `user` | `string` | GitHub username of the contributor. |
-| `locations` | `list` | Array of coordinate objects (points or regions). |
-| `issue_number` | `integer` | The GitHub Issue ID used for submission. |
-| `timestamp` | `string` | ISO-8601 timestamp of the contribution. |
+| `user` | `string` | GitHub username. |
+| `locations` | `list` | Array of point/region objects. |
+| `issue_number` | `integer` | Submission source issue. |
+| `timestamp` | `string` | Contribution timestamp. |
 
 ### Location Object
 
@@ -74,6 +74,4 @@ Each entry in the `annotations` list represents a contribution from a single use
 { "x": 450, "y": 210, "radius": 15, "label": "class_f" }
 ```
 
-- **`x`, `y`**: Pixel coordinates relative to the 1024x1024 source image.
-- **`radius`**: The radius (in pixels) of the identified feature (0 for a single point).
-- **`label`**: The specific scientific classification label for this location.
+Labels are applied to **specific locations** only. There is no image-wide label field.
