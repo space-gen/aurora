@@ -65,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fresh-task-data
-          path: data_processing/*.json
+          path: data_processing/*.jsonl
 
   push-annotations:
     name: Node B · Push Annotations to HF
