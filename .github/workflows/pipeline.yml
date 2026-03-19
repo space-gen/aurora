@@ -45,7 +45,7 @@ jobs:
           fi
 
   pull-urls:
-    name: Node A · Pull New URLs
+    name: Stage 2 · Pull New URLs
     needs: lock
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +68,7 @@ jobs:
           path: data_processing/*.jsonl
 
   push-annotations:
-    name: Node B · Push Annotations to HF
+    name: Stage 3 · Push Annotations to HF
     needs: lock
     runs-on: ubuntu-latest
     steps:
