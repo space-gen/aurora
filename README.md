@@ -55,7 +55,7 @@ aurora/
 ## Data Schema
 
 Each task record includes:
-- `annotations`: List of user contributions. Each entry contains the GitHub `user`, a list of `locations` (points/regions), and submission metadata.
+- `annotations`: List of user contributions. Each entry contains the GitHub `user`, a `confidence_score`, a list of `locations` (points/regions), and submission metadata.
 - `metadata`: Source information and capture timestamps.
 
 ## Submitting Annotations

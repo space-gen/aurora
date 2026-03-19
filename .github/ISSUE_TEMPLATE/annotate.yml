@@ -50,9 +50,17 @@ body:
     placeholder: e.g. class_a,450,320,15 ; class_f,890,110,10
   validations:
     required: true
-- type: textarea
-  id: notes
+- type: input
+  id: confidence_score
   attributes:
+    label: "Confidence Score (0-100)"
+    description: "How confident are you in these annotations? (0 = Not sure, 100 = Absolutely certain)"
+    placeholder: "e.g. 95"
+  validations:
+    required: true
+
+- type: textarea
+  id: notes  attributes:
     label: Notes (optional)
     description: Any additional observations or comments about this image.
     placeholder: Optional notes...

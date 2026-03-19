@@ -8,11 +8,6 @@ SolarHub uses a standardized **JSON Lines (JSONL)** format for all solar task an
 
 Every data file in the repository (under `data/` and `annotations/`) is a `.jsonl` file. Each line is a single, independent, and minified JSON object representing one solar observation record.
 
-**Key Benefits:**
-- **Git Friendly**: Append-only structure prevents merge conflicts between contributors.
-- **High Compression**: Zero whitespace and minified separators for minimal file size.
-- **Streaming Ready**: Optimized for machine learning pipelines (HuggingFace/Kaggle).
-
 ---
 
 ## Task Record Schema
@@ -29,6 +24,7 @@ Each task is represented as a single minified line in a `.jsonl` file.
   "annotations": [
     {
       "user": "github_username",
+      "confidence_score": 95.0,
       "locations": [
         { "x": 450, "y": 210, "radius": 15, "label": "class_f" }
       ],
@@ -52,18 +48,19 @@ Each task is represented as a single minified line in a `.jsonl` file.
 | `url` | `string` | Image URL. |
 | `task_type` | `string` | Scientific category. |
 | `created_at` | `string` | Record creation timestamp. |
-| `annotations` | `list` | **User Contributions**: Contains all user data (username, points, labels). |
-| `metadata` | `object` | **System Only**: Reserved for backend metadata (source, capture date). No user information. |
+| `annotations` | `list` | **User Contributions**: Contains all user data (username, points, labels, confidence). |
+| `metadata` | `object` | **System Only**: Reserved for backend metadata (source, capture date). |
 
 ---
 
 ## Annotation Entry Structure
 
-Each entry in the `annotations` list represents a contribution from a single user. All identifying information and scientific labels must be contained here.
+Each entry in the `annotations` list represents a contribution from a single user. 
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `user` | `string` | GitHub username. |
+| `confidence_score` | `float` | Contributor's self-reported confidence (0-100). |
 | `locations` | `list` | Array of point/region objects. |
 | `issue_number` | `integer` | Submission source issue. |
 | `timestamp` | `string` | Contribution timestamp. |

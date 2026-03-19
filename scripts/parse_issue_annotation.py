@@ -6,7 +6,7 @@ task JSONL file within annotations/.
 
 Strict Schema:
 - Top-level metadata is for system/source info only.
-- All user data (username, locations, labels, timestamps) lives inside the 'annotations' list.
+- All user data (username, locations, labels, timestamps, confidence) lives inside the 'annotations' list.
 - Each location has its own label; no top-level user_label.
 """
 
@@ -84,6 +84,13 @@ def main() -> None:
     task_type = fields.get("task_type", "").strip().lower()
     record_id = fields.get("record_id", "").strip()
     regions_raw = fields.get("pixel_coordinates", fields.get("regions", "")).strip()
+    confidence_raw = fields.get("confidence_score", "100").strip()
+    
+    try:
+        # Extract numeric value, handle % if present
+        confidence = float(re.sub(r"[^0-9.]", "", confidence_raw))
+    except ValueError:
+        confidence = 100.0
 
     if task_type not in VALID_TASK_TYPES:
         log.error(f"Invalid task_type: {task_type}")
@@ -131,6 +138,7 @@ def main() -> None:
                     task["annotations"].append({
                         "user": issue_author,
                         "locations": regions,
+                        "confidence_score": confidence,
                         "issue_number": int(issue_number) if issue_number.isdigit() else issue_number,
                         "timestamp": datetime.now(timezone.utc).isoformat()
                     })
@@ -146,7 +154,7 @@ def main() -> None:
     with open(file_path, "w", encoding="utf-8") as f:
         for t in tasks:
             f.write(json.dumps(t, separators=(",", ":"), sort_keys=True) + "\n")
-    log.info(f"Updated {record_id} with annotation from {issue_author}")
+    log.info(f"Updated {record_id} with annotation from {issue_author} (Confidence: {confidence})")
 
 if __name__ == "__main__":
     main()
