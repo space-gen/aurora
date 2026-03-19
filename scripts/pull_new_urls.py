@@ -115,36 +115,45 @@ def main():
 
     for task_type, cfg in SOURCE_MAP.items():
         log.info(f"Processing {task_type}...")
+        
+        # Get starting serial number
         current_serial = _get_last_serial(task_type)
         prefix = cfg["prefix"]
+        
+        # Fetch fresh URLs from source
         urls = _fetch_day_urls(task_type, target_date)
         
-        file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
-        new_count = 0
-        
-        # Open in write mode ('w') to keep only one day of data in the repository
-        with open(file_path, "w", encoding="utf-8") as f:
-            for url in urls:
-                if url in existing_urls: continue
-                current_serial += 1
-                new_count += 1
-                record = {
-                    "id": f"{prefix}-{current_serial}",
-                    "serial_number": current_serial,
-                    "url": url,
-                    "task_type": task_type,
-                    "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                    "annotations": [],
-                    "metadata": {
-                        "source": "JSOC_HMI_JPG",
-                        "captured_at": target_date.isoformat()
-                    }
+        new_records = []
+        for url in urls:
+            # Skip if already in HF
+            if url in existing_urls:
+                continue
+            
+            current_serial += 1
+            record = {
+                "id": f"{prefix}-{current_serial}",
+                "serial_number": current_serial,
+                "url": url,
+                "task_type": task_type,
+                "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "annotations": [],
+                "metadata": {
+                    "source": "JSOC_HMI_JPG",
+                    "captured_at": target_date.isoformat()
                 }
-                # Minified JSONL line
-                f.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
+            }
+            new_records.append(record)
         
-        if new_count > 0:
-            log.info(f"Saved {new_count} new tasks to {file_path.name}")
+        # ONLY write to file if we have new data. 
+        # This prevents wiping the repo if the crawler runs multiple times on the same day.
+        if new_records:
+            file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
+            with open(file_path, "w", encoding="utf-8") as f:
+                for record in new_records:
+                    f.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
+            log.info(f"Saved {len(new_records)} fresh tasks to {file_path.name}")
+        else:
+            log.info(f"No new unique tasks found for {task_type}. Repository state preserved.")
 
 if __name__ == "__main__":
     main()
