@@ -1,10 +1,14 @@
-name: "HF Production Setup"
+name: "HF Platform Setup"
 
 on:
   workflow_dispatch:
     inputs:
+      tasks:
+        description: "Space-separated task types to reset (e.g. sunspot magnetogram cme). Defaults to sunspot magnetogram."
+        required: false
+        default: "sunspot magnetogram"
       confirm:
-        description: "Type 'yes' to PURGE ALL HF DATA and start Production"
+        description: "Type 'yes' to confirm DELETION of existing HF data for these tasks"
         required: true
         default: ""
 
@@ -17,13 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.inputs.confirm == 'yes'
     permissions:
-      contents: write
+      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -33,22 +35,7 @@ jobs:
       - name: Install dependencies
         run: pip install huggingface_hub
 
-      - name: Run Production Reset
+      - name: Run Platform Setup
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/hf_setup.py
-
-      - name: Self-Destruct Workflow
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Delete the setup script (if not already deleted by the script itself)
-          rm -f scripts/hf_setup.py
-          
-          # Delete this workflow file
-          rm .github/workflows/hf_setup.yml
-          
-          git add .
-          git commit -m "chore: production setup complete, self-destructing setup tools [skip ci]"
-          git push origin main
+        run: python scripts/hf_setup.py ${{ github.event.inputs.tasks }}
