@@ -124,10 +124,25 @@ jobs:
               if os.path.isfile(p): os.remove(p)
               elif os.path.isdir(p): shutil.rmtree(p)
 
-          # Direct clone from data_processing to annotations
+          # Direct clone from data_processing to annotations with enforced order
           for src_path in glob.glob("data_processing/*.jsonl"):
               dest_path = Path("annotations") / os.path.basename(src_path)
-              shutil.copy2(src_path, dest_path)
+              with open(src_path, "r", encoding="utf-8") as fin, open(dest_path, "w", encoding="utf-8") as fout:
+                  for line in fin:
+                      if not line.strip(): continue
+                      record = json.loads(line)
+                      
+                      # Enforce field order
+                      ordered_record = {
+                          "id": record.get("id"),
+                          "url": record.get("url"),
+                          "task_type": record.get("task_type"),
+                          "created_at": record.get("created_at"),
+                          "annotations": [], # Reset for new template
+                          "metadata": record.get("metadata", {})
+                      }
+                      
+                      fout.write(json.dumps(ordered_record, separators=(",", ":")) + "\n")
           '          
           # 2. Unlock system (Rename processing -> data)
           if [ -d "data_processing" ]; then

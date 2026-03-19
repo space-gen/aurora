@@ -12,12 +12,12 @@ Every data file in the repository (under `data/` and `annotations/`) is a `.json
 
 ## Task Record Schema
 
-Each task is represented as a single minified line in a `.jsonl` file.
+Each task is represented as a single minified line in a `.jsonl` file, with fields ordered as follows: `id`, `url`, `task_type`, `created_at`, `annotations`, `metadata`.
 
 ```json
 {
   "id": "sp-1234",
-  "url": "http://...",
+  "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/000000_Ic_1k.jpg",
   "task_type": "sunspot",
   "created_at": "2026-03-17T00:30:00Z",
   "annotations": [
@@ -43,18 +43,30 @@ Each task is represented as a single minified line in a `.jsonl` file.
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | `string` | **Primary Key**: Unique global identifier (e.g., `sp-94`, `mg-102`). Persists across years of data. |
-| `url` | `string` | Image URL. |
+| `url` | `string` | Direct link to the solar observation image. |
 | `task_type` | `string` | Scientific category (sunspot, magnetogram, etc.). |
-| `created_at` | `string` | Record creation timestamp. |
-| `annotations` | `list` | **User Contributions**: Contains all user data (username, points, labels, confidence). |
+| `created_at` | `string` | Record creation timestamp (ISO 8601). |
+| `annotations` | `list` | **User Contributions**: Contains all user data (username, locations, labels, confidence). |
 | `metadata` | `object` | **System Only**: Reserved for backend metadata (source, capture date). |
 
 ---
 
-## Persistence and Merging
+## Annotation Entry Structure
 
-The system prioritizes the **`id`** field for all synchronization operations.
+Each entry in the `annotations` list represents a contribution from a single user.
 
-1. **Crawler**: Generates new IDs by continuing the sequence from the last known ID in the master HuggingFace dataset.
-2. **Synchronization**: When syncing to HuggingFace, if an `id` already exists, the new annotations are merged into that specific row. If the `id` is new, it is appended as a fresh row.
-3. **Repository Window**: The GitHub repository only stores the most recent 24 hours of data. The full historical archive is maintained on HuggingFace.
+| Field | Type | Description |
+|-------|------|-------------|
+| `user` | `string` | GitHub username. |
+| `confidence_score` | `float` | Contributor's self-reported confidence (0-100). |
+| `locations` | `list` | Array of point/region objects. |
+| `issue_number` | `integer` | Submission source issue. |
+| `timestamp` | `string` | Contribution timestamp. |
+
+### Location Object
+
+```json
+{ "x": 450, "y": 210, "radius": 15, "label": "class_f" }
+```
+
+Labels are applied to **specific locations** only. There is no image-wide label field.

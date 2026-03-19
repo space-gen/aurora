@@ -4,7 +4,8 @@ pull_new_urls.py
 Stage 2 — Daily Solar Data Crawler
 
 Fetches sunspot and magnetogram JPG URLs for a specific day.
-Prioritizes unique global IDs based on the local repository state.
+Prioritizes unique global IDs and removes serial numbers.
+Records are created with ISO 8601 timestamps and an empty annotations list.
 """
 
 import os
@@ -25,6 +26,7 @@ log = logging.getLogger(__name__)
 # Config
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
+HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 SOURCE_MAP = {
     "sunspot": {"path": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/", "filter": "_Ic_1k.jpg", "prefix": "sp"},
@@ -39,7 +41,6 @@ def _get_last_id_numeric(task_type):
     prefix = SOURCE_MAP[task_type]["prefix"]
     
     # Search all local jsonl files (data/ and data_processing/)
-    # During the pipeline, data/ has been renamed to data_processing/
     for p in REPO_ROOT.glob("**/*.jsonl"):
         try:
             with open(p, "r", encoding="utf-8") as f:
@@ -52,8 +53,10 @@ def _get_last_id_numeric(task_type):
                             try:
                                 num = int(id_str.split("-")[1])
                                 max_id = max(max_id, num)
-                            except: pass
-        except: pass
+                            except ValueError:
+                                log.warning(f"Could not parse serial number from ID: {id_str}")
+        except Exception as e:
+            log.warning(f"Could not read or parse file {p}: {e}")
     return max_id
 
 def _fetch_day_urls(task_type, date_obj):
@@ -68,7 +71,8 @@ def _fetch_day_urls(task_type, date_obj):
             for match in matches:
                 if cfg["filter"] in match:
                     results.append(url + match)
-    except: pass
+    except requests.exceptions.RequestException as e:
+        log.warning(f"Could not fetch URLs from {url}: {e}")
     return results
 
 def main():
@@ -86,7 +90,6 @@ def main():
         last_num = _get_last_id_numeric(task_type)
         prefix = cfg["prefix"]
         
-        # Fetch ALL URLs for the day
         urls = _fetch_day_urls(task_type, target_date)
         
         new_records = []
@@ -100,18 +103,17 @@ def main():
                 "annotations": [],
                 "metadata": {
                     "source": "JSOC_HMI_JPG",
-                    "captured_at": target_date.isoformat()
+                    "captured_at": target_date.isoformat() # Already YYYY-MM-DD, ISO format is preferred for timestamps
                 }
             }
             new_records.append(record)
         
         if new_records:
             file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
-            # Overwrite processing file with ONLY this day's data
             with open(file_path, "w", encoding="utf-8") as f:
                 for record in new_records:
-                    f.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
-            log.info(f"Generated {len(new_records)} tasks for {task_type}. Starting ID: {prefix}-{last_num - len(new_records) + 1}")
+                    f.write(json.dumps(record, separators=(",", ":")) + "\n")
+            log.info(f"Generated {len(new_records)} tasks for {task_type}. Starting ID: {prefix}-{last_num - len(new_records) + 1}, Ending ID: {prefix}-{last_num}")
         else:
             log.warning(f"No URLs found for {task_type} on {target_date}.")
 

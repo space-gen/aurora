@@ -31,7 +31,7 @@ PREFERRED_KEY_ORDER = ["id", "url", "task_type", "created_at", "annotations", "m
 def _safe_value(value: Any) -> Any:
     """Keep scalar values as-is; normalise dict/list into minified JSON strings."""
     if isinstance(value, (dict, list)):
-        return json.dumps(value, separators=(",", ":"), sort_keys=True)
+        return json.dumps(value, separators=(",", ":"))
     return value
 
 def _normalise_record(record: dict[str, Any]) -> dict[str, Any]:
@@ -70,7 +70,7 @@ def _merge_annotations_list(remote_str: str | None, local_list: list[dict[str, A
             seen_hashes.add(s_item)
             merged_list.append(item)
 
-    return json.dumps(merged_list, separators=(",", ":"), sort_keys=True)
+    return json.dumps(merged_list, separators=(",", ":"))
 
 def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str) -> None:
     from datasets import Dataset, load_dataset

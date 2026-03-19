@@ -153,7 +153,7 @@ def main() -> None:
 
     with open(file_path, "w", encoding="utf-8") as f:
         for t in tasks:
-            f.write(json.dumps(t, separators=(",", ":"), sort_keys=True) + "\n")
+            f.write(json.dumps(t, separators=(",", ":")) + "\n")
     log.info(f"Updated {record_id} with annotation from {issue_author} (Confidence: {confidence})")
 
 if __name__ == "__main__":
