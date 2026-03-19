@@ -1,9 +1,11 @@
 """
 hf_setup.py
 ===========
-Production Setup Tool for HuggingFace Datasets.
-Resets (deletes and re-creates) specified datasets on HuggingFace.
-Usage: python scripts/hf_setup.py [task_type1] [task_type2] ...
+Production Cleanup Tool for HuggingFace Datasets.
+Cleans the data within specified HF repositories while preserving repo settings,
+licenses, and tags (README.md and .gitattributes).
+
+Usage: python scripts/hf_setup.py task_type1 task_type2 ...
 """
 
 import os
@@ -18,8 +20,8 @@ log = logging.getLogger(__name__)
 HF_REPO_PREFIX = "SpaceGen/solarhub-"
 
 def main():
-    parser = argparse.ArgumentParser(description="Initialize HuggingFace repositories for SolarHub.")
-    parser.add_argument("tasks", nargs="*", help="Task types to initialize (e.g. sunspot magnetogram)")
+    parser = argparse.ArgumentParser(description="Clean data from HuggingFace repositories.")
+    parser.add_argument("tasks", nargs="+", help="Task types to clean (e.g. sunspot magnetogram)")
     args = parser.parse_args()
 
     token = os.environ.get("HF_TOKEN")
@@ -27,30 +29,44 @@ def main():
         log.error("HF_TOKEN missing.")
         sys.exit(1)
 
-    # Use provided tasks or default set
-    tasks = args.tasks if args.tasks else ["sunspot", "magnetogram"]
-    
     api = HfApi(token=token)
     
-    for task in tasks:
+    for task in args.tasks:
         repo_id = f"{HF_REPO_PREFIX}{task.replace('_', '-')}"
+        log.info(f"Processing repository cleanup for: {repo_id}")
         
-        # 1. Delete existing repo to purge old data
         try:
-            log.info(f"Purging existing repository: {repo_id}")
-            api.delete_repo(repo_id=repo_id, repo_type="dataset")
-        except Exception as e:
-            log.warning(f"Could not delete {repo_id} (might not exist): {e}")
+            # 1. List all files in the repository
+            files = api.list_repo_files(repo_id=repo_id, repo_type="dataset")
+            
+            # 2. Filter files to delete (everything except metadata)
+            # We preserve README.md (tags/license) and .gitattributes (LFS config)
+            to_delete = [
+                f for f in files 
+                if f not in ["README.md", ".gitattributes"] and not f.startswith(".github/")
+            ]
+            
+            if not to_delete:
+                log.info(f"No data files found in {repo_id}. Already clean.")
+                continue
 
-        # 2. Create fresh empty repo
-        try:
-            log.info(f"Initializing fresh repository: {repo_id}")
-            api.create_repo(repo_id=repo_id, repo_type="dataset", private=False)
-            log.info(f"Successfully initialized {repo_id}")
+            log.info(f"Deleting {len(to_delete)} files from {repo_id}...")
+            
+            # 3. Perform deletion
+            for file_path in to_delete:
+                api.delete_file(
+                    path_in_repo=file_path,
+                    repo_id=repo_id,
+                    repo_type="dataset",
+                    commit_message=f"chore: production data purge for {task}"
+                )
+            
+            log.info(f"Successfully cleaned data from {repo_id}. Metadata preserved.")
+            
         except Exception as e:
-            log.error(f"Failed to initialize {repo_id}: {e}")
+            log.error(f"Failed to clean {repo_id}: {e}")
 
-    log.info("Setup process complete.")
+    log.info("Cleanup process complete.")
 
 if __name__ == "__main__":
     main()

@@ -1,14 +1,14 @@
-name: "HF Platform Setup"
+name: "HF Platform Cleanup"
 
 on:
   workflow_dispatch:
     inputs:
       tasks:
-        description: "Space-separated task types to reset (e.g. sunspot magnetogram cme). Defaults to sunspot magnetogram."
-        required: false
-        default: "sunspot magnetogram"
+        description: "Space-separated task types to clean (e.g. sunspot magnetogram cme). REQUIRED."
+        required: true
+        default: ""
       confirm:
-        description: "Type 'yes' to confirm DELETION of existing HF data for these tasks"
+        description: "Type 'yes' to confirm PURGE of existing HF data for these tasks"
         required: true
         default: ""
 
@@ -16,8 +16,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  production-setup:
-    name: Purge and Reset HuggingFace Datasets
+  production-cleanup:
+    name: Purge Dataset Records
     runs-on: ubuntu-latest
     if: github.event.inputs.confirm == 'yes'
     permissions:
@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: pip install huggingface_hub
 
-      - name: Run Platform Setup
+      - name: Run Platform Cleanup
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python scripts/hf_setup.py ${{ github.event.inputs.tasks }}
