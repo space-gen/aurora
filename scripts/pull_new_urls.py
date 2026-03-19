@@ -3,8 +3,8 @@ pull_new_urls.py
 ================
 Stage 2 — Daily Solar Data Crawler
 
-Fetches sunspot and magnetogram JPG URLs from the previous day.
-Writes output in compressed JSONL format.
+Fetches sunspot and magnetogram JPG URLs for a specific day.
+Prioritizes unique global IDs and removes serial numbers.
 """
 
 import os
@@ -34,36 +34,12 @@ SOURCE_MAP = {
 
 LINK_REGEX = re.compile(r'href="([^"]+\.jpg)"')
 
-def _get_existing_urls():
-    token = os.environ.get("HF_TOKEN")
-    all_urls = set()
+def _get_last_id_numeric(task_type):
+    """Find the highest numeric part of the ID from existing HF and local data."""
+    max_id = 0
+    prefix = SOURCE_MAP[task_type]["prefix"]
     
-    # Check local JSONL files first
-    for p in REPO_ROOT.glob("**/*.jsonl"):
-        if "data_processing" in str(p): continue
-        try:
-            with open(p, "r") as f:
-                for line in f:
-                    if not line.strip(): continue
-                    all_urls.add(json.loads(line)["url"])
-        except: pass
-
-    if not token: return all_urls
-    
-    try:
-        from datasets import load_dataset
-        for task_type in SOURCE_MAP.keys():
-            repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
-            try:
-                ds = load_dataset(repo_id, token=token, split="train")
-                all_urls.update(ds["url"])
-            except: continue
-    except ImportError: pass
-    return all_urls
-
-def _get_last_serial(task_type):
-    max_serial = 0
-    # Search all local jsonl files for the highest serial for this task type
+    # 1. Search all local jsonl files
     for p in REPO_ROOT.glob("**/*.jsonl"):
         try:
             with open(p, "r") as f:
@@ -71,9 +47,16 @@ def _get_last_serial(task_type):
                     if not line.strip(): continue
                     item = json.loads(line)
                     if item.get("task_type") == task_type:
-                        max_serial = max(max_serial, item.get("serial_number", 0))
+                        # Extract N from prefix-N
+                        id_str = item.get("id", "")
+                        if id_str.startswith(f"{prefix}-"):
+                            try:
+                                num = int(id_str.split("-")[1])
+                                max_id = max(max_id, num)
+                            except: pass
         except: pass
 
+    # 2. Check HF
     token = os.environ.get("HF_TOKEN")
     if token:
         try:
@@ -83,10 +66,15 @@ def _get_last_serial(task_type):
                 try:
                     ds = load_dataset(repo_id, token=token, split=split)
                     if len(ds) > 0:
-                        max_serial = max(max_serial, max(ds["serial_number"]))
+                        for id_val in ds["id"]:
+                            if id_val.startswith(f"{prefix}-"):
+                                try:
+                                    num = int(id_val.split("-")[1])
+                                    max_id = max(max_id, num)
+                                except: pass
                 except: pass
         except: pass
-    return max_serial
+    return max_id
 
 def _fetch_day_urls(task_type, date_obj):
     y, m, d = date_obj.strftime("%Y"), date_obj.strftime("%m"), date_obj.strftime("%d")
@@ -109,30 +97,23 @@ def main():
     args = parser.parse_args()
 
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
-    existing_urls = _get_existing_urls()
     target_date = datetime.date.today() - datetime.timedelta(days=args.days_back)
     log.info(f"Target date: {target_date}")
 
     for task_type, cfg in SOURCE_MAP.items():
         log.info(f"Processing {task_type}...")
         
-        # Get starting serial number
-        current_serial = _get_last_serial(task_type)
+        last_num = _get_last_id_numeric(task_type)
         prefix = cfg["prefix"]
         
-        # Fetch fresh URLs from source
+        # Fetch ALL URLs for the day (No local deduplication per requirements)
         urls = _fetch_day_urls(task_type, target_date)
         
         new_records = []
         for url in urls:
-            # Skip if already in HF
-            if url in existing_urls:
-                continue
-            
-            current_serial += 1
+            last_num += 1
             record = {
-                "id": f"{prefix}-{current_serial}",
-                "serial_number": current_serial,
+                "id": f"{prefix}-{last_num}",
                 "url": url,
                 "task_type": task_type,
                 "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -144,16 +125,14 @@ def main():
             }
             new_records.append(record)
         
-        # ONLY write to file if we have new data. 
-        # This prevents wiping the repo if the crawler runs multiple times on the same day.
         if new_records:
             file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
             with open(file_path, "w", encoding="utf-8") as f:
                 for record in new_records:
                     f.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
-            log.info(f"Saved {len(new_records)} fresh tasks to {file_path.name}")
+            log.info(f"Generated {len(new_records)} tasks for {task_type}. Starting ID: {prefix}-{last_num - len(new_records) + 1}")
         else:
-            log.info(f"No new unique tasks found for {task_type}. Repository state preserved.")
+            log.warning(f"No URLs found for {task_type} on {target_date}.")
 
 if __name__ == "__main__":
     main()

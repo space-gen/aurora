@@ -17,7 +17,6 @@ Each task is represented as a single minified line in a `.jsonl` file.
 ```json
 {
   "id": "sp-1234",
-  "serial_number": 1234,
   "url": "http://...",
   "task_type": "sunspot",
   "created_at": "2026-03-17T00:30:00Z",
@@ -43,32 +42,19 @@ Each task is represented as a single minified line in a `.jsonl` file.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `string` | Unique identifier. |
-| `serial_number` | `integer` | Incremental serial. |
+| `id` | `string` | **Primary Key**: Unique global identifier (e.g., `sp-94`, `mg-102`). Persists across years of data. |
 | `url` | `string` | Image URL. |
-| `task_type` | `string` | Scientific category. |
+| `task_type` | `string` | Scientific category (sunspot, magnetogram, etc.). |
 | `created_at` | `string` | Record creation timestamp. |
 | `annotations` | `list` | **User Contributions**: Contains all user data (username, points, labels, confidence). |
 | `metadata` | `object` | **System Only**: Reserved for backend metadata (source, capture date). |
 
 ---
 
-## Annotation Entry Structure
+## Persistence and Merging
 
-Each entry in the `annotations` list represents a contribution from a single user. 
+The system prioritizes the **`id`** field for all synchronization operations.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `user` | `string` | GitHub username. |
-| `confidence_score` | `float` | Contributor's self-reported confidence (0-100). |
-| `locations` | `list` | Array of point/region objects. |
-| `issue_number` | `integer` | Submission source issue. |
-| `timestamp` | `string` | Contribution timestamp. |
-
-### Location Object
-
-```json
-{ "x": 450, "y": 210, "radius": 15, "label": "class_f" }
-```
-
-Labels are applied to **specific locations** only. There is no image-wide label field.
+1. **Crawler**: Generates new IDs by continuing the sequence from the last known ID in the master HuggingFace dataset.
+2. **Synchronization**: When syncing to HuggingFace, if an `id` already exists, the new annotations are merged into that specific row. If the `id` is new, it is appended as a fresh row.
+3. **Repository Window**: The GitHub repository only stores the most recent 24 hours of data. The full historical archive is maintained on HuggingFace.
