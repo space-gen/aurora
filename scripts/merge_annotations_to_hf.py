@@ -3,8 +3,9 @@ merge_annotations_to_hf.py
 ==========================
 Pipeline Stage 3 — Merge Annotations
 
-Appends local annotation records to HuggingFace datasets.
-Handles schema reconciliation for new columns.
+Optimized for high performance: Appends new rows to HuggingFace datasets
+without pulling existing data. Falls back to schema-aware reconciliation 
+only when necessary.
 """
 
 from __future__ import annotations
@@ -35,53 +36,34 @@ def _safe_value(value: Any) -> Any:
 def _normalise_record(record: dict[str, Any]) -> dict[str, Any]:
     return {k: _safe_value(v) for k, v in record.items()}
 
-def _load_hf_schema(repo_id: str, token: str) -> list[str]:
-    """Load existing column names from HF."""
-    try:
-        from datasets import load_dataset_builder
-        ds_info = load_dataset_builder(repo_id, token=token).info
-        return list(ds_info.features.keys())
-    except Exception:
-        return []
-
-def _align_schema(records: list[dict[str, Any]], all_keys: list[str]) -> list[dict[str, Any]]:
-    """Ensure all records have the same keys, filling missing with None."""
-    aligned: list[dict[str, Any]] = []
-    for record in records:
-        row = {k: record.get(k) for k in all_keys}
-        aligned.append(row)
-    return aligned
-
 def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str) -> None:
     from datasets import Dataset, load_dataset, concatenate_datasets
 
     repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
     local_records = [_normalise_record(r) for r in local_records_raw]
+    new_ds = Dataset.from_list(local_records)
     
+    # 1. Fast Path: Direct Remote Append
+    # This is fast because it does NOT pull existing data.
     try:
-        # 1. Load existing dataset
+        new_ds.push_to_hub(repo_id, token=token, split="train", append=True)
+        log.info("Fast path: Successfully appended %d rows to %s", len(local_records), repo_id)
+        return
+    except Exception as exc:
+        log.warning("Fast path failed for %s (Likely schema mismatch). Falling back to reconciliation...", repo_id)
+
+    # 2. Slow Path (Fallback): Schema Reconciliation
+    # Only triggered if the local columns differ from the remote columns.
+    try:
         try:
             existing_ds = load_dataset(repo_id, token=token, split="train")
-            log.info("Loaded existing dataset for %s (%d rows)", repo_id, len(existing_ds))
         except Exception:
             existing_ds = None
-            log.info("No existing dataset found for %s. Creating new.", repo_id)
 
-        # 2. Create dataset from local records
-        new_ds = Dataset.from_list(local_records)
-
-        # 3. Handle schema reconciliation and Merge (Append)
         if existing_ds:
-            # Union of all keys
             all_keys = sorted(set(existing_ds.column_names) | set(new_ds.column_names))
             
-            # Align both datasets to the union schema
-            def align(example):
-                for k in all_keys:
-                    if k not in example: example[k] = None
-                return example
-            
-            # Note: Map is slow for large datasets but robust for schema changes
+            # Align schemas (add missing columns as null)
             existing_aligned = existing_ds.map(lambda x: {k: x.get(k) for k in all_keys})
             new_aligned = new_ds.map(lambda x: {k: x.get(k) for k in all_keys})
             
@@ -89,12 +71,11 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
         else:
             final_ds = new_ds
 
-        # 4. Push back to HF
         final_ds.push_to_hub(repo_id, token=token, split="train")
-        log.info("Successfully appended %d rows to %s", len(local_records), repo_id)
+        log.info("Successfully reconciled and pushed %d rows to %s", len(local_records), repo_id)
 
     except Exception as exc:
-        log.error("Failed to push %s to HF: %s", task_type, exc)
+        log.error("Critical failure during HF push for %s: %s", task_type, exc)
 
 def main() -> None:
     token = os.environ.get("HF_TOKEN")
