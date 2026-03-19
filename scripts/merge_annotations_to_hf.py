@@ -26,7 +26,7 @@ ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 # Desired column order for consistency
-PREFERRED_KEY_ORDER = ["id", "url", "task_type", "created_at", "annotations", "metadata"]
+PREFERRED_KEY_ORDER = ["id", "url", "task_type", "created_at", "metadata", "annotations"]
 
 def _safe_value(value: Any) -> Any:
     """Keep scalar values as-is; normalise dict/list into minified JSON strings."""
@@ -94,31 +94,33 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
         existing_records = []
         existing_keys = set() # Start fresh if no existing dataset
 
-    # Index existing records by ID for efficient lookup
-    hf_index = {str(r["id"]): r for r in existing_records if "id" in r}
+    # Index existing records by URL for efficient lookup (primary key for merging)
+    hf_index = {str(r["url"]): r for r in existing_records if "url" in r}
     
     merged_records_map = hf_index.copy() # Start with existing records
     
-    # Process local records: merge or append
+    # Process local records: merge annotations or append new records
     for local in local_records:
-        lid = str(local["id"])
-        if lid in merged_records_map:
-            # ID exists, merge annotations
-            remote_record = merged_records_map[lid]
+        l_url = str(local["url"])
+        if l_url in merged_records_map:
+            # URL exists, merge annotations list
+            remote_record = merged_records_map[l_url]
             remote_annotations_str = remote_record.get("annotations")
             local_annotations = local.get("annotations", [])
             
             merged_annotations_str = _merge_annotations_list(remote_annotations_str, local_annotations)
             remote_record["annotations"] = merged_annotations_str # Update with merged annotations
-            # Update timestamp/user/issue_number from the latest local record for this ID (optional, but useful)
+            
+            # Update metadata from local record if it exists and is more recent (optional refinement)
             if local.get("annotations"): # If local record has annotations
                 latest_local_ann = local["annotations"][-1] # Assume latest annotation in local list
+                if "metadata" not in remote_record: remote_record["metadata"] = {}
                 remote_record["metadata"]["last_user"] = latest_local_ann.get("user")
                 remote_record["metadata"]["last_issue_number"] = latest_local_ann.get("issue_number")
                 remote_record["metadata"]["last_timestamp"] = latest_local_ann.get("timestamp")
         else:
-            # New ID, append as a new record
-            merged_records_map[lid] = _normalise_record(local) # Normalize before adding
+            # New URL, append as a new record
+            merged_records_map[l_url] = _normalise_record(local) # Normalize before adding
 
     # Combine all records (existing merged + new ones)
     final_records_list = list(merged_records_map.values())
@@ -128,15 +130,13 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
         return
 
     # Align schema based on all keys found
-    all_keys = PREFERRED_KEY_ORDER.copy()
-    found_keys = set().union(*(r.keys() for r in final_records_list))
-    for k in sorted(found_keys):
-        if k not in all_keys:
-            all_keys.append(k)
-
     aligned_data = []
     for r in final_records_list:
-        row = {k: r.get(k) for k in all_keys}
+        # Use PREFERRED_KEY_ORDER for explicit ordering, add others at the end
+        row = {k: r.get(k) for k in PREFERRED_KEY_ORDER if k in r}
+        for k in sorted(r.keys()):
+            if k not in PREFERRED_KEY_ORDER:
+                row[k] = r.get(k)
         aligned_data.append(row)
 
     final_ds = Dataset.from_list(aligned_data)
