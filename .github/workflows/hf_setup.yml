@@ -1,0 +1,54 @@
+name: "HF Production Setup"
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'yes' to PURGE ALL HF DATA and start Production"
+        required: true
+        default: ""
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  production-setup:
+    name: Purge and Reset HuggingFace Datasets
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'yes'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install huggingface_hub
+
+      - name: Run Production Reset
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/hf_setup.py
+
+      - name: Self-Destruct Workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Delete the setup script (if not already deleted by the script itself)
+          rm -f scripts/hf_setup.py
+          
+          # Delete this workflow file
+          rm .github/workflows/hf_setup.yml
+          
+          git add .
+          git commit -m "chore: production setup complete, self-destructing setup tools [skip ci]"
+          git push origin main
