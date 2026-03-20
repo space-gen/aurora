@@ -12,7 +12,7 @@ Every data file in the repository (under `data/` and `annotations/`) is a `.json
 
 ## Task Record Schema
 
-Each task is represented as a single minified line in a `.jsonl` file, with fields ordered as follows: `id`, `url`, `task_type`, `created_at`, `annotations`, `metadata`.
+Each task is represented as a single minified line in a `.jsonl` file, with fields ordered as follows: `id`, `url`, `task_type`, `created_at`, `metadata`, `annotations`.
 
 ```json
 {
@@ -20,6 +20,10 @@ Each task is represented as a single minified line in a `.jsonl` file, with fiel
   "url": "http://jsoc.stanford.edu/data/hmi/images/2026/03/16/000000_Ic_1k.jpg",
   "task_type": "sunspot",
   "created_at": "2026-03-17T00:30:00Z",
+  "metadata": {
+    "source": "JSOC_HMI_JPG",
+    "captured_at": "2026-03-16"
+  },
   "annotations": [
     {
       "user": "github_username",
@@ -30,11 +34,7 @@ Each task is represented as a single minified line in a `.jsonl` file, with fiel
       "issue_number": 42,
       "timestamp": "2026-03-17T14:30:00Z"
     }
-  ],
-  "metadata": {
-    "source": "JSOC_HMI_JPG",
-    "captured_at": "2026-03-16"
-  }
+  ]
 }
 ```
 
@@ -46,8 +46,8 @@ Each task is represented as a single minified line in a `.jsonl` file, with fiel
 | `url` | `string` | Direct link to the solar observation image. |
 | `task_type` | `string` | Scientific category (sunspot, magnetogram, etc.). |
 | `created_at` | `string` | Record creation timestamp (ISO 8601). |
-| `annotations` | `list` | **User Contributions**: Contains all user data (username, locations, labels, confidence). |
 | `metadata` | `object` | **System Only**: Reserved for backend metadata (source, capture date). |
+| `annotations` | `list` | **User Contributions**: Contains all user data (username, locations, labels, confidence). |
 
 ---
 

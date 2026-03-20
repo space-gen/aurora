@@ -123,6 +123,7 @@ def main() -> None:
                     task.pop("user_label", None)
                     task.pop("ml_label", None)
                     task.pop("locations", None)
+                    task.pop("serial_number", None)
                     
                     # Clean system metadata from user info
                     if "metadata" in task:
@@ -142,7 +143,17 @@ def main() -> None:
                         "issue_number": int(issue_number) if issue_number.isdigit() else issue_number,
                         "timestamp": datetime.now(timezone.utc).isoformat()
                     })
-                tasks.append(task)
+                
+                # Re-order keys for consistency
+                ordered_task = {
+                    "id": task.get("id"),
+                    "url": task.get("url"),
+                    "task_type": task.get("task_type"),
+                    "created_at": task.get("created_at"),
+                    "metadata": task.get("metadata"),
+                    "annotations": task.get("annotations", [])
+                }
+                tasks.append(ordered_task)
     except Exception as exc:
         log.error(f"Failed to process {file_path}: {exc}")
         sys.exit(1)

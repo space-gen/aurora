@@ -52,9 +52,34 @@ aurora/
 
 ## Data Schema
 
-Each task record includes:
-- `annotations`: List of user contributions. Each entry contains the GitHub `user`, a `confidence_score`, a list of `locations` (points/regions), and submission metadata.
-- `metadata`: Source information and capture timestamps.
+The data is stored in a compressed JSON Lines (JSONL) format. Each line is a minified JSON object representing a solar observation record.
+
+**Field Order:** `id`, `url`, `task_type`, `created_at`, `metadata`, `annotations`.
+
+### Task Record Example:
+```json
+{
+  "id": "sp-1234",
+  "url": "http://...",
+  "task_type": "sunspot",
+  "created_at": "2026-03-17T00:30:00Z",
+  "metadata": {
+    "source": "JSOC_HMI_JPG",
+    "captured_at": "2026-03-16"
+  },
+  "annotations": [
+    {
+      "user": "github_username",
+      "locations": [
+        { "x": 450, "y": 210, "radius": 15, "label": "class_f" }
+      ],
+      "issue_number": 42,
+      "timestamp": "2026-03-17T14:30:00Z",
+      "confidence_score": 95.0
+    }
+  ]
+}
+```
 
 ## Submitting Annotations
 

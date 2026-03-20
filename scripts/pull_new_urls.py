@@ -26,7 +26,6 @@ log = logging.getLogger(__name__)
 # Config
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
-HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 SOURCE_MAP = {
     "sunspot": {"path": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/", "filter": "_Ic_1k.jpg", "prefix": "sp"},
@@ -53,10 +52,10 @@ def _get_last_id_numeric(task_type):
                             try:
                                 num = int(id_str.split("-")[1])
                                 max_id = max(max_id, num)
-                            except ValueError:
-                                log.warning(f"Could not parse serial number from ID: {id_str}")
-        except Exception as e:
-            log.warning(f"Could not read or parse file {p}: {e}")
+                            except (ValueError, IndexError):
+                                pass
+        except Exception:
+            pass
     return max_id
 
 def _fetch_day_urls(task_type, date_obj):
@@ -71,7 +70,7 @@ def _fetch_day_urls(task_type, date_obj):
             for match in matches:
                 if cfg["filter"] in match:
                     results.append(url + match)
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         log.warning(f"Could not fetch URLs from {url}: {e}")
     return results
 
@@ -95,16 +94,19 @@ def main():
         new_records = []
         for url in urls:
             last_num += 1
+            # Using 00:00:00 as a default time since JSOC URLs are daily folders
+            captured_at_ts = f"{target_date.isoformat()}T00:00:00Z"
+            
             record = {
                 "id": f"{prefix}-{last_num}",
                 "url": url,
                 "task_type": task_type,
                 "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "annotations": [],
                 "metadata": {
                     "source": "JSOC_HMI_JPG",
-                    "captured_at": target_date.isoformat() # Already YYYY-MM-DD, ISO format is preferred for timestamps
-                }
+                    "captured_at": captured_at_ts
+                },
+                "annotations": [],
             }
             new_records.append(record)
         
