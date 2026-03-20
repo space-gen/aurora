@@ -115,7 +115,7 @@ jobs:
 
           # 1. Reset annotations folder with latest images
           python -c '
-          import os, glob, shutil
+          import json, os, glob, shutil
           from pathlib import Path
 
           # Clean annotations/ but keep README.md
@@ -138,8 +138,8 @@ jobs:
                           "url": record.get("url"),
                           "task_type": record.get("task_type"),
                           "created_at": record.get("created_at"),
-                          "annotations": [], # Reset for new template
-                          "metadata": record.get("metadata", {})
+                          "metadata": record.get("metadata", {}),
+                          "annotations": [] # Reset for new template
                       }
                       
                       fout.write(json.dumps(ordered_record, separators=(",", ":")) + "\n")
