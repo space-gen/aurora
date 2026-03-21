@@ -83,22 +83,11 @@ The data is stored in a compressed JSON Lines (JSONL) format. Each line is a min
 
 ## Submitting Annotations
 
-Users annotate solar observations by **opening a GitHub Issue** using the
-*Submit Solar Observation Annotation* template. When the `annotation` label
-is applied, the `Parse Annotation Issue` workflow automatically parses the 
-form and writes it to `annotations/`. It is merged into HuggingFace during 
-the next nightly pipeline run.
+Users annotate solar observations by **opening a GitHub Issue** using the *Submit Solar Observation Annotation* template. When the `annotation` label is applied to an issue, the `Parse Annotation Issue` workflow automatically parses the form fields and writes the annotation to `annotations/`. It is merged into HuggingFace during the next nightly pipeline run.
 
-## Nightly Pipeline
-
-The pipeline runs daily at **00:30 UTC** and follows a 4-stage parallel architecture:
-
-| Stage | Workflow | Description |
-|-------|----------|-------------|
-| 1 | `Stage 01 · Lock Frontend` | Renames `data/` → `data_processing/` to prevent UI inconsistency. |
-| 2A | `Node A · Pull New URLs` | Fetches new solar-observation URLs from JSOC. |
-| 2B | `Node B · Push Annotations to HF` | Merges pending user annotations to HuggingFace datasets. |
-| 4 | `Stage 04-05 · Sync & Unlock` | Syncs templates, renames `data_processing/` → `data/`. |
+**When submitting annotations:**
+*   Use the `your_label` field to specify the scientific classification (e.g., `class_a`, `beta-gamma`, `polar`). This label will be applied to *all* coordinates provided in that submission.
+*   Provide pixel coordinates in the format `x,y,radius,label`. Multiple features should be separated by a semicolon (`;`). Example: `450,320,15,active_region ; 890,110,10,quiet_sun`.
 
 ## Documentation
 

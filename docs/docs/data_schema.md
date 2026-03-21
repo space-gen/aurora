@@ -47,7 +47,7 @@ Each task is represented as a single minified line in a `.jsonl` file, with fiel
 | `task_type` | `string` | Scientific category (sunspot, magnetogram, etc.). |
 | `created_at` | `string` | Record creation timestamp (ISO 8601). |
 | `metadata` | `object` | **System Only**: Reserved for backend metadata (source, capture date). |
-| `annotations` | `list` | **User Contributions**: Contains all user data (username, locations, labels, confidence). |
+| `annotations` | `list` | A list of user annotation entries. Each entry contains `user`, `confidence_score`, `locations`, `issue_number`, and `timestamp`. |
 
 ---
 
