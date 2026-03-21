@@ -31,11 +31,11 @@ DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 # {Y} = YYYY, {M} = MM, {D} = DD, {ymd} = YYYYMMDD
 SOURCE_MAP = {
     "sunspot": {
-        "url_pattern": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_Ic_1k.jpg",
+        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_Ic_1k.jpg",
         "prefix": "sp"
     },
     "magnetogram": {
-        "url_pattern": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_M_1k.jpg",
+        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_M_1k.jpg",
         "prefix": "mg"
     },
     "solar_flare": {
@@ -87,9 +87,13 @@ def _get_last_id_numeric(task_type):
 def _check_url_exists(url):
     """Head request to verify URL exists."""
     try:
-        r = requests.head(url, timeout=10)
-        return r.status_code == 200
-    except:
+        r = requests.head(url, timeout=15, allow_redirects=True)
+        if r.status_code == 200:
+            return True
+        log.warning(f"URL check failed: {url} (Status: {r.status_code})")
+        return False
+    except Exception as e:
+        log.warning(f"URL check error for {url}: {e}")
         return False
 
 def main():
@@ -135,6 +139,7 @@ def main():
         
         if new_records:
             file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
+            # Overwrite processing file with ONLY this day's data
             with open(file_path, "w", encoding="utf-8") as f:
                 for record in new_records:
                     f.write(json.dumps(record, separators=(",", ":")) + "\n")
