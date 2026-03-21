@@ -50,25 +50,37 @@ def _parse_issue_body(body: str) -> dict[str, str]:
         heading = lines[0].strip()
         value = "\n".join(lines[1:]).strip()
         if value in ("_No response_", "_No response_\n"): value = ""
-        key = heading.lower().replace(" ", "_").replace("(optional)", "").rstrip("_").strip("_")
+        
+        # Normalize key
+        key = heading.lower()
+        if "(" in key:
+            key = key.split("(")[0].strip()
+        key = key.replace(" ", "_").replace("(optional)", "").rstrip("_").strip("_")
         fields[key] = value
+    log.info(f"Parsed fields: {list(fields.keys())}")
     return fields
 
 def _parse_regions(regions_raw: str) -> list[dict]:
     regions = []
     if not regions_raw: return regions
+    log.info(f"Parsing regions from: {regions_raw}")
     for part in regions_raw.split(";"):
         part = part.strip()
         if not part: continue
         pieces = [p.strip() for p in part.split(",") if p.strip()]
-        if len(pieces) < 3: continue # Need label,x,y
-        label = pieces[0].lower()
+        # Expecting label, x, y, [radius]
+        if len(pieces) < 3: 
+            log.warning(f"Skipping malformed region string (expected label,x,y[,radius]): {part}")
+            continue
         try:
+            label = pieces[0].lower()
             x = float(pieces[1])
             y = float(pieces[2])
             r = float(pieces[3]) if len(pieces) >= 4 else 0.0
-        except ValueError: continue
-        regions.append({"label": label, "x": x, "y": y, "radius": r})
+            regions.append({"label": label, "x": x, "y": y, "radius": r})
+        except ValueError:
+            log.warning(f"Skipping region due to invalid numeric values: {part}")
+            continue
     return regions
 
 def main() -> None:
@@ -83,7 +95,14 @@ def main() -> None:
     fields = _parse_issue_body(issue_body)
     task_type = fields.get("task_type", "").strip().lower()
     record_id = fields.get("record_id", "").strip()
-    regions_raw = fields.get("pixel_coordinates", fields.get("regions", "")).strip()
+    
+    # Try multiple common keys for regions
+    regions_raw = ""
+    for key in ["your_label", "label", "pixel_coordinates", "regions", "coordinates"]:
+        if fields.get(key):
+            regions_raw = fields[key]
+            break
+            
     confidence_raw = fields.get("confidence_score", "100").strip()
     
     try:
@@ -119,32 +138,28 @@ def main() -> None:
                 if str(task.get("id")) == record_id:
                     found = True
                     
-                    # Remove any leftover top-level user fields
-                    task.pop("user_label", None)
-                    task.pop("ml_label", None)
-                    task.pop("locations", None)
-                    task.pop("serial_number", None)
+                    # Remove legacy fields
+                    for legacy in ["user_label", "ml_label", "locations", "serial_number"]:
+                        task.pop(legacy, None)
                     
-                    # Clean system metadata from user info
+                    # Clean metadata
                     if "metadata" in task:
-                        task["metadata"].pop("last_user", None)
-                        task["metadata"].pop("last_annotator", None)
-                        task["metadata"].pop("last_timestamp", None)
-                        task["metadata"].pop("last_issue_number", None)
+                        for legacy_meta in ["last_user", "last_annotator", "last_timestamp", "last_issue_number"]:
+                            task["metadata"].pop(legacy_meta, None)
 
                     if "annotations" not in task or not isinstance(task["annotations"], list):
                         task["annotations"] = []
                     
-                    # Append new clean annotation entry
+                    # Append new annotation entry
                     task["annotations"].append({
                         "user": issue_author,
                         "locations": regions,
                         "confidence_score": confidence,
-                        "issue_number": int(issue_number) if issue_number.isdigit() else issue_number,
+                        "issue_number": int(issue_number) if str(issue_number).isdigit() else issue_number,
                         "timestamp": datetime.now(timezone.utc).isoformat()
                     })
                 
-                # Re-order keys for consistency
+                # Enforce field order
                 ordered_task = {
                     "id": task.get("id"),
                     "url": task.get("url"),
