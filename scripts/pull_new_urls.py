@@ -31,27 +31,27 @@ DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 # {Y} = YYYY, {M} = MM, {D} = DD, {ymd} = YYYYMMDD
 SOURCE_MAP = {
     "sunspot": {
-        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_Ic_1k.jpg",
+        "url_pattern": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_Ic_1k.jpg",
         "prefix": "sp"
     },
     "magnetogram": {
-        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_M_1k.jpg",
+        "url_pattern": "http://jsoc.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_M_1k.jpg",
         "prefix": "mg"
     },
     "solar_flare": {
-        "url_pattern": "https://sdo.gsfc.nasa.gov/assets/img/browse/{Y}/{M}/{D}/{ymd}_000000_1024_0094.jpg",
+        "url_pattern": "http://jsoc.stanford.edu/data/aia/images/{Y}/{M}/{D}/0094/AIA.{ymd}_000000.0094.jpg",
         "prefix": "fl"
     },
     "coronal_hole": {
-        "url_pattern": "https://sdo.gsfc.nasa.gov/assets/img/browse/{Y}/{M}/{D}/{ymd}_000000_1024_0193.jpg",
+        "url_pattern": "http://jsoc.stanford.edu/data/aia/images/{Y}/{M}/{D}/0193/AIA.{ymd}_000000.0193.jpg",
         "prefix": "ch"
     },
     "active_region": {
-        "url_pattern": "https://sdo.gsfc.nasa.gov/assets/img/browse/{Y}/{M}/{D}/{ymd}_000000_1024_0171.jpg",
+        "url_pattern": "http://jsoc.stanford.edu/data/aia/images/{Y}/{M}/{D}/0171/AIA.{ymd}_000000.0171.jpg",
         "prefix": "ar"
     },
     "prominence": {
-        "url_pattern": "https://sdo.gsfc.nasa.gov/assets/img/browse/{Y}/{M}/{D}/{ymd}_000000_1024_0304.jpg",
+        "url_pattern": "http://jsoc.stanford.edu/data/aia/images/{Y}/{M}/{D}/0304/AIA.{ymd}_000000.0304.jpg",
         "prefix": "pr"
     },
     "cme": {
