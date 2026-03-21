@@ -8,19 +8,25 @@ workflow:
 
 huggingface:
   # Per-task-type annotation dataset prefix.
-  # Full dataset repo: {dataset_repo_prefix}{task_type_hyphenated}
-  # e.g. SpaceGen/solarhub-sunspot, SpaceGen/solarhub-solar-flare, …
   dataset_repo_prefix: SpaceGen/solarhub-
-  # Name of the GitHub Actions secret that holds the HF write token.
   token_secret: HF_TOKEN
 
 data:
   task_types:
     - sunspot
     - magnetogram
+    - solar_flare
+    - coronal_hole
+    - active_region
+    - prominence
+    - cme
   source_apis:
-    - name: SDO HMI
+    - name: SDO HMI/AIA
       base_url: https://jsoc.stanford.edu/
+    - name: NASA SDO
+      base_url: https://sdo.gsfc.nasa.gov/
+    - name: SOHO LASCO
+      base_url: https://soho.nascom.nasa.gov/
 
 annotations:
   merge_strategy: append
