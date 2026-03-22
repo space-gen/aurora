@@ -1,66 +1,78 @@
 body:
-- type: markdown
-  attributes:
-    value: "## Annotate a Solar Observation\n\nFill in the fields below to submit your annotation. Your label will be used to train and evaluate the SolarHub solar-classification model.\n\n**Scientific Classification Labels:**\n\n| Task Type | Scientific System |\n|-----------|-------------------|\n| `sunspot` | McIntosh (`class_a` - `class_h`) |\n| `solar_flare` | GOES (`x_class` - `a_class`) |\n| `magnetogram` | Mount Wilson (`alpha` - `delta`) |\n| `coronal_hole`| Heliographic (`polar`, `equatorial`) |\n| `prominence`  | Stability (`quiescent`, `active`) |\n| `cme`         | CDAW (`full_halo`, `partial_halo`) |"
-- type: input
-  id: image_url
-  attributes:
-    label: Image URL
-    description: The full HTTPS URL of the solar observation image you are labelling.
-    placeholder: https://solar-data-source/image.jpg
-  validations:
-    required: true
-- type: dropdown
-  id: task_type
-  attributes:
-    label: Task Type
-    description: The type of solar observation task.
-    options:
-      - sunspot
-      - solar_flare
-      - magnetogram
-      - coronal_hole
-      - prominence
-      - active_region
-      - cme
-  validations:
-    required: true
-- type: input
-  id: record_id
-  attributes:
-    label: Record ID
-    description: The unique ID of this record (e.g. sp-123). Found in the task JSON.
-  validations:
-    required: true
-- type: input
-  id: label
-  attributes:
-    label: Your Label (label,x,y,r ; label2,x2,y2,r2)
-    description: |
-      Specify one or more labeled regions using the format `label,x,y,r`. Separate multiple regions with a semicolon (`;`).
-      Example: `class_a,450,320,15 ; class_h,890,110,10`.
-      Labels must be valid for the selected Task Type (see table above). Coordinates may be integers or floats. Radius is optional; omit or set to 0 for point annotations.
-    placeholder: e.g. class_a,450,320,15 ; class_f,890,110,10
-  validations:
-    required: true
-- type: input
-  id: confidence_score
-  attributes:
-    label: "Confidence Score (0-100)"
-    description: "How confident are you in these annotations? (0 = Not sure, 100 = Absolutely certain)"
-    placeholder: "e.g. 95"
-  validations:
-    required: true
+- attributes:
+    value: '## Annotate a Solar Observation
 
-- type: textarea
-  id: notes  
-  attributes:
-    label: Notes (optional)
+
+      Fill in the fields below to submit your annotation. Your label will be used to train and evaluate the SolarHub solar-classification model.
+
+
+      **Scientific Classification Labels:**
+
+
+      | Task Type | Valid Labels (Scientific System) |
+
+      |-----------|----------------------------------|
+
+      | `sunspot` | `class_a`, `class_b`, `class_c`, `class_d`, `class_e`, `class_f`, `class_h`, `none` |
+
+      | `magnetogram` | `alpha`, `beta`, `gamma`, `beta-gamma`, `delta`, `beta-delta`, `beta-gamma-delta`, `gamma-delta`, `none` |'
+  type: markdown
+- attributes:
+    description: The full HTTPS URL of the solar observation image you are labelling.
+    label: Image URL
+    placeholder: https://solar-data-source/image.jpg
+  id: image_url
+  type: input
+  validations:
+    required: true
+- attributes:
+    description: The type of solar observation task.
+    label: Task Type
+    options:
+    - sunspot
+    - magnetogram
+  id: task_type
+  type: dropdown
+  validations:
+    required: true
+- attributes:
+    description: The unique ID of this record (e.g. sp-123). Found in the task JSON.
+    label: Record ID
+  id: record_id
+  type: input
+  validations:
+    required: true
+- attributes:
+    description: 'Specify one or more labeled regions using the format `label,x,y,r`. Separate multiple regions with a semicolon (`;`).
+
+      Example: `class_a,450,320,15 ; class_h,890,110,10`.
+
+      Labels must be valid for the selected Task Type (see table above). Coordinates may be integers or floats. Radius is optional; omit or set to 0 for point annotations.
+
+      '
+    label: Your Label (label,x,y,r ; label2,x2,y2,r2)
+    placeholder: e.g. class_a,450,320,15 ; class_f,890,110,10
+  id: label
+  type: input
+  validations:
+    required: true
+- attributes:
+    description: How confident are you in these annotations? (0 = Not sure, 100 = Absolutely certain)
+    label: Confidence Score (0-100)
+    placeholder: e.g. 95
+  id: confidence_score
+  type: input
+  validations:
+    required: true
+- attributes:
     description: Any additional observations or comments about this image.
+    label: Notes (optional)
     placeholder: Optional notes...
+  id: notes
+  type: textarea
   validations:
     required: false
-name: Submit Solar Observation Annotation
 description: Label a solar observation image for the SolarHub citizen-science dataset.
 labels:
-  - annotation
+- annotation
+name: Submit Solar Observation Annotation
