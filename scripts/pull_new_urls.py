@@ -5,7 +5,7 @@ Stage 2 — Daily Solar Data Crawler
 
 Fetches sunspot and magnetogram JPG URLs for a specific day.
 Prioritizes unique global IDs and removes serial numbers.
-Records are created with ISO 8601 timestamps and an empty annotations list.
+Records are created with ISO 8601 timestamps.
 """
 
 import os
@@ -27,9 +27,17 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
+# Source Configurations
+# {Y} = YYYY, {M} = MM, {D} = DD, {ymd} = YYYYMMDD
 SOURCE_MAP = {
-    "sunspot": {"path": "http://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/", "filter": "_Ic_flat_1k.jpg", "prefix": "sp"},
-    "magnetogram": {"path": "http://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/", "filter": "_M_1k.jpg", "prefix": "mg"},
+    "sunspot": {
+        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_Ic_1k.jpg",
+        "prefix": "sp"
+    },
+    "magnetogram": {
+        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_000000_M_1k.jpg",
+        "prefix": "mg"
+    }
 }
 
 LINK_REGEX = re.compile(r'href="([^"]+\.jpg)"')
@@ -39,7 +47,6 @@ def _get_last_id_numeric(task_type):
     max_id = 0
     prefix = SOURCE_MAP[task_type]["prefix"]
     
-    # Search all local jsonl files (data/ and data_processing/)
     for p in REPO_ROOT.glob("**/*.jsonl"):
         try:
             with open(p, "r", encoding="utf-8") as f:
@@ -58,21 +65,17 @@ def _get_last_id_numeric(task_type):
             pass
     return max_id
 
-def _fetch_day_urls(task_type, date_obj):
-    y, m, d = date_obj.strftime("%Y"), date_obj.strftime("%m"), date_obj.strftime("%d")
-    cfg = SOURCE_MAP[task_type]
-    url = cfg["path"].format(Y=y, M=m, D=d)
-    results = []
+def _check_url_exists(url):
+    """Head request to verify URL exists."""
     try:
-        response = requests.get(url, timeout=15)
-        if response.status_code == 200:
-            matches = LINK_REGEX.findall(response.text)
-            for match in matches:
-                if cfg["filter"] in match:
-                    results.append(url + match)
+        r = requests.head(url, timeout=15, allow_redirects=True)
+        if r.status_code == 200:
+            return True
+        log.warning(f"URL check failed: {url} (Status: {r.status_code})")
+        return False
     except Exception as e:
-        log.warning(f"Could not fetch URLs from {url}: {e}")
-    return results
+        log.warning(f"URL check error for {url}: {e}")
+        return False
 
 def main():
     parser = argparse.ArgumentParser()
@@ -89,12 +92,17 @@ def main():
         last_num = _get_last_id_numeric(task_type)
         prefix = cfg["prefix"]
         
-        urls = _fetch_day_urls(task_type, target_date)
+        # Format URL for target date
+        url = cfg["url_pattern"].format(
+            Y=target_date.strftime("%Y"),
+            M=target_date.strftime("%m"),
+            D=target_date.strftime("%d"),
+            ymd=target_date.strftime("%Y%m%d")
+        )
         
         new_records = []
-        for url in urls:
+        if _check_url_exists(url):
             last_num += 1
-            # Using 00:00:00 as a default time since JSOC URLs are daily folders
             captured_at_ts = f"{target_date.isoformat()}T00:00:00Z"
             
             record = {
@@ -103,7 +111,7 @@ def main():
                 "task_type": task_type,
                 "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "metadata": {
-                    "source": "JSOC_HMI_JPG",
+                    "source": "Official Observatory",
                     "captured_at": captured_at_ts
                 },
                 "annotations": [],
@@ -115,9 +123,9 @@ def main():
             with open(file_path, "w", encoding="utf-8") as f:
                 for record in new_records:
                     f.write(json.dumps(record, separators=(",", ":")) + "\n")
-            log.info(f"Generated {len(new_records)} tasks for {task_type}. Starting ID: {prefix}-{last_num - len(new_records) + 1}, Ending ID: {prefix}-{last_num}")
+            log.info(f"Generated {len(new_records)} task for {task_type}. ID: {prefix}-{last_num}")
         else:
-            log.warning(f"No URLs found for {task_type} on {target_date}.")
+            log.warning(f"No valid image found for {task_type} on {target_date}.")
 
 if __name__ == "__main__":
     main()
