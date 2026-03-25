@@ -41,8 +41,7 @@ Notes:
 - The old top-level `user_label` and `locations` fields are migrated into the new
   `annotations_by_user` and `annotation_history` fields by the migration script
   `scripts/migrate_annotations_schema.py` (non-destructive backup created).
-- `image_url` remains a required field in the issue form; pixel coordinates and label are
-  now submitted together in the `regions` field (format: `label,x,y,r ; label2,x2,y2,r2`).
+- `image_url` remains a required field in the issue form; annotations are now submitted in the `your_label` field using `label,rle` format (multiple annotations separated by `;`). RLE should be a run-length encoding string describing the annotated region's mask.
 - Annotation files are **never** pushed directly to HuggingFace without passing through the
   `scripts/merge_annotations_to_hf.py` script which performs schema reconciliation when
   needed.

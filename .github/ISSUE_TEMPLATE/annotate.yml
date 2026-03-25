@@ -43,16 +43,15 @@ body:
   validations:
     required: true
 - attributes:
-    description: 'Specify one or more labeled regions using the format `label,x,y,r`. Separate multiple regions with a semicolon (`;`).
+    description: 'Specify one or more labeled regions using the format `label,rle`. Separate multiple regions with a semicolon (`;`).
 
-      Example: `class_a,450,320,15 ; class_h,890,110,10`.
+      Example: `class_a,10 1 5 2 3 ; class_h,2 7 1 4`.
 
-      Labels must be valid for the selected Task Type (see table above). Coordinates may be integers or floats. Radius is optional; omit or set to 0 for point annotations.
-
+      Labels must be valid for the selected Task Type (see table above). RLE (run-length encoding) should be provided as a space-separated sequence of start/length pairs or another accepted RLE string representing the mask for that annotation.
       '
-    label: Your Label (label,x,y,r ; label2,x2,y2,r2)
-    placeholder: e.g. class_a,450,320,15 ; class_f,890,110,10
-  id: label
+    label: Your Label (label,rle ; label2,rle2)
+    placeholder: e.g. class_a,10 1 5 2 3 ; class_f,2 7 1 4
+  id: your_label
   type: input
   validations:
     required: true

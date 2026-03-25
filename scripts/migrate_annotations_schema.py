@@ -53,14 +53,22 @@ def migrate_file(path: Path) -> None:
             locs = rec.get("locations") or []
             # If locations present, normalize
             for loc in locs:
-                # expect {x,y,radius,label}
-                label = loc.get("label") or ul
-                regions.append({
-                    "label": label,
-                    "x": loc.get("x"),
-                    "y": loc.get("y"),
-                    "radius": loc.get("radius", 0),
-                })
+                # loc may be legacy numeric {x,y,radius,label} or modern {label, rle}
+                label = ul
+                if isinstance(loc, dict):
+                    label = loc.get("label") or ul
+                    if "rle" in loc:
+                        regions.append({"label": label, "rle": loc.get("rle")})
+                    else:
+                        regions.append({
+                            "label": label,
+                            "x": loc.get("x"),
+                            "y": loc.get("y"),
+                            "radius": loc.get("radius", 0),
+                        })
+                else:
+                    # unexpected type - skip
+                    continue
             if regions:
                 rec["annotations_by_user"].setdefault(annotator, [])
                 rec["annotations_by_user"][annotator].extend(regions)
@@ -79,12 +87,15 @@ def migrate_file(path: Path) -> None:
                 a_annotator = a.get("annotator") or annotator or "unknown"
                 a_regions = []
                 for loc in a.get("locations", []):
-                    a_regions.append({
-                        "label": loc.get("label"),
-                        "x": loc.get("x"),
-                        "y": loc.get("y"),
-                        "radius": loc.get("radius", 0),
-                    })
+                    if isinstance(loc, dict) and "rle" in loc:
+                        a_regions.append({"label": loc.get("label"), "rle": loc.get("rle")})
+                    else:
+                        a_regions.append({
+                            "label": loc.get("label"),
+                            "x": loc.get("x"),
+                            "y": loc.get("y"),
+                            "radius": loc.get("radius", 0),
+                        })
                 if a_regions:
                     rec["annotations_by_user"].setdefault(a_annotator, [])
                     rec["annotations_by_user"][a_annotator].extend(a_regions)

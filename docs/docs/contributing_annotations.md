@@ -24,16 +24,12 @@ sunspot
 sp-1234
 
 ### Your Label
-active_region
-
-### Pixel Coordinates
-450,210; 460,215
+class_a,10 1 5 2 3 ; class_h,2 7 1 4
 ```
 
 - **Task Type**: Must be one of `sunspot`, `magnetogram`, `solar_flare`, etc.
 - **Record ID**: The unique ID found in the task JSON.
-- **Your Label**: A valid classification label for that task type.
-- **Pixel Coordinates**: (Optional) A semicolon-separated list of `x,y` pairs representing the centers of identified features.
+- **Your Label**: One or more annotations in `label,rle` format (multiple annotations separated by `;`). Labels must be valid for the task type; RLE is a run-length encoding string describing the annotation mask.
 
 ### 3. Automated Processing
 Once your issue is submitted and labeled as `annotation`:

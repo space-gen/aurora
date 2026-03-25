@@ -60,27 +60,31 @@ def _parse_issue_body(body: str) -> dict[str, str]:
     log.info(f"Parsed fields: {list(fields.keys())}")
     return fields
 
-def _parse_regions(regions_raw: str) -> list[dict]:
+def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]:
+    """Parse regions provided as `label,rle ; label2,rle2`.
+
+    Each part is split on the first comma to separate the label from the RLE string.
+    Returns a list of dicts with keys: `label` (lowercased) and `rle` (raw string).
+    Optionally validates labels against VALID_LABELS when task_type is provided.
+    """
     regions = []
-    if not regions_raw: return regions
-    log.info(f"Parsing regions from: {regions_raw}")
+    if not regions_raw:
+        return regions
+    log.info(f"Parsing regions (RLE) from: {regions_raw}")
     for part in regions_raw.split(";"):
         part = part.strip()
-        if not part: continue
-        pieces = [p.strip() for p in part.split(",") if p.strip()]
-        # Expecting label, x, y, [radius]
-        if len(pieces) < 3: 
-            log.warning(f"Skipping malformed region string (expected label,x,y[,radius]): {part}")
+        if not part:
             continue
-        try:
-            label = pieces[0].lower()
-            x = float(pieces[1])
-            y = float(pieces[2])
-            r = float(pieces[3]) if len(pieces) >= 4 else 0.0
-            regions.append({"label": label, "x": x, "y": y, "radius": r})
-        except ValueError:
-            log.warning(f"Skipping region due to invalid numeric values: {part}")
+        if "," not in part:
+            log.warning(f"Skipping malformed region string (expected label,rle): {part}")
             continue
+        label, rle = [p.strip() for p in part.split(",", 1)]
+        label_l = label.lower()
+        # Validate label for the given task_type if possible
+        if task_type and label_l not in VALID_LABELS.get(task_type, set()):
+            log.warning(f"Skipping unknown label for task_type {task_type}: {label}")
+            continue
+        regions.append({"label": label_l, "rle": rle})
     return regions
 
 def main() -> None:
@@ -118,7 +122,7 @@ def main() -> None:
         log.error("record_id is required")
         sys.exit(1)
 
-    regions = _parse_regions(regions_raw)
+    regions = _parse_regions(regions_raw, task_type)
     if not regions:
         log.error("No valid regions provided.")
         sys.exit(1)
