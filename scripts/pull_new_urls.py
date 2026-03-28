@@ -39,11 +39,10 @@ SOURCE_MAP = {
 
 LINK_REGEX = re.compile(r'href="([^"]+\.jpg)"')
 
-MAX_WORKERS = 10  # parallel threads
+MAX_WORKERS = 10
 
 
 def _get_last_id_numeric(task_type):
-    """Find highest numeric ID from existing JSONL files."""
     max_id = 0
     prefix = SOURCE_MAP[task_type]["prefix"]
 
@@ -70,7 +69,6 @@ def _get_last_id_numeric(task_type):
 
 
 def _fetch_single_day(task_type, date_obj):
-    """Fetch URLs for a single day."""
     y = date_obj.strftime("%Y")
     m = date_obj.strftime("%m")
     d = date_obj.strftime("%d")
@@ -99,9 +97,7 @@ def _fetch_single_day(task_type, date_obj):
 
 
 def _fetch_day_urls_parallel(task_type, date_obj):
-    """Parallel fetch wrapper."""
     dates = [date_obj]
-
     all_results = []
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -112,8 +108,7 @@ def _fetch_day_urls_parallel(task_type, date_obj):
 
         for future in as_completed(futures):
             try:
-                result = future.result()
-                all_results.extend(result)
+                all_results.extend(future.result())
             except Exception as e:
                 log.warning(f"Thread failed: {e}")
 
@@ -168,82 +163,9 @@ def main():
                 f"{len(new_records)} records saved for {task_type} "
                 f"(IDs {prefix}-{last_num - len(new_records) + 1} → {prefix}-{last_num})"
             )
-
         else:
             log.warning(f"No URLs found for {task_type} on {target_date}")
 
-
-if __name__ == "__main__":
-    main()cords) + 1}, Ending ID: {prefix}-{last_num}")
-        else:
-            log.warning(f"No URLs found for {task_type} on {target_date}.")
-
-if __name__ == "__main__":
-    main()        except Exception:
-            pass
-    return max_id
-
-def _check_url_exists(url):
-    """Head request to verify URL exists."""
-    try:
-        r = requests.head(url, timeout=15, allow_redirects=True)
-        if r.status_code == 200:
-            return True
-        log.warning(f"URL check failed: {url} (Status: {r.status_code})")
-        return False
-    except Exception as e:
-        log.warning(f"URL check error for {url}: {e}")
-        return False
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--days-back", type=int, default=1)
-    args = parser.parse_args()
-
-    DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
-    target_date = datetime.date.today() - datetime.timedelta(days=args.days_back)
-    log.info(f"Target date: {target_date}")
-
-    for task_type, cfg in SOURCE_MAP.items():
-        log.info(f"Processing {task_type}...")
-        
-        last_num = _get_last_id_numeric(task_type)
-        prefix = cfg["prefix"]
-        
-        # Format URL for target date
-        url = cfg["url_pattern"].format(
-            Y=target_date.strftime("%Y"),
-            M=target_date.strftime("%m"),
-            D=target_date.strftime("%d"),
-            ymd=target_date.strftime("%Y%m%d")
-        )
-        
-        new_records = []
-        if _check_url_exists(url):
-            last_num += 1
-            captured_at_ts = f"{target_date.isoformat()}T00:00:00Z"
-            
-            record = {
-                "id": f"{prefix}-{last_num}",
-                "url": url,
-                "task_type": task_type,
-                "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "metadata": {
-                    "source": "Official Observatory",
-                    "captured_at": captured_at_ts
-                },
-                "annotations": [],
-            }
-            new_records.append(record)
-        
-        if new_records:
-            file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
-            with open(file_path, "w", encoding="utf-8") as f:
-                for record in new_records:
-                    f.write(json.dumps(record, separators=(",", ":")) + "\n")
-            log.info(f"Generated {len(new_records)} task for {task_type}. ID: {prefix}-{last_num}")
-        else:
-            log.warning(f"No valid image found for {task_type} on {target_date}.")
 
 if __name__ == "__main__":
     main()
