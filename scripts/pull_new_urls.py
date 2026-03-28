@@ -31,11 +31,11 @@ DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 # {Y} = YYYY, {M} = MM, {D} = DD, {ymd} = YYYYMMDD
 SOURCE_MAP = {
     "sunspot": {
-        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_Ic_flat_1k.jpg",
+        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_{timestamp}_Ic_flat_1k.jpg",
         "prefix": "sp"
     },
     "magnetogram": {
-        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_M_1k.jpg",
+        "url_pattern": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/{ymd}_{timestamp}_M_1k.jpg",
         "prefix": "mg"
     }
 }
