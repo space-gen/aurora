@@ -1,9 +1,9 @@
 body:
 - attributes:
-    value: '## Annotate a Solar Observation
+    value: '## Annotate a Solar Observation (It is recommended to annotate data through the frontend and avoid directly creating the issue manually)
 
 
-      Fill in the fields below to submit your annotation. Your label will be used to train and evaluate the SolarHub solar-classification model.
+      Fill in the fields below to submit your annotation. Your label will be used to produce data that helps scientists and ML models to study the Sun.
 
 
       **Scientific Classification Labels:**

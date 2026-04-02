@@ -31,12 +31,7 @@ ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 # Valid labels for each task type
 VALID_LABELS: dict[str, set[str]] = {
     "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
-    "solar_flare": {"x_class", "m_class", "c_class", "b_class", "a_class", "none"},
     "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
-    "coronal_hole": {"polar", "equatorial", "mid-latitude", "transequatorial", "none"},
-    "prominence": {"quiescent", "active", "eruptive", "intermediate", "none"},
-    "active_region": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-gamma-delta", "none"},
-    "cme": {"full_halo", "partial_halo", "normal", "narrow", "none"},
 }
 VALID_TASK_TYPES = set(VALID_LABELS.keys())
 

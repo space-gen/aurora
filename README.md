@@ -2,18 +2,12 @@
 
 > **Backend orchestration system for the SolarHub citizen-science platform.**
 >
-> I’m [Soumyadip Karforma](https://github.com/soumyadipkarforma), founder of SolarHub. Aurora is the backend engine I designed to run our contributor-powered solar science pipeline.
+> I’m [Soumyadip Karforma](https://github.com/soumyadipkarforma), founder of SpaceGen, the mother organisation of SolarHub. Aurora is the backend engine I designed to run our contributor-powered solar science pipeline.
 
 [![Nightly Pipeline](https://github.com/space-gen/aurora/actions/workflows/pipeline.yml/badge.svg)](https://github.com/space-gen/aurora/actions)
 [![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-ff69b4)](https://github.com/sponsors/soumyadipkarforma)
 [![Patreon](https://img.shields.io/badge/Support-Patreon-FF424D)](https://www.patreon.com/SoumyadipKarforma)
 [![Buy Me a Coffee](https://img.shields.io/badge/Support-Buy%20Me%20a%20Coffee-orange)](https://buymeacoffee.com/soumyadipkarforma)
-
-## Funding
-
-[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-ff69b4?style=for-the-badge&logo=github-sponsors)](https://github.com/sponsors/soumyadipkarforma)
-[![Patreon](https://img.shields.io/badge/Support-Patreon-FF424D?style=for-the-badge&logo=patreon)](https://www.patreon.com/SoumyadipKarforma)
-[![Buy Me a Coffee](https://img.shields.io/badge/Support-Buy%20Me%20a%20Coffee-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/soumyadipkarforma)
 
 ## Overview
 
@@ -21,7 +15,7 @@ This repository is **Repo B** of the SolarHub platform. It manages task data,
 user annotations, solar observation data pipelines, and synchronisation between GitHub
 and HuggingFace.
 
-Repo A (the user-facing UI) is maintained separately and reads task files from
+Repo A (the user-facing UI : [solarhub](https://github.com/space-gen/solarhub) ) is maintained separately and reads task files from
 the `data/` directory of this repository.
 
 ## Tech Stack
@@ -57,28 +51,8 @@ The data is stored in a compressed JSON Lines (JSONL) format. Each line is a min
 **Field Order:** `id`, `url`, `task_type`, `created_at`, `metadata`, `annotations`.
 
 ### Task Record Example:
-```json
-{
-  "id": "sp-1234",
-  "url": "http://...",
-  "task_type": "sunspot",
-  "created_at": "2026-03-17T00:30:00Z",
-  "metadata": {
-    "source": "JSOC_HMI_JPG",
-    "captured_at": "2026-03-16"
-  },
-  "annotations": [
-    {
-      "user": "github_username",
-      "locations": [
-        { "x": 450, "y": 210, "radius": 15, "label": "class_f" }
-      ],
-      "issue_number": 42,
-      "timestamp": "2026-03-17T14:30:00Z",
-      "confidence_score": 95.0
-    }
-  ]
-}
+```jsonl
+{"id":"mg-1428","url":"http://jsoc1.stanford.edu/data/hmi/images/2026/04/01/20260401_000000_M_1k.jpg","task_type":"magnetogram","created_at":"2026-04-02T00:02:08.160034+00:00","metadata":{"source":"JSOC_HMI_JPG","captured_at":"2026-04-01T00:00:00Z"},"annotations":[]}
 ```
 
 ## Submitting Annotations
@@ -91,20 +65,13 @@ Users annotate solar observations by **opening a GitHub Issue** using the *Submi
 
 ## Documentation
 
-Comprehensive documentation is available at [space-gen.github.io/aurora/](https://space-gen.github.io/aurora/):
+Comprehensive documentation is available at [Aurora Docs](https://space-gen.github.io/aurora/):
 
 - [Architecture](https://space-gen.github.io/aurora/architecture)
 - [Pipeline Details](https://space-gen.github.io/aurora/pipeline)
 - [ML Flow](https://space-gen.github.io/aurora/ml_flow)
 - [Data Schema](https://space-gen.github.io/aurora/data_schema)
 
-## Required Secrets
-
-| Secret | Purpose |
-|--------|---------|
-| `HF_TOKEN` | HuggingFace write token |
-| `KAGGLE_USERNAME` | Kaggle API authentication |
-| `KAGGLE_KEY` | Kaggle API authentication |
 
 ## Supported Task Types
 
@@ -113,11 +80,13 @@ SolarHub supports rigorous scientific standards for ML training:
 | Task Type | Scientific Standard |
 |-----------|---------------------|
 | `sunspot` | **McIntosh** |
-| `solar_flare` | **GOES X-ray** |
 | `magnetogram` | **Mount Wilson** |
-| `coronal_hole` | **Latitude** |
-| `prominence` | **Behavioral** |
-| `cme` | **CDAW** |
+
+## Funding
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-ff69b4?style=for-the-badge&logo=github-sponsors)](https://github.com/sponsors/soumyadipkarforma)
+[![Patreon](https://img.shields.io/badge/Support-Patreon-FF424D?style=for-the-badge&logo=patreon)](https://www.patreon.com/SoumyadipKarforma)
+[![Buy Me a Coffee](https://img.shields.io/badge/Support-Buy%20Me%20a%20Coffee-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/soumyadipkarforma)
 
 ## License
 

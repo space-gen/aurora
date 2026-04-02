@@ -1,8 +1,6 @@
 name: "Parse Annotation Issue"
 
 on:
-  schedule:
-    - cron: "0 */3 * * *"   # Every 3 hours
   issues:
     types: [labeled]
 

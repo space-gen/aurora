@@ -4,7 +4,7 @@ system:
   version: 1.0
 
 workflow:
-  nightly_time: "00:30 UTC daily"
+  nightly_time: "00:00 UTC daily"
 
 huggingface:
   # Per-task-type annotation dataset prefix.
@@ -15,11 +15,6 @@ data:
   task_types:
     - sunspot
     - magnetogram
-    - solar_flare
-    - coronal_hole
-    - active_region
-    - prominence
-    - cme
   source_apis:
     - name: SDO HMI/AIA
       base_url: https://jsoc.stanford.edu/

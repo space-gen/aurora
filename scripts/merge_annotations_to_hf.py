@@ -3,8 +3,8 @@ merge_annotations_to_hf.py
 ==========================
 Pipeline Stage 3 — Merge Annotations
 
-ID-based synchronization: 
-- If ID exists on HF, appends local annotations to the remote record.
+URL-based synchronization: 
+- If URL exists on HF, appends local annotations to the remote record.
 - Otherwise, appends as a new row.
 Optimized for data integrity and performance by avoiding full remote pulls.
 """

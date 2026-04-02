@@ -10,18 +10,18 @@ and data synchronisation across three external platforms: **GitHub**, **HuggingF
 ┌─────────────────────────────────────────────────────────────────┐
 │                         GitHub (Repo B)                         │
 │                                                                 │
-│  data/            ← task JSON files served to Repo A (UI)      │
-│  annotations/     ← pending user annotations                   │
-│  data_processing/ ← nightly pipeline workspace                 │
-│  scripts/         ← Python pipeline scripts                    │
-│  .github/workflows/ ← GitHub Actions orchestration             │
+│  data/            ← task JSON files served to Repo A (UI)       │
+│  annotations/     ← pending user annotations                    │
+│  data_processing/ ← nightly pipeline workspace                  │
+│  scripts/         ← Python pipeline scripts                     │
+│  .github/workflows/ ← GitHub Actions orchestration              │
 └───────────┬─────────────────────────┬───────────────────────────┘
-            │                         │
-            ▼                         ▼
+            │                         
+            ▼                         
  ┌──────────────────┐      ┌──────────────────────┐
- │   HuggingFace    │      │        Kaggle         │
- │  (datasets &     │      │  (training &          │
- │   models)        │◄─────│   inference kernels)  │
+ │   HuggingFace    │      │        Kaggle        │
+ │  (datasets &     │      │  (training &         │
+ │   models)        │      │   inference kernels) │
  └──────────────────┘      └──────────────────────┘
 ```
 
