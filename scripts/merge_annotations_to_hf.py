@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import sys
 from pathlib import Path
@@ -27,6 +28,83 @@ HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 # Desired column order for consistency
 PREFERRED_KEY_ORDER = ["id", "url", "task_type", "created_at", "metadata", "annotations"]
+
+def circle_to_rle(cx: float, cy: float, r: float, width: int = 1024) -> str:
+    """
+    Convert a circle (cx, cy, r) to a compressed RLE string.
+    Format: start1 length1 gap1 length2 gap2 length3 ...
+    gap is the distance from the end of the previous run to the start of the current one.
+    """
+    runs = []
+    for y in range(int(cy - r), int(cy + r) + 1):
+        if y < 0 or y >= 1024:
+            continue
+        dy = y - cy
+        dx = math.sqrt(max(0, r*r - dy*dy))
+        x1 = max(0, int(cx - dx))
+        x2 = min(width - 1, int(cx + dx))
+        if x1 <= x2:
+            runs.append((y * width + x1, x2 - x1 + 1))
+    
+    if not runs:
+        return ""
+        
+    rle_parts = [str(runs[0][0]), str(runs[0][1])]
+    last_end = runs[0][0] + runs[0][1]
+    
+    for i in range(1, len(runs)):
+        start, length = runs[i]
+        gap = start - last_end
+        rle_parts.extend([str(gap), str(length)])
+        last_end = start + length
+        
+    return " ".join(rle_parts)
+
+def _migrate_annotations(annotations: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Migrate legacy x,y,r or absolute RLE to compressed RLE."""
+    if not isinstance(annotations, list):
+        return annotations
+        
+    for a in annotations:
+        if "locations" in a:
+            new_locs = []
+            for loc in a["locations"]:
+                if not isinstance(loc, dict):
+                    continue
+                
+                # Case 1: Already has RLE, check if it needs compression
+                if "rle" in loc:
+                    rle_val = loc["rle"]
+                    parts = rle_val.split()
+                    if len(parts) > 2:
+                        try:
+                            p0, p1, p2 = int(parts[0]), int(parts[1]), int(parts[2])
+                            if p2 > p0 + p1: # Absolute RLE detected
+                                new_parts = [parts[0], parts[1]]
+                                last_end = p0 + p1
+                                for i in range(2, len(parts), 2):
+                                    start = int(parts[i])
+                                    length = parts[i+1]
+                                    gap = start - last_end
+                                    new_parts.extend([str(gap), length])
+                                    last_end = start + int(length)
+                                loc["rle"] = " ".join(new_parts)
+                        except (ValueError, IndexError):
+                            pass
+                    new_locs.append(loc)
+                
+                # Case 2: Legacy x,y,r
+                elif all(k in loc for k in ["x", "y"]):
+                    label = loc.get("label", "unknown")
+                    x, y = float(loc["x"]), float(loc["y"])
+                    r = float(loc.get("radius", loc.get("r", 0)))
+                    rle = circle_to_rle(x, y, r)
+                    new_locs.append({"label": label, "rle": rle})
+                
+                else:
+                    new_locs.append(loc)
+            a["locations"] = new_locs
+    return annotations
 
 def _safe_value(value: Any) -> Any:
     """Keep scalar values as-is; normalise dict/list into minified JSON strings."""
@@ -97,18 +175,47 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
     # Index existing records by URL for efficient lookup (primary key for merging)
     hf_index = {str(r["url"]): r for r in existing_records if "url" in r}
     
-    merged_records_map = hf_index.copy() # Start with existing records
+    # Migrate ALL existing records in HF to new schema
+    for url, record in hf_index.items():
+        if "annotations" in record and record["annotations"]:
+            try:
+                # remote annotations are JSON stringified in the dataset
+                anns = json.loads(record["annotations"])
+                if not isinstance(anns, list): anns = [anns]
+                migrated_anns = _migrate_annotations(anns)
+                record["annotations"] = json.dumps(migrated_anns, separators=(",", ":"))
+            except:
+                pass
+
+    merged_records_map = hf_index.copy() # Start with migrated existing records
     
     # Process local records: merge annotations or append new records
     for local in local_records:
         l_url = str(local["url"])
+        
+        # Ensure local annotations are migrated (if not already)
+        if "annotations" in local and isinstance(local["annotations"], list):
+            local["annotations"] = _migrate_annotations(local["annotations"])
+            
         if l_url in merged_records_map:
             # URL exists, merge annotations list
             remote_record = merged_records_map[l_url]
             remote_annotations_str = remote_record.get("annotations")
+            
+            # Parse remote annotations and migrate them
+            remote_annotations = []
+            if remote_annotations_str:
+                try:
+                    remote_annotations = json.loads(remote_annotations_str)
+                    if not isinstance(remote_annotations, list):
+                        remote_annotations = [remote_annotations]
+                    remote_annotations = _migrate_annotations(remote_annotations)
+                except:
+                    log.warning("Could not parse remote annotations for %s", l_url)
+
             local_annotations = local.get("annotations", [])
             
-            merged_annotations_str = _merge_annotations_list(remote_annotations_str, local_annotations)
+            merged_annotations_str = _merge_annotations_list(json.dumps(remote_annotations), local_annotations)
             remote_record["annotations"] = merged_annotations_str # Update with merged annotations
             
             # Update metadata from local record if it exists and is more recent (optional refinement)
@@ -160,13 +267,12 @@ def main() -> None:
                     if line.strip():
                         local_records.append(json.loads(line))
             
-            # Filter for labeled records only
+            # Filter for labeled records only (for actual merging)
             labeled = [r for r in local_records if r.get("annotations")]
             
-            if labeled:
-                _push_to_hf(task_type, labeled, token)
-            else:
-                log.info("No new annotations for %s. Skipping.", task_type)
+            # Call sync even if labeled is empty, to perform migration of existing HF data
+            _push_to_hf(task_type, labeled, token)
+            
         except Exception as exc:
             log.warning("Error processing %s: %s", task_file.name, exc)
 

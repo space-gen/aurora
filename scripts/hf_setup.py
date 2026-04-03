@@ -33,8 +33,8 @@ This license promotes freedom, sharing, and collaboration.
 """
 
 # Standard .gitattributes content for LFS tracking
-GITATTRIBUTES_CONTENT = "* text=auto
-*.jsonl filter=lfs diff=lfs merge=lfs -text"
+GITATTRIBUTES_CONTENT = """* text=auto
+*.jsonl filter=lfs diff=lfs merge=lfs -text"""
 
 def main():
     parser = argparse.ArgumentParser(description="Clean data from HuggingFace repositories.")
