@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import re
 import sys
@@ -34,6 +35,28 @@ VALID_LABELS: dict[str, set[str]] = {
     "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
 }
 VALID_TASK_TYPES = set(VALID_LABELS.keys())
+
+def circle_to_rle(cx: float, cy: float, r: float, width: int = 1024) -> str:
+    """
+    Convert a circle (cx, cy, r) to a run-length encoded (RLE) string.
+    RLE format: start1 length1 start2 length2 ... (1D pixel indices)
+    """
+    rle_parts = []
+    # Iterate through rows that the circle covers
+    for y in range(int(cy - r), int(cy + r) + 1):
+        if y < 0 or y >= 1024: # Assuming 1024 height
+            continue
+        dy = y - cy
+        dx = math.sqrt(max(0, r*r - dy*dy))
+        x1 = max(0, int(cx - dx))
+        x2 = min(width - 1, int(cx + dx))
+        
+        if x1 <= x2:
+            start_idx = y * width + x1
+            length = x2 - x1 + 1
+            rle_parts.extend([str(start_idx), str(length)])
+    
+    return " ".join(rle_parts)
 
 def _parse_issue_body(body: str) -> dict[str, str]:
     fields: dict[str, str] = {}
@@ -56,30 +79,47 @@ def _parse_issue_body(body: str) -> dict[str, str]:
     return fields
 
 def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]:
-    """Parse regions provided as `label,rle ; label2,rle2`.
+    """Parse regions provided as `label,rle ; label2,rle2` or `label,x,y,r`.
 
-    Each part is split on the first comma to separate the label from the RLE string.
-    Returns a list of dicts with keys: `label` (lowercased) and `rle` (raw string).
-    Optionally validates labels against VALID_LABELS when task_type is provided.
+    Returns a list of dicts with keys: `label` and `rle`.
+    Automatically converts x,y,r to RLE if 4 comma-separated values are found.
     """
     regions = []
     if not regions_raw:
         return regions
-    log.info(f"Parsing regions (RLE) from: {regions_raw}")
+    log.info(f"Parsing regions from: {regions_raw}")
     for part in regions_raw.split(";"):
         part = part.strip()
         if not part:
             continue
-        if "," not in part:
-            log.warning(f"Skipping malformed region string (expected label,rle): {part}")
+        
+        # Split by comma to check format
+        bits = [b.strip() for b in part.split(",")]
+        if len(bits) < 2:
+            log.warning(f"Skipping malformed region string: {part}")
             continue
-        label, rle = [p.strip() for p in part.split(",", 1)]
-        label_l = label.lower()
+            
+        label = bits[0].lower()
         # Validate label for the given task_type if possible
-        if task_type and label_l not in VALID_LABELS.get(task_type, set()):
+        if task_type and label not in VALID_LABELS.get(task_type, set()):
             log.warning(f"Skipping unknown label for task_type {task_type}: {label}")
             continue
-        regions.append({"label": label_l, "rle": rle})
+
+        if len(bits) == 4:
+            # Format: label,x,y,r
+            try:
+                x, y, r = map(float, bits[1:])
+                rle = circle_to_rle(x, y, r)
+                regions.append({"label": label, "rle": rle})
+                log.info(f"Converted {label} circle ({x},{y},{r}) to RLE")
+            except ValueError:
+                log.warning(f"Failed to parse x,y,r coordinates: {part}")
+                continue
+        else:
+            # Format: label,rle
+            rle = ",".join(bits[1:]) # Re-join in case RLE itself contains commas (unlikely but safe)
+            regions.append({"label": label, "rle": rle})
+            
     return regions
 
 def main() -> None:

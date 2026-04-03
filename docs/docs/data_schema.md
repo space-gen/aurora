@@ -66,7 +66,9 @@ Each entry in the `annotations` list represents a contribution from a single use
 ### Location Object
 
 ```json
-{ "x": 450, "y": 210, "radius": 15, "label": "class_f" }
+{ "label": "class_f", "rle": "450000 15 451024 15" }
 ```
 
-Labels are applied to **specific locations** only. There is no image-wide label field.
+Labels are applied to **specific regions** defined by RLE (Run-Length Encoding).
+RLE is stored as a space-separated sequence of `start length` pairs representing the 1D pixel indices of the mask.
+There is no image-wide label field.

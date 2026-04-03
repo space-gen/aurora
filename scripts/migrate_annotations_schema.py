@@ -18,6 +18,7 @@ Run locally and inspect changes before pushing to remote.
 from __future__ import annotations
 
 import json
+import math
 import shutil
 import sys
 from datetime import datetime
@@ -28,92 +29,89 @@ ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
 TS = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
 
+def circle_to_rle(cx: float, cy: float, r: float, width: int = 1024) -> str:
+    """
+    Convert a circle (cx, cy, r) to a run-length encoded (RLE) string.
+    RLE format: start1 length1 start2 length2 ... (1D pixel indices)
+    """
+    rle_parts = []
+    # Iterate through rows that the circle covers
+    for y in range(int(cy - r), int(cy + r) + 1):
+        if y < 0 or y >= 1024: # Assuming 1024 height
+            continue
+        dy = y - cy
+        dx = math.sqrt(max(0, r*r - dy*dy))
+        x1 = max(0, int(cx - dx))
+        x2 = min(width - 1, int(cx + dx))
+        
+        if x1 <= x2:
+            start_idx = y * width + x1
+            length = x2 - x1 + 1
+            rle_parts.extend([str(start_idx), str(length)])
+    
+    return " ".join(rle_parts)
 
 def migrate_file(path: Path) -> None:
     bak = path.with_suffix(path.suffix + f".bak.{TS}")
     shutil.copy(path, bak)
-    data = json.loads(path.read_text())
+    
+    # Read as JSONL if it's .jsonl, otherwise .json
+    is_jsonl = path.suffix == ".jsonl"
+    
+    tasks = []
     changed = False
 
-    for rec in data:
-        # Ensure structures
-        rec.setdefault("annotations_by_user", {})
-        rec.setdefault("annotation_history", [])
+    if is_jsonl:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip(): continue
+                tasks.append(json.loads(line))
+    else:
+        tasks = json.loads(path.read_text())
 
-        annotator = None
-        meta = rec.get("metadata") or {}
-        annotator = meta.get("annotator")
-        issue_number = meta.get("issue_number")
-        timestamp = meta.get("timestamp")
-
-        # 1) Migrate top-level user_label + locations -> annotations_by_user
-        if annotator and (rec.get("user_label") or rec.get("locations")):
-            regions = []
-            ul = rec.get("user_label")
-            locs = rec.get("locations") or []
-            # If locations present, normalize
-            for loc in locs:
-                # loc may be legacy numeric {x,y,radius,label} or modern {label, rle}
-                label = ul
-                if isinstance(loc, dict):
-                    label = loc.get("label") or ul
-                    if "rle" in loc:
-                        regions.append({"label": label, "rle": loc.get("rle")})
-                    else:
-                        regions.append({
-                            "label": label,
-                            "x": loc.get("x"),
-                            "y": loc.get("y"),
-                            "radius": loc.get("radius", 0),
-                        })
-                else:
-                    # unexpected type - skip
-                    continue
-            if regions:
-                rec["annotations_by_user"].setdefault(annotator, [])
-                rec["annotations_by_user"][annotator].extend(regions)
-                rec["annotation_history"].append({"annotator": annotator, "issue_number": issue_number, "timestamp": timestamp, "regions": regions})
-                changed = True
-            # Remove old top-level fields
-            if "user_label" in rec:
-                del rec["user_label"]
-            if "locations" in rec:
-                del rec["locations"]
-
-        # 2) Migrate existing 'annotations' list (older format)
+    for rec in tasks:
+        # 1) Migrate 'annotations' list (older format or current format)
         anns = rec.get("annotations")
         if isinstance(anns, list) and anns:
             for a in anns:
-                a_annotator = a.get("annotator") or annotator or "unknown"
-                a_regions = []
-                for loc in a.get("locations", []):
-                    if isinstance(loc, dict) and "rle" in loc:
-                        a_regions.append({"label": loc.get("label"), "rle": loc.get("rle")})
-                    else:
-                        a_regions.append({
-                            "label": loc.get("label"),
-                            "x": loc.get("x"),
-                            "y": loc.get("y"),
-                            "radius": loc.get("radius", 0),
-                        })
-                if a_regions:
-                    rec["annotations_by_user"].setdefault(a_annotator, [])
-                    rec["annotations_by_user"][a_annotator].extend(a_regions)
-                    rec["annotation_history"].append({"annotator": a_annotator, "issue_number": a.get("issue_number"), "timestamp": a.get("timestamp"), "regions": a_regions})
-                    changed = True
-            # remove old list
-            del rec["annotations"]
+                if "locations" in a:
+                    new_locs = []
+                    for loc in a["locations"]:
+                        if isinstance(loc, dict):
+                            if "rle" in loc:
+                                new_locs.append(loc)
+                            elif all(k in loc for k in ["x", "y"]):
+                                # Convert x,y,radius to RLE
+                                label = loc.get("label", "unknown")
+                                x = float(loc["x"])
+                                y = float(loc["y"])
+                                r = float(loc.get("radius", loc.get("r", 0)))
+                                rle = circle_to_rle(x, y, r)
+                                new_locs.append({"label": label, "rle": rle})
+                                changed = True
+                        else:
+                            # Handle non-dict or malformed
+                            continue
+                    a["locations"] = new_locs
 
     if changed:
-        path.write_text(json.dumps(data, indent=2))
+        if is_jsonl:
+            with open(path, "w", encoding="utf-8") as f:
+                for t in tasks:
+                    f.write(json.dumps(t, separators=(",", ":")) + "\n")
+        else:
+            path.write_text(json.dumps(tasks, indent=2))
         print(f"Migrated {path} (backup: {bak})")
     else:
+        # Cleanup backup if no changes
+        bak.unlink()
         print(f"No changes for {path}")
 
 
 def main() -> None:
-    for p in ANNOTATIONS_DIR.glob("*.json"):
-        migrate_file(p)
+    for p in ANNOTATIONS_DIR.glob("*.json*"):
+        if p.suffix in [".json", ".jsonl"]:
+            migrate_file(p)
 
 
 if __name__ == "__main__":

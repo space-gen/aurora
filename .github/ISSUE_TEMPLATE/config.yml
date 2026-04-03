@@ -1,9 +1,9 @@
 blank_issues_enabled: false
 contact_links:
-  -name: SolarHub Frontend (Recommended)
-   url: https://space-gen.github.io/solarhub/
-   about: Annotate data via the GUI (Frontend)
+  - name: SolarHub Frontend (Recommended)
+    url: https://space-gen.github.io/solarhub/
+    about: Annotate data via the GUI (Frontend)
+  - name: SolarHub - Aurora Documentation
+    url: https://space-gen.github.io/aurora/
+    about: Learn more about the Aurora annotation pipeline.
 
-  -name: SolarHub - Aurora Documentation
-     url: https://space-gen.github.io/aurora/
-     about: Learn more about the Aurora annotation pipeline.
