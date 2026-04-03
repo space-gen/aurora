@@ -49,8 +49,8 @@ body:
 
       Labels must be valid for the selected Task Type (see table above). RLE (run-length encoding) should be provided as a space-separated sequence of start/length pairs or another accepted RLE string representing the mask for that annotation.
       '
-    label: Your Label (label,rle ; label2,rle2)
-    placeholder: e.g. class_a,10 1 5 2 3 ; class_f,2 7 1 4
+    label: Your Label (label,x,y,r ; label2,x2,y2,r2)
+    placeholder: e.g. class_a,100,150,32 ; class_f,200,50,50
   id: your_label
   type: input
   validations:
