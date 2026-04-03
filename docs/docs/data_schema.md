@@ -29,7 +29,7 @@ Each task is represented as a single minified line in a `.jsonl` file, with fiel
       "user": "github_username",
       "confidence_score": 95.0,
       "locations": [
-        { "x": 450, "y": 210, "radius": 15, "label": "class_f" }
+        { "label": "class_f", "rle": "450000 15 1009 15" }
       ],
       "issue_number": 42,
       "timestamp": "2026-03-17T14:30:00Z"
@@ -66,9 +66,14 @@ Each entry in the `annotations` list represents a contribution from a single use
 ### Location Object
 
 ```json
-{ "label": "class_f", "rle": "450000 15 451024 15" }
+{ "label": "class_f", "rle": "450000 15 1009 15" }
 ```
 
 Labels are applied to **specific regions** defined by RLE (Run-Length Encoding).
-RLE is stored as a space-separated sequence of `start length` pairs representing the 1D pixel indices of the mask.
+RLE is stored in a **compressed format**: a space-separated sequence of `start length gap length gap length ...`.
+- `start` is the absolute 1D pixel index of the first run.
+- `length` is the number of pixels in the run.
+- `gap` is the number of pixels between the **end** of the previous run and the **start** of the next run.
+This relative encoding keeps numbers smaller and more compact.
 There is no image-wide label field.
+

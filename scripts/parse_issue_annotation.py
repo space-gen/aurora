@@ -38,24 +38,33 @@ VALID_TASK_TYPES = set(VALID_LABELS.keys())
 
 def circle_to_rle(cx: float, cy: float, r: float, width: int = 1024) -> str:
     """
-    Convert a circle (cx, cy, r) to a run-length encoded (RLE) string.
-    RLE format: start1 length1 start2 length2 ... (1D pixel indices)
+    Convert a circle (cx, cy, r) to a compressed RLE string.
+    Format: start1 length1 gap1 length2 gap2 length3 ...
+    gap is the distance from the end of the previous run to the start of the current one.
     """
-    rle_parts = []
-    # Iterate through rows that the circle covers
+    runs = []
     for y in range(int(cy - r), int(cy + r) + 1):
-        if y < 0 or y >= 1024: # Assuming 1024 height
+        if y < 0 or y >= 1024:
             continue
         dy = y - cy
         dx = math.sqrt(max(0, r*r - dy*dy))
         x1 = max(0, int(cx - dx))
         x2 = min(width - 1, int(cx + dx))
-        
         if x1 <= x2:
-            start_idx = y * width + x1
-            length = x2 - x1 + 1
-            rle_parts.extend([str(start_idx), str(length)])
+            runs.append((y * width + x1, x2 - x1 + 1))
     
+    if not runs:
+        return ""
+        
+    rle_parts = [str(runs[0][0]), str(runs[0][1])]
+    last_end = runs[0][0] + runs[0][1]
+    
+    for i in range(1, len(runs)):
+        start, length = runs[i]
+        gap = start - last_end
+        rle_parts.extend([str(gap), str(length)])
+        last_end = start + length
+        
     return " ".join(rle_parts)
 
 def _parse_issue_body(body: str) -> dict[str, str]:

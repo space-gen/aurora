@@ -34,7 +34,7 @@ The `annotations` column stores a full history of human labels. Because HuggingF
     "issue_number": 101,
     "timestamp": "2026-03-18T12:00:00Z",
     "locations": [
-      { "label": "class_f", "rle": "450000 15 451024 15" }
+      { "label": "class_f", "rle": "450000 15 1009 15" }
     ]
   }
 ]
