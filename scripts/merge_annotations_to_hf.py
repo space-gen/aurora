@@ -6,7 +6,8 @@ Pipeline Stage 3 — Merge Annotations
 URL-based synchronization: 
 - If URL exists on HF, appends local annotations to the remote record.
 - Otherwise, appends as a new row.
-Optimized for data integrity and performance by avoiding full remote pulls.
+Optimized for data integrity and performance by avoiding full remote pulls
+unless conflicts (existing URLs) are detected.
 """
 
 from __future__ import annotations
@@ -28,6 +29,14 @@ HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
 
 # Desired column order for consistency
 PREFERRED_KEY_ORDER = ["id", "url", "task_type", "created_at", "metadata", "annotations"]
+
+def _normalize_url(url: Any) -> str:
+    """Ensure URL is a string and normalized to absolute form."""
+    s = str(url).strip()
+    if s.startswith("//"):
+        return "http:" + s
+    # If the URL is already absolute (starts with http), return as is
+    return s
 
 def circle_to_rle(cx: float, cy: float, r: float, width: int = 1024) -> str:
     """
@@ -154,101 +163,107 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
     from datasets import Dataset, load_dataset
 
     repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
-    local_records = [_normalise_record(r) for r in local_records_raw]
     
-    # Get existing records and their schema keys
-    existing_records = []
-    existing_keys = set()
-    try:
-        # Attempt to load the entire dataset to get existing records and schema
-        # Note: This can be slow for very large datasets, but is necessary for robust merging
-        # If this is too slow, we might need a dedicated API to only fetch specific IDs.
-        existing_ds = load_dataset(repo_id, token=token, split="train")
-        existing_records = [dict(row) for row in existing_ds]
-        existing_keys = set(existing_ds.column_names)
-        log.info("Loaded %d existing records from %s", len(existing_records), repo_id)
-    except Exception as e:
-        log.info("No existing dataset found for %s or error loading it (%s). Creating new.", repo_id, e)
-        existing_records = []
-        existing_keys = set() # Start fresh if no existing dataset
+    # 1. Normalize local records
+    local_url_map = {}
+    for r in local_records_raw:
+        norm_r = _normalise_record(r)
+        if "url" in norm_r:
+            norm_r["url"] = _normalize_url(norm_r["url"])
+            # Pre-migrate local annotations
+            if "annotations" in norm_r and isinstance(r.get("annotations"), list):
+                norm_r["annotations"] = _safe_value(_migrate_annotations(r["annotations"]))
+            local_url_map[norm_r["url"]] = norm_r
 
-    # Index existing records by URL for efficient lookup (primary key for merging)
-    hf_index = {str(r["url"]): r for r in existing_records if "url" in r}
-    
-    # Migrate ALL existing records in HF to new schema
-    for url, record in hf_index.items():
-        if "annotations" in record and record["annotations"]:
-            try:
-                # remote annotations are JSON stringified in the dataset
-                anns = json.loads(record["annotations"])
-                if not isinstance(anns, list): anns = [anns]
-                migrated_anns = _migrate_annotations(anns)
-                record["annotations"] = json.dumps(migrated_anns, separators=(",", ":"))
-            except:
-                pass
-
-    merged_records_map = hf_index.copy() # Start with migrated existing records
-    
-    # Process local records: merge annotations or append new records
-    for local in local_records:
-        l_url = str(local["url"])
-        
-        # Ensure local annotations are migrated (if not already)
-        if "annotations" in local and isinstance(local["annotations"], list):
-            local["annotations"] = _migrate_annotations(local["annotations"])
-            
-        if l_url in merged_records_map:
-            # URL exists, merge annotations list
-            remote_record = merged_records_map[l_url]
-            remote_annotations_str = remote_record.get("annotations")
-            
-            # Parse remote annotations and migrate them
-            remote_annotations = []
-            if remote_annotations_str:
-                try:
-                    remote_annotations = json.loads(remote_annotations_str)
-                    if not isinstance(remote_annotations, list):
-                        remote_annotations = [remote_annotations]
-                    remote_annotations = _migrate_annotations(remote_annotations)
-                except:
-                    log.warning("Could not parse remote annotations for %s", l_url)
-
-            local_annotations = local.get("annotations", [])
-            
-            merged_annotations_str = _merge_annotations_list(json.dumps(remote_annotations), local_annotations)
-            remote_record["annotations"] = merged_annotations_str # Update with merged annotations
-            
-            # Update metadata from local record if it exists and is more recent (optional refinement)
-            if local.get("annotations"): # If local record has annotations
-                latest_local_ann = local["annotations"][-1] # Assume latest annotation in local list
-                if "metadata" not in remote_record: remote_record["metadata"] = {}
-                remote_record["metadata"]["last_user"] = latest_local_ann.get("user")
-                remote_record["metadata"]["last_issue_number"] = latest_local_ann.get("issue_number")
-                remote_record["metadata"]["last_timestamp"] = latest_local_ann.get("timestamp")
-        else:
-            # New URL, append as a new record
-            merged_records_map[l_url] = _normalise_record(local) # Normalize before adding
-
-    # Combine all records (existing merged + new ones)
-    final_records_list = list(merged_records_map.values())
-
-    if not final_records_list:
-        log.info("No records to push for %s.", task_type)
+    if not local_url_map:
+        log.info("No records to process for %s.", task_type)
         return
 
-    # Align schema based on all keys found
-    aligned_data = []
-    for r in final_records_list:
-        # Use PREFERRED_KEY_ORDER for explicit ordering, add others at the end
+    # 2. Identify conflicts via streaming
+    existing_urls = set()
+    has_existing = False
+    try:
+        ds_preview = load_dataset(repo_id, token=token, split="train", streaming=True)
+        has_existing = True
+        log.info("Checking for conflicts in %s...", repo_id)
+        for row in ds_preview:
+            if "url" in row:
+                existing_urls.add(_normalize_url(row["url"]))
+    except Exception as e:
+        log.info("New dataset or inaccessible: %s", repo_id)
+
+    conflicts = set(local_url_map.keys()).intersection(existing_urls)
+
+    # 3. Decision: Optimized Append or Full Merge
+    if not conflicts and has_existing:
+        log.info("No conflicts. Appending %d records to %s", len(local_url_map), repo_id)
+        append_ds = Dataset.from_list(list(local_url_map.values()))
+        append_ds.push_to_hub(repo_id, token=token, split="train", append=True)
+        return
+
+    # 4. Full Merge Path
+    log.info("Conflicts found or migration needed. Performing full merge for %s", repo_id)
+    
+    existing_records = []
+    if has_existing:
+        try:
+            full_ds = load_dataset(repo_id, token=token, split="train")
+            existing_records = [dict(row) for row in full_ds]
+        except Exception as e:
+            log.error("Failed to load full dataset: %s", e)
+
+    # Index and migrate remote records
+    merged_map = {}
+    for r in existing_records:
+        if "url" in r:
+            url = _normalize_url(r["url"])
+            r["url"] = url
+            # Migrate remote annotations
+            if r.get("annotations"):
+                try:
+                    anns = json.loads(r["annotations"])
+                    if not isinstance(anns, list): anns = [anns]
+                    r["annotations"] = json.dumps(_migrate_annotations(anns), separators=(",", ":"))
+                except: pass
+            merged_map[url] = r
+
+    # Merge local into map
+    for url, local in local_url_map.items():
+        if url in merged_map:
+            remote = merged_map[url]
+            try:
+                l_anns = json.loads(local.get("annotations", "[]"))
+                r_anns_str = remote.get("annotations")
+                remote["annotations"] = _merge_annotations_list(r_anns_str, l_anns)
+                
+                # Update metadata if local has annotations
+                if l_anns:
+                    latest = l_anns[-1]
+                    meta = remote.get("metadata", "{}")
+                    if isinstance(meta, str):
+                        try: meta = json.loads(meta)
+                        except: meta = {}
+                    meta["last_user"] = latest.get("user")
+                    meta["last_timestamp"] = latest.get("timestamp")
+                    remote["metadata"] = json.dumps(meta, separators=(",", ":"))
+            except Exception as e:
+                log.warning("Merge failed for %s: %s", url, e)
+        else:
+            merged_map[url] = local
+
+    # Prepare final dataset
+    final_list = list(merged_map.values())
+    aligned = []
+    for r in final_list:
         row = {k: r.get(k) for k in PREFERRED_KEY_ORDER if k in r}
         for k in sorted(r.keys()):
             if k not in PREFERRED_KEY_ORDER:
                 row[k] = r.get(k)
-        aligned_data.append(row)
+        aligned.append(row)
 
-    final_ds = Dataset.from_list(aligned_data)
+    final_ds = Dataset.from_list(aligned)
     final_ds.push_to_hub(repo_id, token=token, split="train")
-    log.info("Successfully synchronized %d records for %s (Total rows: %d)", len(local_records_raw), repo_id, len(final_ds))
+    log.info("Synchronized %d records for %s", len(local_url_map), repo_id)
 
 
 def main() -> None:
@@ -267,11 +282,8 @@ def main() -> None:
                     if line.strip():
                         local_records.append(json.loads(line))
             
-            # Filter for labeled records only (for actual merging)
-            labeled = [r for r in local_records if r.get("annotations")]
-            
-            # Call sync even if labeled is empty, to perform migration of existing HF data
-            _push_to_hf(task_type, labeled, token)
+            # Sync even if empty to ensure HF data is migrated
+            _push_to_hf(task_type, local_records, token)
             
         except Exception as exc:
             log.warning("Error processing %s: %s", task_file.name, exc)
