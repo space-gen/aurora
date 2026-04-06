@@ -27,7 +27,7 @@ DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 SOURCE_MAP = {
     "sunspot": {
         "path": "http://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/",
-        "filter": "_Ic_1k.jpg",
+        "filter": "_Ic_flat_1k.jpg",
         "prefix": "sp"
     },
     "magnetogram": {
