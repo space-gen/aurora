@@ -42,7 +42,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No annotation changes to commit (possibly a duplicate)."
           else
-            git commit -m "chore(annotation): record annotation from issue #${{ github.event.issue.number }} [skip ci]
+            git commit -m "chore(annotation): record annotation from issues [skip ci]
 
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push
@@ -52,7 +52,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // Add acknowledgment comment and close the original issue
+            // Add acknowledgment comment and close the original issues
             const payload = context.payload.client_payload || {};
             const issue_number = payload.issue_number;
             if (!issue_number) {
