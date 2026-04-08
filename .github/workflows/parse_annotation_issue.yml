@@ -80,3 +80,35 @@ jobs:
                 state_reason: 'completed'
               });
             }
+
+  process-all-annotations:
+    name: Process all open annotation issues
+    runs-on: ubuntu-latest
+    # Only run when repository_dispatch includes a client_payload.process_all flag
+    if: ${{ github.event.client_payload.process_all == 'true' }}
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ensure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run processor for all annotation issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python scripts/process_all_annotation_issues.py
