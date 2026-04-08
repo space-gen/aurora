@@ -137,25 +137,39 @@ def _merge_annotations_list(remote_str: str | None, local_list: list[dict[str, A
         except: 
             log.warning("Could not parse JSON string as a list: %s", s)
             return []
-
     remote_list = parse_list(remote_str)
-    
-    seen_hashes = set()
+
+    def _normalize_annotation(obj: dict[str, Any]) -> dict[str, Any]:
+        # Make a shallow copy to avoid mutating input
+        ann = dict(obj)
+        # Normalize locations to use `region` key (migrate older `rle` if present)
+        locs = ann.get("locations")
+        if isinstance(locs, str):
+            try:
+                locs = json.loads(locs)
+            except Exception:
+                locs = []
+        new_locs = []
+        if isinstance(locs, list):
+            for l in locs:
+                if not isinstance(l, dict):
+                    continue
+                lcopy = dict(l)
+                if "rle" in lcopy and "region" not in lcopy:
+                    lcopy["region"] = lcopy.pop("rle")
+                new_locs.append(lcopy)
+        ann["locations"] = new_locs
+        return ann
+
+    # Append-only merge: normalize both remote and local lists and concatenate.
     merged_list = []
-    
-    # Add remote items first, ensuring they are added only if not seen
     for item in remote_list:
-        s_item = json.dumps(item, sort_keys=True)
-        if s_item not in seen_hashes:
-            seen_hashes.add(s_item)
-            merged_list.append(item)
-            
-    # Add local items, ensuring they are unique and not already present
+        norm = _normalize_annotation(item) if isinstance(item, dict) else item
+        merged_list.append(norm)
+
     for item in local_list:
-        s_item = json.dumps(item, sort_keys=True)
-        if s_item not in seen_hashes:
-            seen_hashes.add(s_item)
-            merged_list.append(item)
+        norm = _normalize_annotation(item) if isinstance(item, dict) else item
+        merged_list.append(norm)
 
     return json.dumps(merged_list, separators=(",", ":"))
 

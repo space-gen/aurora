@@ -60,8 +60,9 @@ The data is stored in a compressed JSON Lines (JSONL) format. Each line is a min
 Users annotate solar observations by **opening a GitHub Issue** using the *Submit Solar Observation Annotation* template. When the `annotation` label is applied to an issue, the `Parse Annotation Issue` workflow automatically parses the form fields and writes the annotation to `annotations/`. It is merged into HuggingFace during the next nightly pipeline run.
 
 **When submitting annotations:**
-*   Use the `your_label` field to submit one or more annotations in the format `label,rle`. Multiple annotations are separated by a semicolon (`;`). Example: `class_a,10 1 5 2 3 ; class_h,2 7 1 4`.
-*   Labels must be valid for the selected Task Type (see table above). RLE should be a run-length encoding string describing the region mask (space-separated start/length pairs or another accepted RLE format).
+*   Use the `your_label` field to submit one or more annotations in the format `label,region`. Multiple annotations are separated by a semicolon (`;`). Example: `class_a,10 1 5 2 3 ; class_h,2 7 1 4`.
+*   Labels must be valid for the selected Task Type (see table above). The `region` payload is stored exactly as submitted.
+*   A single GitHub username can annotate a given record ID only once. Repeat submissions for the same `id` by the same user are rejected by the parser.
 
 ## Documentation
 

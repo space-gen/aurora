@@ -29,14 +29,15 @@ class_a,10 1 5 2 3 ; class_h,2 7 1 4
 
 - **Task Type**: Must be one of `sunspot`, `magnetogram`, `solar_flare`, etc.
 - **Record ID**: The unique ID found in the task JSON.
-- **Your Label**: One or more annotations in `label,rle` format (multiple annotations separated by `;`). Labels must be valid for the task type; RLE is a run-length encoding string describing the annotation mask.
+- **Your Label**: One or more annotations in `label,region` format (multiple annotations separated by `;`). Labels must be valid for the task type. The `region` payload is stored exactly as submitted.
 
 ### 3. Automated Processing
 Once your issue is submitted and labeled as `annotation`:
 1. The **`Parse Annotation Issue`** workflow is triggered.
 2. `scripts/parse_issue_annotation.py` validates your input.
 3. If valid, your contribution is *appended* to the `annotations` list for the corresponding task in the local `annotations/` directory.
-4. The issue is automatically acknowledged and closed.
+4. If you submit again for the same record ID with the same GitHub username, the parser rejects the duplicate.
+5. The issue is automatically acknowledged and closed.
 
 ## Valid Labels
 

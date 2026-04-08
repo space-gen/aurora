@@ -34,11 +34,13 @@ The `annotations` column stores a full history of human labels. Because HuggingF
     "issue_number": 101,
     "timestamp": "2026-03-18T12:00:00Z",
     "locations": [
-      { "label": "class_f", "rle": "450000 15 1009 15" }
+      { "label": "class_f", "region": "450000 15 1009 15" }
     ]
   }
 ]
 ```
+
+`locations[].region` is persisted exactly as submitted by contributors (no RLE conversion or other normalization in the issue parser).
 
 ## Schema Reconciliation
 
@@ -47,3 +49,10 @@ The synchronization script (`merge_annotations_to_hf.py`) performs automated sch
 1. **Union Merge**: If a new version of the Aurora backend adds a field (e.g., `confidence_score`), the script identifies the missing column on HuggingFace and updates the dataset features automatically.
 2. **Backward Compatibility**: All historical records are preserved. Missing fields in older records are filled with `null`.
 3. **Deduplication**: Records are merged by `id`. If a record is updated with a new annotation, the new entry is appended to the existing `annotations` array for that record ID.
+
+## Parser Strictness Rule
+
+Aurora enforces a strict write rule before data reaches HuggingFace:
+
+- For a given record `id`, the same GitHub `user` can only submit one annotation entry.
+- A second submission from the same user for the same record is rejected during issue parsing.

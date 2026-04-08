@@ -29,7 +29,7 @@ Each task is represented as a single minified line in a `.jsonl` file, with fiel
       "user": "github_username",
       "confidence_score": 95.0,
       "locations": [
-        { "label": "class_f", "rle": "450000 15 1009 15" }
+        { "label": "class_f", "region": "450000 15 1009 15" }
       ],
       "issue_number": 42,
       "timestamp": "2026-03-17T14:30:00Z"
@@ -66,14 +66,16 @@ Each entry in the `annotations` list represents a contribution from a single use
 ### Location Object
 
 ```json
-{ "label": "class_f", "rle": "450000 15 1009 15" }
+{ "label": "class_f", "region": "450000 15 1009 15" }
 ```
 
-Labels are applied to **specific regions** defined by RLE (Run-Length Encoding).
-RLE is stored in a **compressed format**: a space-separated sequence of `start length gap length gap length ...`.
-- `start` is the absolute 1D pixel index of the first run.
-- `length` is the number of pixels in the run.
-- `gap` is the number of pixels between the **end** of the previous run and the **start** of the next run.
-This relative encoding keeps numbers smaller and more compact.
+Labels are applied to **specific regions** via the `region` field.
+The parser stores each region payload exactly as submitted by the contributor (no transformation).
+This means the value may contain RLE, polygon coordinates, circles, or any other accepted task-specific encoding.
 There is no image-wide label field.
+
+## Contribution Constraint
+
+For each record `id`, a given GitHub `user` can appear at most once in `annotations`.
+If the same user tries to submit another annotation for the same record, the parser rejects it and returns an error.
 

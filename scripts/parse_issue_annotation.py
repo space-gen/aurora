@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 import os
 import re
 import sys
@@ -35,37 +34,6 @@ VALID_LABELS: dict[str, set[str]] = {
     "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
 }
 VALID_TASK_TYPES = set(VALID_LABELS.keys())
-
-def circle_to_rle(cx: float, cy: float, r: float, width: int = 1024) -> str:
-    """
-    Convert a circle (cx, cy, r) to a compressed RLE string.
-    Format: start1 length1 gap1 length2 gap2 length3 ...
-    gap is the distance from the end of the previous run to the start of the current one.
-    """
-    runs = []
-    for y in range(int(cy - r), int(cy + r) + 1):
-        if y < 0 or y >= 1024:
-            continue
-        dy = y - cy
-        dx = math.sqrt(max(0, r*r - dy*dy))
-        x1 = max(0, int(cx - dx))
-        x2 = min(width - 1, int(cx + dx))
-        if x1 <= x2:
-            runs.append((y * width + x1, x2 - x1 + 1))
-    
-    if not runs:
-        return ""
-        
-    rle_parts = [str(runs[0][0]), str(runs[0][1])]
-    last_end = runs[0][0] + runs[0][1]
-    
-    for i in range(1, len(runs)):
-        start, length = runs[i]
-        gap = start - last_end
-        rle_parts.extend([str(gap), str(length)])
-        last_end = start + length
-        
-    return " ".join(rle_parts)
 
 def _parse_issue_body(body: str) -> dict[str, str]:
     fields: dict[str, str] = {}
@@ -88,10 +56,9 @@ def _parse_issue_body(body: str) -> dict[str, str]:
     return fields
 
 def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]:
-    """Parse regions provided as `label,rle ; label2,rle2` or `label,x,y,r`.
+    """Parse regions provided as `label,region ; label2,region2`.
 
-    Returns a list of dicts with keys: `label` and `rle`.
-    Automatically converts x,y,r to RLE if 4 comma-separated values are found.
+    Region payloads are stored exactly as submitted (no RLE conversion).
     """
     regions = []
     if not regions_raw:
@@ -101,33 +68,25 @@ def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]
         part = part.strip()
         if not part:
             continue
-        
-        # Split by comma to check format
-        bits = [b.strip() for b in part.split(",")]
-        if len(bits) < 2:
+
+        if "," not in part:
             log.warning(f"Skipping malformed region string: {part}")
             continue
-            
-        label = bits[0].lower()
+
+        label_raw, region_payload = part.split(",", 1)
+        label = label_raw.strip().lower()
+        region_payload = region_payload.strip()
+
+        if not region_payload:
+            log.warning(f"Skipping region with empty payload: {part}")
+            continue
+
         # Validate label for the given task_type if possible
         if task_type and label not in VALID_LABELS.get(task_type, set()):
             log.warning(f"Skipping unknown label for task_type {task_type}: {label}")
             continue
 
-        if len(bits) == 4:
-            # Format: label,x,y,r
-            try:
-                x, y, r = map(float, bits[1:])
-                rle = circle_to_rle(x, y, r)
-                regions.append({"label": label, "rle": rle})
-                log.info(f"Converted {label} circle ({x},{y},{r}) to RLE")
-            except ValueError:
-                log.warning(f"Failed to parse x,y,r coordinates: {part}")
-                continue
-        else:
-            # Format: label,rle
-            rle = ",".join(bits[1:]) # Re-join in case RLE itself contains commas (unlikely but safe)
-            regions.append({"label": label, "rle": rle})
+        regions.append({"label": label, "region": region_payload})
             
     return regions
 
@@ -197,6 +156,20 @@ def main() -> None:
 
                     if "annotations" not in task or not isinstance(task["annotations"], list):
                         task["annotations"] = []
+
+                    normalized_author = issue_author.strip().lower()
+                    if normalized_author and any(
+                        isinstance(a, dict)
+                        and str(a.get("user", "")).strip().lower() == normalized_author
+                        for a in task["annotations"]
+                    ):
+                        log.error(
+                            "Duplicate annotation rejected: user '%s' has already annotated record '%s'. "
+                            "Each username can annotate a given record only once.",
+                            issue_author,
+                            record_id,
+                        )
+                        sys.exit(1)
                     
                     # Append new annotation entry
                     task["annotations"].append({
