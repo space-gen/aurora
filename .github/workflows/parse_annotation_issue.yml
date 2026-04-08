@@ -1,4 +1,4 @@
-name: "Parse Annotation (repository_dispatch)"
+name: "Parse Annotation"
 
 on:
   repository_dispatch:
