@@ -5,6 +5,7 @@ concurrency:
 
 on:
   repository_dispatch: 
+    types: nightly refresh
    # 00:00 UTC daily
   workflow_dispatch:
 
