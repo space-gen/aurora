@@ -4,6 +4,16 @@ on:
   repository_dispatch:
     types: [parse_annotation, "annotation update"]
   workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number'
+        required: true
+      issue_body:
+        description: 'Issue body (full markdown)'
+        required: true
+      issue_author:
+        description: 'Issue author (username)'
+        required: true
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -30,9 +40,9 @@ jobs:
 
       - name: Parse issue body into annotation JSON
         env:
-          ISSUE_NUMBER: ${{ github.event.client_payload.issue_number }}
-          ISSUE_BODY: ${{ github.event.client_payload.issue_body }}
-          ISSUE_AUTHOR: ${{ github.event.client_payload.issue_author }}
+          ISSUE_NUMBER: ${{ github.event.client_payload.issue_number || github.event.inputs.issue_number }}
+          ISSUE_BODY: ${{ github.event.client_payload.issue_body || github.event.inputs.issue_body }}
+          ISSUE_AUTHOR: ${{ github.event.client_payload.issue_author || github.event.inputs.issue_author }}
         run: python scripts/parse_issue_annotation.py
 
       - name: Commit annotation file
