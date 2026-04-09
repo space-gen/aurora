@@ -5,15 +5,19 @@ on:
     types: [parse_annotation, "annotation update"]
   workflow_dispatch:
     inputs:
+      process_all:
+        description: 'Process all open annotation issues instead of a single issue'
+        required: false
+        default: 'false'
       issue_number:
         description: 'Issue number'
-        required: true
+        required: false
       issue_body:
         description: 'Issue body (full markdown)'
-        required: true
+        required: false
       issue_author:
         description: 'Issue author (username)'
-        required: true
+        required: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -21,6 +25,8 @@ env:
 jobs:
   parse-annotation:
     name: Parse annotation issue and write to annotations/
+    # Skip this job when a 'process_all' dispatch is requested
+    if: ${{ !((github.event_name == 'repository_dispatch' && github.event.client_payload.process_all == 'true') || (github.event_name == 'workflow_dispatch' && github.event.inputs.process_all == 'true')) }}
     runs-on: ubuntu-latest
     # Triggered via repository_dispatch by the issue router workflow after validation.
     permissions:
@@ -96,7 +102,7 @@ jobs:
     name: Process all open annotation issues
     runs-on: ubuntu-latest
     # Only run when repository_dispatch includes a client_payload.process_all flag
-    if: ${{ github.event.client_payload.process_all == 'true' }}
+    if: ${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.process_all == 'true') || (github.event_name == 'workflow_dispatch' && github.event.inputs.process_all == 'true') }}
     permissions:
       contents: write
       issues: write
