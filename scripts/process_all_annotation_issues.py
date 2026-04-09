@@ -84,6 +84,9 @@ def main() -> None:
     issues = list_annotation_issues()
     print(f"Found {len(issues)} open annotation issues")
 
+    successes = []
+    failures = []
+
     for issue in issues:
         num = issue["number"]
         body = issue.get("body", "")
@@ -100,21 +103,37 @@ def main() -> None:
         print(f"Parser rc={rc}\nstdout:\n{out}\nstderr:\n{err}")
 
         if rc == 0:
-            # Commit annotation changes if any
-            run_cmd(["git", "add", "annotations/"], cwd=repo_dir)
-            # Check if there is anything to commit
-            rc2, out2, err2 = run_cmd(["git", "diff", "--cached", "--name-only"], cwd=repo_dir)
-            if out2.strip():
-                commit_msg = f"chore(annotation): record annotation from issue #{num} [skip ci]\n\nCo-authored-by: {author} <>{''}"
-                rc3, out3, err3 = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
-                print(f"git commit rc={rc3}\n{out3}\n{err3}")
-                # push
-                rc4, out4, err4 = run_cmd(["git", "push", "origin", "HEAD:main"], cwd=repo_dir)
-                print(f"git push rc={rc4}\n{out4}\n{err4}")
-            else:
-                print("No annotation changes to commit for this issue (possibly duplicate)")
+            successes.append({"number": num, "author": author})
+        else:
+            failures.append({"number": num, "error": err})
 
-            # Comment and close
+    # After processing all issues, commit any annotation changes once
+    run_cmd(["git", "add", "annotations/"], cwd=repo_dir)
+    rc2, out2, err2 = run_cmd(["git", "diff", "--cached", "--name-only"], cwd=repo_dir)
+    commit_ok = False
+    if out2.strip():
+        issue_nums = [s["number"] for s in successes]
+        coauthors = ""
+        for s in successes:
+            coauthors += f"Co-authored-by: {s['author']} <>\n"
+        commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
+        rc3, out3, err3 = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
+        print(f"git commit rc={rc3}\n{out3}\n{err3}")
+        if rc3 == 0:
+            rc4, out4, err4 = run_cmd(["git", "push", "origin", "HEAD:main"], cwd=repo_dir)
+            print(f"git push rc={rc4}\n{out4}\n{err4}")
+            commit_ok = (rc4 == 0)
+        else:
+            print("Git commit failed; not pushing and not closing issues.")
+    else:
+        print("No annotation changes to commit (possibly duplicates)")
+        # treat as OK to close issues (parser produced no new changes)
+        commit_ok = True
+
+    # Comment and close successes only if commit/push succeeded
+    if commit_ok:
+        for s in successes:
+            num = s["number"]
             try:
                 comment_issue(num, COMMENT_BODY_SUCCESS)
                 add_label(num, ["recorded"])
@@ -122,14 +141,16 @@ def main() -> None:
                 print(f"Closed issue #{num}")
             except Exception as e:
                 print(f"Failed to comment/close issue #{num}: {e}")
-        else:
-            # Parser failed; leave a comment
-            try:
-                comment_issue(num, COMMENT_BODY_FAILURE + "\n\nError output:\n```
-" + err + "\n```")
-                print(f"Posted failure comment for issue #{num}")
-            except Exception as e:
-                print(f"Failed to post failure comment for issue #{num}: {e}")
+    else:
+        print("Commit/push failed; skipping closing successful issues to avoid data loss.")
+
+    # For failures, post failure comments with error output
+    for f in failures:
+        try:
+            comment_issue(f["number"], COMMENT_BODY_FAILURE + "\n\nError output:\n```\n" + f["error"] + "\n```")
+            print(f"Posted failure comment for issue #{f['number']}")
+        except Exception as e:
+            print(f"Failed to post failure comment for issue #{f['number']}: {e}")
 
 
 if __name__ == "__main__":

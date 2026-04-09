@@ -118,16 +118,17 @@ def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]
             # Format: label,x,y,r
             try:
                 x, y, r = map(float, bits[1:])
-                rle = circle_to_rle(x, y, r)
-                regions.append({"label": label, "rle": rle})
-                log.info(f"Converted {label} circle ({x},{y},{r}) to RLE")
+                # Store circle coordinates directly in the 'region' field as comma-separated x,y,r
+                region_val = f"{x},{y},{r}"
+                regions.append({"label": label, "region": region_val})
+                log.info(f"Stored {label} circle as region ({region_val})")
             except ValueError:
                 log.warning(f"Failed to parse x,y,r coordinates: {part}")
                 continue
         else:
-            # Format: label,rle
-            rle = ",".join(bits[1:]) # Re-join in case RLE itself contains commas (unlikely but safe)
-            regions.append({"label": label, "rle": rle})
+            # Format: label,rle or label,region-string
+            region_val = ",".join(bits[1:]) # Re-join in case the region string contains commas
+            regions.append({"label": label, "region": region_val})
             
     return regions
 
@@ -191,7 +192,7 @@ def main() -> None:
                         task.pop(legacy, None)
                     
                     # Clean metadata
-                    if "metadata" in task:
+                    if isinstance(task.get("metadata"), dict):
                         for legacy_meta in ["last_user", "last_annotator", "last_timestamp", "last_issue_number"]:
                             task["metadata"].pop(legacy_meta, None)
 
@@ -206,6 +207,12 @@ def main() -> None:
                         "issue_number": int(issue_number) if str(issue_number).isdigit() else issue_number,
                         "timestamp": datetime.now(timezone.utc).isoformat()
                     })
+
+                    # Ensure annotations are chronologically ordered by timestamp
+                    try:
+                        task["annotations"].sort(key=lambda a: a.get("timestamp", ""))
+                    except Exception:
+                        pass
                 
                 # Enforce field order
                 ordered_task = {

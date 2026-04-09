@@ -3,6 +3,7 @@ name: "Parse Annotation"
 on:
   repository_dispatch:
     types: [parse_annotation, "annotation update"]
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
