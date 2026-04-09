@@ -8,7 +8,7 @@ on:
       process_all:
         description: 'Process all open annotation issues instead of a single issue'
         required: false
-        default: 'false'
+        default: 'true'
       issue_number:
         description: 'Issue number'
         required: false
