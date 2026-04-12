@@ -1,0 +1,29 @@
+name: "HF Monthly Super Squash"
+
+on:
+  schedule:
+    # Run at 00:00 UTC on the first day of each month
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  squash:
+    name: Run HF super_squash_history
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install --quiet huggingface_hub pyyaml
+      - name: Run super_squash_history
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/squash_history.py
