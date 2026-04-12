@@ -173,7 +173,7 @@ def _merge_annotations_list(remote_str: str | None, local_list: list[dict[str, A
 
     return json.dumps(merged_list, separators=(",", ":"))
 
-def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str) -> None:
+def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str, append_only: bool = False) -> None:
     from datasets import Dataset, load_dataset
 
     repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
@@ -191,6 +191,16 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
 
     if not local_url_map:
         log.info("No records to process for %s.", task_type)
+        return
+
+    # If running in append-only mode, just push the new rows and return
+    if append_only:
+        log.info("Append-only mode enabled for %s: appending %d records", repo_id, len(local_url_map))
+        try:
+            append_ds = Dataset.from_list(list(local_url_map.values()))
+            append_ds.push_to_hub(repo_id, token=token, split="train", append=True)
+        except Exception as e:
+            log.warning("Append-only push failed for %s: %s", repo_id, e)
         return
 
     # 2. Identify conflicts via streaming
@@ -287,6 +297,8 @@ def main() -> None:
         sys.exit(1)
     
     target_files = list(ANNOTATIONS_DIR.glob("*.jsonl"))
+    append_only = os.environ.get("HF_APPEND_ONLY", "false").lower() in ("1", "true", "yes")
+
     for task_file in target_files:
         task_type = task_file.stem
         local_records = []
@@ -297,7 +309,7 @@ def main() -> None:
                         local_records.append(json.loads(line))
             
             # Sync even if empty to ensure HF data is migrated
-            _push_to_hf(task_type, local_records, token)
+            _push_to_hf(task_type, local_records, token, append_only=append_only)
             
         except Exception as exc:
             log.warning("Error processing %s: %s", task_file.name, exc)

@@ -87,7 +87,27 @@ jobs:
       - name: Merge to HuggingFace
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/merge_annotations_to_hf.py
+        run: |
+          # Use UTC date to decide append-only vs full merge
+          if [ "$(date -u +%d)" = "01" ]; then
+            echo "1st of month detected (UTC): running full HF merge"
+            python scripts/merge_annotations_to_hf.py
+          else
+            echo "Not the 1st of the month (UTC): running append-only HF merge"
+            HF_APPEND_ONLY=1 python scripts/merge_annotations_to_hf.py
+          fi
+
+      - name: Monthly HF history squash (1st of month)
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Use UTC date; run only on the 1st day of the month
+          if [ "$(date -u +%d)" = "01" ]; then
+            echo "1st of month detected (UTC): running HF history squash"
+            python scripts/squash_history.py
+          else
+            echo "Not the 1st of the month (UTC); skipping HF history squash."
+          fi
 
   sync-and-unlock:
     name: Stage 04-05 · Sync & Unlock
