@@ -113,7 +113,21 @@ def main():
                     repo_type="dataset",
                     commit_message=f"chore: add .gitattributes for LFS tracking in {task}"
                 )
-                
+
+            # 6. Ensure data/ directory placeholder exists so datasets store daily files under data/YYYY-MM-DD.jsonl
+            try:
+                api.hf_hub_download(repo_id=repo_id, filename="data/.gitkeep", repo_type="dataset")
+                log.info("data/.gitkeep already exists in %s.", repo_id)
+            except Exception:
+                log.info("Creating data/.gitkeep for %s", repo_id)
+                api.upload_file(
+                    path_or_fileobj=b"",
+                    path_in_repo="data/.gitkeep",
+                    repo_id=repo_id,
+                    repo_type="dataset",
+                    commit_message=f"chore: create data/ placeholder for {task}"
+                )
+
         except Exception as e:
             log.error(f"Failed processing {repo_id}: {e}")
 
