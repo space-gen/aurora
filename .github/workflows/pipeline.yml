@@ -88,14 +88,8 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Use UTC date to decide append-only vs full merge
-          if [ "$(date -u +%d)" = "01" ]; then
-            echo "1st of month detected (UTC): running full HF merge"
-            python scripts/merge_annotations_to_hf.py
-          else
-            echo "Not the 1st of the month (UTC): running append-only HF merge"
-            HF_APPEND_ONLY=1 python scripts/merge_annotations_to_hf.py
-          fi
+          echo "Running HF merge script (daily). Script will upload daily files and perform full merge on UTC 1st."
+          python scripts/merge_annotations_to_hf.py
 
       - name: Monthly HF history squash (1st of month)
         env:

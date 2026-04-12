@@ -173,7 +173,7 @@ def _merge_annotations_list(remote_str: str | None, local_list: list[dict[str, A
 
     return json.dumps(merged_list, separators=(",", ":"))
 
-def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str, append_only: bool = False) -> None:
+def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str) -> None:
     from datasets import Dataset, load_dataset
 
     repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
@@ -193,113 +193,109 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
         log.info("No records to process for %s.", task_type)
         return
 
-    # If running in append-only mode, write daily jsonl files and upload under data/YYYY-MM-DD.jsonl
-    if append_only:
-        log.info("Append-only mode enabled for %s: creating daily files and uploading", repo_id)
-        try:
-            from huggingface_hub import HfApi
-            from datetime import datetime
-
-            api = HfApi(token=token)
-            tmp_dir = REPO_ROOT / "tmp_hf_uploads"
-            tmp_dir.mkdir(parents=True, exist_ok=True)
-
-            records_by_date: dict[str, list[dict[str, Any]]] = {}
-            for rec in local_url_map.values():
-                date_str = None
-                created = rec.get("created_at")
-                if created:
-                    try:
-                        # support ISO timestamps
-                        dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                        date_str = dt.date().isoformat()
-                    except Exception:
-                        date_str = None
-                if not date_str:
-                    date_str = datetime.utcnow().date().isoformat()
-                records_by_date.setdefault(date_str, []).append(rec)
-
-            for date_key, recs in records_by_date.items():
-                local_path = tmp_dir / f"{date_key}.jsonl"
-                with open(local_path, "w", encoding="utf-8") as out_f:
-                    for r in recs:
-                        out_f.write(json.dumps(r, separators=(",", ":")) + "\n")
-
-                repo_path = f"data/{date_key}.jsonl"
-                try:
-                    api.upload_file(
-                        path_or_fileobj=str(local_path),
-                        path_in_repo=repo_path,
-                        repo_id=repo_id,
-                        repo_type="dataset",
-                        token=token,
-                        commit_message=f"chore: add daily annotations {date_key}"
-                    )
-                    log.info("Uploaded %s to %s:%s", local_path, repo_id, repo_path)
-                except Exception as e:
-                    log.warning("Failed to upload %s to %s: %s", local_path, repo_id, e)
-                finally:
-                    try:
-                        local_path.unlink()
-                    except Exception:
-                        pass
-
-            # cleanup tmp dir if empty
-            try:
-                tmp_dir.rmdir()
-            except Exception:
-                pass
-
-        except Exception as e:
-            log.warning("Append-only flow failed for %s: %s", repo_id, e)
-        return
-
-    # 2. Identify conflicts via streaming
-    existing_urls = set()
-    has_existing = False
+    # Always write daily jsonl files and upload under data/YYYY-MM-DD.jsonl
     try:
-        ds_preview = load_dataset(repo_id, token=token, split="train", streaming=True)
-        has_existing = True
-        log.info("Checking for conflicts in %s...", repo_id)
-        for row in ds_preview:
-            if "url" in row:
-                existing_urls.add(_normalize_url(row["url"]))
+        from huggingface_hub import HfApi
+        from datetime import datetime
+
+        api = HfApi(token=token)
+        tmp_dir = REPO_ROOT / "tmp_hf_uploads"
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+
+        records_by_date: dict[str, list[dict[str, Any]]] = {}
+        for rec in local_url_map.values():
+            date_str = None
+            created = rec.get("created_at")
+            if created:
+                try:
+                    # support ISO timestamps
+                    dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                    date_str = dt.date().isoformat()
+                except Exception:
+                    date_str = None
+            if not date_str:
+                date_str = datetime.utcnow().date().isoformat()
+            records_by_date.setdefault(date_str, []).append(rec)
+
+        for date_key, recs in records_by_date.items():
+            local_path = tmp_dir / f"{date_key}.jsonl"
+            with open(local_path, "w", encoding="utf-8") as out_f:
+                for r in recs:
+                    out_f.write(json.dumps(r, separators=(",", ":")) + "\n")
+
+            repo_path = f"data/{date_key}.jsonl"
+            try:
+                api.upload_file(
+                    path_or_fileobj=str(local_path),
+                    path_in_repo=repo_path,
+                    repo_id=repo_id,
+                    repo_type="dataset",
+                    token=token,
+                    commit_message=f"chore: add daily annotations {date_key}"
+                )
+                log.info("Uploaded %s to %s:%s", local_path, repo_id, repo_path)
+            except Exception as e:
+                log.warning("Failed to upload %s to %s: %s", local_path, repo_id, e)
+            finally:
+                try:
+                    local_path.unlink()
+                except Exception:
+                    pass
+
+        # cleanup tmp dir if empty
+        try:
+            tmp_dir.rmdir()
+        except Exception:
+            pass
+
     except Exception as e:
-        log.info("New dataset or inaccessible: %s", repo_id)
+        log.warning("Daily file upload failed for %s: %s", repo_id, e)
 
-    conflicts = set(local_url_map.keys()).intersection(existing_urls)
-
-    # 3. Decision: Optimized Append or Full Merge
-    if not conflicts and has_existing:
-        log.info("No conflicts. Appending %d records to %s", len(local_url_map), repo_id)
-        append_ds = Dataset.from_list(list(local_url_map.values()))
-        append_ds.push_to_hub(repo_id, token=token, split="train", append=True)
+    # If not the first of the month (UTC), skip the expensive full merge.
+    from datetime import datetime as _dt
+    if not (_dt.utcnow().day == 1):
+        log.info("Not 1st of month (UTC); skipping full merge for %s", repo_id)
         return
 
-    # 4. Full Merge Path
-    log.info("Conflicts found or migration needed. Performing full merge for %s", repo_id)
-    
+    # 2. Full Merge Path: gather existing records from data/ files in the HF repo and merge
+    log.info("1st of month detected. Performing full merge for %s", repo_id)
     existing_records = []
-    if has_existing:
-        try:
-            full_ds = load_dataset(repo_id, token=token, split="train")
-            existing_records = [dict(row) for row in full_ds]
-        except Exception as e:
-            log.error("Failed to load full dataset: %s", e)
+    try:
+        files = api.list_repo_files(repo_id=repo_id, repo_type="dataset")
+        for f in files:
+            if not f.startswith("data/") or not f.endswith(".jsonl"):
+                continue
+            try:
+                local_f = api.hf_hub_download(repo_id=repo_id, filename=f, repo_type="dataset")
+                with open(local_f, "r", encoding="utf-8") as fh:
+                    for line in fh:
+                        if line.strip():
+                            try:
+                                existing_records.append(json.loads(line))
+                            except Exception:
+                                continue
+            except Exception as e:
+                log.warning("Failed to download %s from %s: %s", f, repo_id, e)
+    except Exception as e:
+        log.info("No existing data files or could not list files: %s", e)
 
-    # Index and migrate remote records
+    # Build merged_map from existing_records (already collected from data/ files)
     merged_map = {}
     for r in existing_records:
+        if not isinstance(r, dict):
+            continue
         if "url" in r:
             url = _normalize_url(r["url"])
             r["url"] = url
             # Migrate remote annotations
             if r.get("annotations"):
                 try:
-                    anns = json.loads(r["annotations"])
-                    if not isinstance(anns, list): anns = [anns]
+                    anns = json.loads(r["annotations"]) if isinstance(r["annotations"], str) else r["annotations"]
+                    if not isinstance(anns, list):
+                        anns = [anns]
                     r["annotations"] = json.dumps(_migrate_annotations(anns), separators=(",", ":"))
-                except: pass
+                except Exception:
+                    pass
             merged_map[url] = r
 
     # Merge local into map
@@ -307,17 +303,19 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
         if url in merged_map:
             remote = merged_map[url]
             try:
-                l_anns = json.loads(local.get("annotations", "[]"))
+                l_anns = json.loads(local.get("annotations", "[]")) if isinstance(local.get("annotations"), str) else local.get("annotations", [])
                 r_anns_str = remote.get("annotations")
                 remote["annotations"] = _merge_annotations_list(r_anns_str, l_anns)
-                
+
                 # Update metadata if local has annotations
                 if l_anns:
                     latest = l_anns[-1]
                     meta = remote.get("metadata", "{}")
                     if isinstance(meta, str):
-                        try: meta = json.loads(meta)
-                        except: meta = {}
+                        try:
+                            meta = json.loads(meta)
+                        except Exception:
+                            meta = {}
                     meta["last_user"] = latest.get("user")
                     meta["last_timestamp"] = latest.get("timestamp")
                     remote["metadata"] = json.dumps(meta, separators=(",", ":"))
@@ -338,7 +336,7 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
 
     final_ds = Dataset.from_list(aligned)
     final_ds.push_to_hub(repo_id, token=token, split="train")
-    log.info("Synchronized %d records for %s", len(local_url_map), repo_id)
+    log.info("Synchronized %d records for %s", len(aligned), repo_id)
 
 
 def main() -> None:
@@ -348,7 +346,6 @@ def main() -> None:
         sys.exit(1)
     
     target_files = list(ANNOTATIONS_DIR.glob("*.jsonl"))
-    append_only = os.environ.get("HF_APPEND_ONLY", "false").lower() in ("1", "true", "yes")
 
     for task_file in target_files:
         task_type = task_file.stem
@@ -358,10 +355,10 @@ def main() -> None:
                 for line in f:
                     if line.strip():
                         local_records.append(json.loads(line))
-            
-            # Sync even if empty to ensure HF data is migrated
-            _push_to_hf(task_type, local_records, token, append_only=append_only)
-            
+
+            # Sync: always upload daily files; full merge happens inside _push_to_hf when it's UTC day 1
+            _push_to_hf(task_type, local_records, token)
+
         except Exception as exc:
             log.warning("Error processing %s: %s", task_file.name, exc)
 
