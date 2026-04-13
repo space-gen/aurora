@@ -174,7 +174,7 @@ def _merge_annotations_list(remote_str: str | None, local_list: list[dict[str, A
     return json.dumps(merged_list, separators=(",", ":"))
 
 def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: str) -> None:
-    from datasets import Dataset, load_dataset
+    # Upload per-day files only; no full-merge performed here.
 
     repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
     
@@ -251,92 +251,7 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
     except Exception as e:
         log.warning("Daily file upload failed for %s: %s", repo_id, e)
 
-    # If not the first of the month (UTC), skip the expensive full merge.
-    from datetime import datetime as _dt
-    if not (_dt.utcnow().day == 1):
-        log.info("Not 1st of month (UTC); skipping full merge for %s", repo_id)
-        return
 
-    # 2. Full Merge Path: gather existing records from data/ files in the HF repo and merge
-    log.info("1st of month detected. Performing full merge for %s", repo_id)
-    existing_records = []
-    try:
-        files = api.list_repo_files(repo_id=repo_id, repo_type="dataset")
-        for f in files:
-            if not f.startswith("data/") or not f.endswith(".jsonl"):
-                continue
-            try:
-                local_f = api.hf_hub_download(repo_id=repo_id, filename=f, repo_type="dataset")
-                with open(local_f, "r", encoding="utf-8") as fh:
-                    for line in fh:
-                        if line.strip():
-                            try:
-                                existing_records.append(json.loads(line))
-                            except Exception:
-                                continue
-            except Exception as e:
-                log.warning("Failed to download %s from %s: %s", f, repo_id, e)
-    except Exception as e:
-        log.info("No existing data files or could not list files: %s", e)
-
-    # Build merged_map from existing_records (already collected from data/ files)
-    merged_map = {}
-    for r in existing_records:
-        if not isinstance(r, dict):
-            continue
-        if "url" in r:
-            url = _normalize_url(r["url"])
-            r["url"] = url
-            # Migrate remote annotations
-            if r.get("annotations"):
-                try:
-                    anns = json.loads(r["annotations"]) if isinstance(r["annotations"], str) else r["annotations"]
-                    if not isinstance(anns, list):
-                        anns = [anns]
-                    r["annotations"] = json.dumps(_migrate_annotations(anns), separators=(",", ":"))
-                except Exception:
-                    pass
-            merged_map[url] = r
-
-    # Merge local into map
-    for url, local in local_url_map.items():
-        if url in merged_map:
-            remote = merged_map[url]
-            try:
-                l_anns = json.loads(local.get("annotations", "[]")) if isinstance(local.get("annotations"), str) else local.get("annotations", [])
-                r_anns_str = remote.get("annotations")
-                remote["annotations"] = _merge_annotations_list(r_anns_str, l_anns)
-
-                # Update metadata if local has annotations
-                if l_anns:
-                    latest = l_anns[-1]
-                    meta = remote.get("metadata", "{}")
-                    if isinstance(meta, str):
-                        try:
-                            meta = json.loads(meta)
-                        except Exception:
-                            meta = {}
-                    meta["last_user"] = latest.get("user")
-                    meta["last_timestamp"] = latest.get("timestamp")
-                    remote["metadata"] = json.dumps(meta, separators=(",", ":"))
-            except Exception as e:
-                log.warning("Merge failed for %s: %s", url, e)
-        else:
-            merged_map[url] = local
-
-    # Prepare final dataset
-    final_list = list(merged_map.values())
-    aligned = []
-    for r in final_list:
-        row = {k: r.get(k) for k in PREFERRED_KEY_ORDER if k in r}
-        for k in sorted(r.keys()):
-            if k not in PREFERRED_KEY_ORDER:
-                row[k] = r.get(k)
-        aligned.append(row)
-
-    final_ds = Dataset.from_list(aligned)
-    final_ds.push_to_hub(repo_id, token=token, split="train")
-    log.info("Synchronized %d records for %s", len(aligned), repo_id)
 
 
 def main() -> None:
