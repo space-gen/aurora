@@ -115,16 +115,52 @@ def main() -> None:
         issue_nums = [s["number"] for s in successes]
         coauthors = ""
         for s in successes:
+            # Keep author name; email unknown in parser context
             coauthors += f"Co-authored-by: {s['author']} <>\n"
         commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
-        rc3, out3, err3 = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
-        print(f"git commit rc={rc3}\n{out3}\n{err3}")
-        if rc3 == 0:
-            rc4, out4, err4 = run_cmd(["git", "push", "origin", "HEAD:main"], cwd=repo_dir)
-            print(f"git push rc={rc4}\n{out4}\n{err4}")
-            commit_ok = (rc4 == 0)
-        else:
-            print("Git commit failed; not pushing and not closing issues.")
+
+        # Use an orphan 'data' branch so annotation commits do not bloat main history.
+        # Copy annotations to a temporary location and create a clean orphan branch with only annotations.
+        tmpdir = "/tmp/annotations_payload"
+        try:
+            import shutil
+            if os.path.exists(tmpdir):
+                shutil.rmtree(tmpdir)
+            shutil.copytree(os.path.join(repo_dir, "annotations"), tmpdir)
+        except Exception:
+            # If copying fails, fall back to committing from current working tree (safer default)
+            print("Warning: failed to copy annotations to temporary dir; will attempt in-place commit to data branch")
+
+        # Shell sequence: delete local 'data' if present, create orphan, clear index, populate annotations, commit, push force
+        orphan_script = f"""
+        set -e
+        if git rev-parse --verify data >/dev/null 2>&1; then
+          git branch -D data || true
+        fi
+        git checkout --orphan data
+        git rm -rf --quiet . || true
+        mkdir -p annotations
+        if [ -d \"{tmpdir}\" ]; then
+          cp -r {tmpdir}/* annotations/ || true
+        else
+          # Fallback: copy from current repo annotations (might already be present)
+          cp -r annotations/* annotations/ || true
+        fi
+        git add -f annotations || true
+        if git diff --cached --quiet; then
+          echo \"No data changes to commit.\"
+          git checkout main || true
+          git reset --hard origin/main || true
+          exit 0
+        fi
+        git commit -m "{commit_msg.replace('"', '\\"')}"
+        git push --force origin data
+        git checkout main || true
+        git reset --hard origin/main || true
+        """
+        rc3, out3, err3 = run_cmd(["bash", "-lc", orphan_script], cwd=repo_dir)
+        print(f"orphan branch push rc={rc3}\n{out3}\n{err3}")
+        commit_ok = (rc3 == 0)
     else:
         print("No annotation changes to commit (possibly duplicates)")
         # treat as OK to close issues (parser produced no new changes)

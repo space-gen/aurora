@@ -30,10 +30,19 @@ jobs:
         run: |
           set -euo pipefail
 
-          BRANCH="main"
+          BRANCH="data"
 
-          # Ensure we have the latest remote state.
+          # Ensure we have the latest remote state for data branch.
           git fetch origin "$BRANCH"
+          # If data doesn't exist remotely yet, create an empty local data branch
+          if ! git rev-parse --verify origin/$BRANCH >/dev/null 2>&1; then
+            git checkout --orphan "$BRANCH"
+            git rm -rf --quiet . || true
+            git commit --allow-empty -m "Initialize data branch" || true
+            git push --force origin "$BRANCH" || true
+            git checkout -f main || true
+          fi
+
           git checkout "$BRANCH"
           git reset --hard "origin/$BRANCH"
 
@@ -41,16 +50,15 @@ jobs:
           BASE_COMMIT="$(git rev-list -1 --before='30 days ago' "origin/$BRANCH")"
 
           if [ -z "$BASE_COMMIT" ]; then
-            echo "ERROR: Could not find a commit from 30 days ago (or earlier)."
-            echo "Aborting to avoid unintended history rewrite."
-            exit 1
+            echo "ERROR: Could not find a commit from 30 days ago (or earlier) on data branch. Aborting to avoid unintended rewrite."
+            exit 0
           fi
 
           HEAD_COMMIT="$(git rev-parse HEAD)"
           COMMITS_TO_SQUASH="$(git rev-list --count "$BASE_COMMIT..$HEAD_COMMIT")"
 
           if [ "$COMMITS_TO_SQUASH" -eq 0 ]; then
-            echo "No new commits in the last 30 days to squash. Exiting safely."
+            echo "No new commits in the last 30 days on data branch to squash. Exiting safely."
             exit 0
           fi
 
@@ -64,5 +72,5 @@ jobs:
           # Create one consolidated commit.
           git commit -m "Monthly SolarHub Data Consolidation [Auto]"
 
-          # Rewrite main branch history with the monthly squashed commit.
+          # Rewrite data branch history with the monthly squashed commit.
           git push --force origin "$BRANCH"

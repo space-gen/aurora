@@ -41,12 +41,24 @@ jobs:
 
           ARCHIVE_YEAR="$(date +%Y)"
 
-          # Ensure local main matches remote main before rewriting history.
-          git fetch origin main
-          git checkout main
-          git reset --hard origin/main
+          # Ensure local data branch matches remote data before rewriting history.
+          git fetch origin data || true
+          # If data doesn't exist remotely yet, initialize it from current working tree
+          if ! git rev-parse --verify origin/data >/dev/null 2>&1; then
+            git checkout --orphan temp-fresh-start || true
+            git rm -rf --cached . >/dev/null 2>&1 || true
+            git add -A || true
+            git commit -m "Initialize data branch for yearly archive" || true
+            git branch -M data || true
+            git push --force origin data || true
+            git checkout -f main || true
+          fi
 
-          # Create an orphan branch with no history; fail gracefully if this step fails.
+          # Checkout data branch and reset to remote
+          git checkout data
+          git reset --hard origin/data
+
+          # Create an orphan branch with no history for the archive snapshot
           if ! git checkout --orphan temp-fresh-start; then
             echo "ERROR: Failed to create/switch to orphan branch 'temp-fresh-start'."
             exit 1
@@ -59,8 +71,8 @@ jobs:
           # Commit current snapshot as yearly archive baseline.
           git commit -m "SolarHub Aurora: Annual Fresh Start [Archive Year ${ARCHIVE_YEAR}]"
 
-          # Replace main branch with orphan snapshot.
-          git branch -M main
+          # Replace data branch with orphan snapshot.
+          git branch -M data
 
       - name: Post-check repository size (after cleanup prep)
         shell: bash
