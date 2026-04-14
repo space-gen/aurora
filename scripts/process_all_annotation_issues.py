@@ -131,6 +131,9 @@ def main() -> None:
             # If copying fails, fall back to committing from current working tree (safer default)
             print("Warning: failed to copy annotations to temporary dir; will attempt in-place commit to data branch")
 
+        # Shell-safe quoted commit message
+        commit_msg_quoted = shlex.quote(commit_msg)
+
         # Shell sequence: delete local 'data' if present, create orphan, clear index, populate annotations, commit, push force
         orphan_script = f"""
         set -e
@@ -153,7 +156,7 @@ def main() -> None:
           git reset --hard origin/main || true
           exit 0
         fi
-        git commit -m "{commit_msg.replace('"', '\\"')}"
+        git commit -m {commit_msg_quoted}
         git push --force origin data
         git checkout main || true
         git reset --hard origin/main || true
