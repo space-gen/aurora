@@ -15,8 +15,7 @@ This repository is **Repo B** of the SolarHub platform. It manages task data,
 user annotations, solar observation data pipelines, and synchronisation between GitHub
 and HuggingFace.
 
-Repo A (the user-facing UI : [solarhub](https://github.com/space-gen/solarhub) ) is maintained separately and reads task files from
-the `data/` directory of this repository.
+Repo A (the user-facing UI : [solarhub](https://github.com/space-gen/solarhub) ) is maintained separately and reads task files from the repository's dedicated `data` branch — an orphan branch that contains only dataset files. The `main` branch no longer stores raw data to avoid history bloat.
 
 ## Tech Stack
 

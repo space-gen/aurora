@@ -38,11 +38,39 @@ jobs:
             # Cleanly move to data_processing to lock the public frontend
             mv data data_processing
             
-            git add .
-            git commit -m "chore(pipeline): lock frontend for nightly processing [skip ci]
+            # Prepare orphan 'data' branch and commit only data files
+            # copy data_processing to temp to avoid polluting main
+            mkdir -p /tmp/data_pipeline || true
+            cp -r data_processing /tmp/data_pipeline/ || true
 
-            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-            git push origin main
+            # Create orphan branch 'data' (delete local if exists)
+            if git rev-parse --verify data >/dev/null 2>&1; then
+              git branch -D data || true
+            fi
+            git checkout --orphan data
+
+            # Clear index and working tree for a clean branch
+            git rm -rf --quiet . || true
+
+            # Populate only the data files
+            mkdir -p data
+            if [ -d "/tmp/data_pipeline/data_processing" ]; then
+              cp -r /tmp/data_pipeline/data_processing/* data/ || true
+            fi
+
+            git add -f data || true
+            if git diff --cached --quiet; then
+              echo "No data changes to commit."
+            else
+              git commit -m "chore(data): update dataset [skip ci]
+
+              Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+              git push --force origin data
+            fi
+
+            # Return to main branch (clean workspace)
+            git checkout main || true
+            git reset --hard origin/main || true
             echo "Frontend locked."
           else
             echo "System already locked."
@@ -169,6 +197,12 @@ jobs:
           fi
           
           # 3. Final Consolidated Commit
+          # 3. Final Consolidated Commit
+          # Temporarily move data out of working tree so it won't be committed to main
+          if [ -d "data" ]; then
+            mkdir -p /tmp/data_pipeline
+            mv data /tmp/data_pipeline/data
+          fi
           git add -A .
           if git diff --cached --quiet; then
             echo "No changes."
@@ -178,3 +212,28 @@ jobs:
             Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
             git push origin main
           fi
+
+          # 4. Publish data to orphan 'data' branch with no history
+          if [ -d "/tmp/data_pipeline/data" ]; then
+            if git rev-parse --verify data >/dev/null 2>&1; then
+              git branch -D data || true
+            fi
+            git checkout --orphan data
+            git rm -rf --quiet . || true
+            mkdir -p data
+            cp -r /tmp/data_pipeline/data/* data/ || true
+            git add -f data || true
+            if git diff --cached --quiet; then
+              echo "No data changes to commit."
+            else
+              git commit -m "chore(data): refresh dataset [skip ci]
+
+              Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
+              git push --force origin data
+            fi
+            git checkout main || true
+            git reset --hard origin/main || true
+          fi
+
+          # cleanup temp
+          rm -rf /tmp/data_pipeline || true
