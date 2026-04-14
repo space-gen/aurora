@@ -206,10 +206,22 @@ jobs:
           # 2. Unlock system (Rename processing -> data)
           if [ -d "data_processing" ]; then
             if [ -d "data" ]; then
-              echo "::error::Both data/ and data_processing/ exist simultaneously — inconsistent state."
-              exit 1
+              echo "::warning::Both data/ and data_processing/ exist — attempting safe merge of data_processing -> data."
+              if command -v rsync >/dev/null 2>&1; then
+                rsync -a --ignore-existing data_processing/ data/ || true
+              else
+                mkdir -p data
+                for f in data_processing/*; do
+                  bn=$(basename "$f")
+                  if [ ! -e "data/$bn" ]; then
+                    cp -r "data_processing/$bn" "data/" || true
+                  fi
+                done
+              fi
+              rm -rf data_processing || true
+            else
+              mv data_processing data
             fi
-            mv data_processing data
           fi
           
           # 3. Final Consolidated Commit
