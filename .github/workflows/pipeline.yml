@@ -173,6 +173,8 @@ jobs:
           git pull origin main --rebase --autostash
 
           # 1. Reset annotations folder with latest images
+          # Ensure annotations directory exists (repo may not contain it on main)
+          mkdir -p annotations
           python -c '
           import json, os, glob, shutil
           from pathlib import Path
@@ -186,6 +188,8 @@ jobs:
           # Direct clone from data_processing to annotations with enforced order
           for src_path in glob.glob("data_processing/*.jsonl"):
               dest_path = Path("annotations") / os.path.basename(src_path)
+              # Ensure parent dir exists
+              dest_path.parent.mkdir(parents=True, exist_ok=True)
               with open(src_path, "r", encoding="utf-8") as fin, open(dest_path, "w", encoding="utf-8") as fout:
                   for line in fin:
                       if not line.strip(): continue
