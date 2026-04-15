@@ -120,8 +120,12 @@ jobs:
     needs: lock
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (data branch)
         uses: actions/checkout@v4
+        with:
+          ref: data
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
