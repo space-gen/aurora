@@ -233,12 +233,16 @@ jobs:
           fi
           
           # 3. Final Consolidated Commit
-          # 3. Final Consolidated Commit
-          # Temporarily move data out of working tree so it won't be committed to main
+          # Temporarily move data and annotations out of working tree so they won't be committed to main
           if [ -d "data" ]; then
-            mkdir -p /tmp/data_pipeline
-            mv data /tmp/data_pipeline/data
+            mkdir -p /tmp/data_pipeline || true
+            mv data /tmp/data_pipeline/data || true
           fi
+          if [ -d "annotations" ]; then
+            mkdir -p /tmp/data_pipeline || true
+            mv annotations /tmp/data_pipeline/annotations || true
+          fi
+
           git add -A .
           if git diff --cached --quiet; then
             echo "No changes."
@@ -249,18 +253,24 @@ jobs:
             git push origin main
           fi
 
-          # 4. Publish data to orphan 'data' branch with no history
-          if [ -d "/tmp/data_pipeline/data" ]; then
+          # 4. Publish data+annotations to orphan 'data' branch with no history
+          if [ -d "/tmp/data_pipeline/data" ] || [ -d "/tmp/data_pipeline/annotations" ]; then
             if git rev-parse --verify data >/dev/null 2>&1; then
               git branch -D data || true
             fi
             git checkout --orphan data
             git rm -rf --quiet . || true
             mkdir -p data
-            cp -r /tmp/data_pipeline/data/* data/ || true
-            git add -f data || true
+            if [ -d "/tmp/data_pipeline/data" ]; then
+              cp -r /tmp/data_pipeline/data/* data/ || true
+            fi
+            mkdir -p annotations
+            if [ -d "/tmp/data_pipeline/annotations" ]; then
+              cp -r /tmp/data_pipeline/annotations/* annotations/ || true
+            fi
+            git add -f data annotations || true
             if git diff --cached --quiet; then
-              echo "No data changes to commit."
+              echo "No data/annotation changes to commit."
             else
               git commit -m "chore(data): refresh dataset [skip ci]
 

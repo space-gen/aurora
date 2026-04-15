@@ -10,6 +10,7 @@ import os
 import shlex
 import subprocess
 import sys
+import shutil
 from typing import Any
 
 import requests
@@ -107,34 +108,28 @@ def main() -> None:
         else:
             failures.append({"number": num, "error": err})
 
-    # After processing all issues, commit any annotation changes once
-    run_cmd(["git", "add", "annotations/"], cwd=repo_dir)
-    rc2, out2, err2 = run_cmd(["git", "diff", "--cached", "--name-only"], cwd=repo_dir)
+    # After processing all issues, prepare annotation payload and publish to orphan data branch
+    issue_nums = [s["number"] for s in successes]
+    coauthors = ""
+    for s in successes:
+        coauthors += f"Co-authored-by: {s['author']} <>\n"
+    commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
+
+    # Copy annotations to a temporary location; if copy fails or folder empty, treat as no changes
+    tmpdir = "/tmp/annotations_payload"
+    try:
+        if os.path.exists(tmpdir):
+            shutil.rmtree(tmpdir)
+        shutil.copytree(os.path.join(repo_dir, "annotations"), tmpdir)
+    except Exception:
+        print("Warning: failed to copy annotations to temporary dir; treating as no changes.")
+        tmpdir = None
+
     commit_ok = False
-    if out2.strip():
-        issue_nums = [s["number"] for s in successes]
-        coauthors = ""
-        for s in successes:
-            # Keep author name; email unknown in parser context
-            coauthors += f"Co-authored-by: {s['author']} <>\n"
-        commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
-
-        # Use an orphan 'data' branch so annotation commits do not bloat main history.
-        # Copy annotations to a temporary location and create a clean orphan branch with only annotations.
-        tmpdir = "/tmp/annotations_payload"
-        try:
-            import shutil
-            if os.path.exists(tmpdir):
-                shutil.rmtree(tmpdir)
-            shutil.copytree(os.path.join(repo_dir, "annotations"), tmpdir)
-        except Exception:
-            # If copying fails, fall back to committing from current working tree (safer default)
-            print("Warning: failed to copy annotations to temporary dir; will attempt in-place commit to data branch")
-
+    if tmpdir and os.path.isdir(tmpdir) and any(os.scandir(tmpdir)):
         # Shell-safe quoted commit message
         commit_msg_quoted = shlex.quote(commit_msg)
 
-        # Shell sequence: delete local 'data' if present, create orphan, clear index, populate annotations, commit, push force
         orphan_script = f"""
         set -e
         if git rev-parse --verify data >/dev/null 2>&1; then
@@ -143,15 +138,10 @@ def main() -> None:
         git checkout --orphan data
         git rm -rf --quiet . || true
         mkdir -p annotations
-        if [ -d \"{tmpdir}\" ]; then
-          cp -r {tmpdir}/* annotations/ || true
-        else
-          # Fallback: copy from current repo annotations (might already be present)
-          cp -r annotations/* annotations/ || true
-        fi
+        cp -r {tmpdir}/* annotations/ || true
         git add -f annotations || true
         if git diff --cached --quiet; then
-          echo \"No data changes to commit.\"
+          echo \"No annotation changes to commit.\"
           git checkout main || true
           git reset --hard origin/main || true
           exit 0
@@ -165,8 +155,7 @@ def main() -> None:
         print(f"orphan branch push rc={rc3}\n{out3}\n{err3}")
         commit_ok = (rc3 == 0)
     else:
-        print("No annotation changes to commit (possibly duplicates)")
-        # treat as OK to close issues (parser produced no new changes)
+        print("No annotation changes to commit (possibly duplicates or no annotations created)")
         commit_ok = True
 
     # Comment and close successes only if commit/push succeeded
