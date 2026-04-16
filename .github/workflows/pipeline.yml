@@ -4,9 +4,8 @@ concurrency:
   cancel-in-progress: false
 
 on:
-  repository_dispatch: 
+  repository_dispatch:
     types: [nightly refresh]
-   # 00:00 UTC daily
   workflow_dispatch:
 
 env:
@@ -17,52 +16,61 @@ jobs:
     name: Stage 01 · Lock Frontend
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
-      - name: Checkout data branch
+      - name: Checkout main for scripts
         uses: actions/checkout@v4
         with:
-          ref: data
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Rename data/ to data_processing/
+
+      - name: Prepare locked snapshot from data branch
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin data || true
+          git checkout origin/data -- data annotations || true
 
           if [ -d "data" ]; then
             mv data data_processing
           fi
+          mkdir -p data_processing annotations
 
-          git add -A .
-          if git diff --cached --quiet; then
-            echo "Already locked."
-          else
-            git commit -m "chore(data): lock frontend for nightly processing [skip ci]"
-            git push origin HEAD:data
-          fi
+      - name: Upload locked snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: locked-state
+          path: |
+            data_processing/
+            annotations/
 
   pull-urls:
     name: Stage 2 · Pull New URLs
     needs: lock
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout data branch
+      - name: Checkout main for scripts
         uses: actions/checkout@v4
         with:
-          ref: data
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download locked snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: locked-state
+          path: .
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install dependencies
         run: pip install requests huggingface_hub datasets
+
       - name: Run Crawler
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python scripts/pull_new_urls.py
+
       - name: Upload Pull Results
         uses: actions/upload-artifact@v4
         with:
@@ -74,35 +82,38 @@ jobs:
     needs: lock
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository (data branch)
+      - name: Checkout main for scripts
         uses: actions/checkout@v4
         with:
-          ref: data
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download locked snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: locked-state
+          path: .
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install dependencies
         run: pip install requests huggingface_hub datasets
+
       - name: Merge to HuggingFace
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          echo "Running HF merge script (daily). Script will upload daily files and perform full merge on UTC 1st."
-          python scripts/merge_annotations_to_hf.py
+        run: python scripts/merge_annotations_to_hf.py
 
       - name: Monthly HF history squash (1st of month)
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Use UTC date; run only on the 1st day of the month
           if [ "$(date -u +%d)" = "01" ]; then
-            echo "1st of month detected (UTC): running HF history squash"
             python scripts/squash_history.py
           else
-            echo "Not the 1st of the month (UTC); skipping HF history squash."
+            echo "Not UTC day 1; skipping monthly HF super-squash."
           fi
 
   sync-and-unlock:
@@ -112,84 +123,74 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout data branch
+      - name: Checkout main for scripts
         uses: actions/checkout@v4
         with:
-          ref: data
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Download Pulled Data
+
+      - name: Download pulled data
         uses: actions/download-artifact@v4
         with:
           name: fresh-task-data
           path: data_processing/
-      - name: Sync templates and Unlock
+
+      - name: Build annotations and recreate orphan data branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 1) Rebuild annotations from pulled daily files
           mkdir -p annotations
-          python -c '
-          import json, os, glob, shutil
+          python - <<'PY'
+          import glob
+          import json
+          import os
+          import shutil
           from pathlib import Path
 
-          # Clean annotations/ but keep README.md
           for p in glob.glob("annotations/*"):
-              if os.path.basename(p) == "README.md": continue
-              if os.path.isfile(p): os.remove(p)
-              elif os.path.isdir(p): shutil.rmtree(p)
+              if os.path.basename(p) == "README.md":
+                  continue
+              if os.path.isfile(p):
+                  os.remove(p)
+              elif os.path.isdir(p):
+                  shutil.rmtree(p)
 
-          # Direct clone from data_processing to annotations with enforced order
           for src_path in glob.glob("data_processing/*.jsonl"):
               dest_path = Path("annotations") / os.path.basename(src_path)
-              # Ensure parent dir exists
               dest_path.parent.mkdir(parents=True, exist_ok=True)
               with open(src_path, "r", encoding="utf-8") as fin, open(dest_path, "w", encoding="utf-8") as fout:
                   for line in fin:
-                      if not line.strip(): continue
+                      if not line.strip():
+                          continue
                       record = json.loads(line)
-                      
-                       # Enforce field order
-                       ordered_record = {
-                           "id": record.get("id"),
-                           "url": record.get("url"),
-                           "task_type": record.get("task_type"),
-                           "created_at": record.get("created_at"),
-                           "metadata": record.get("metadata", {}),
-                           "annotations": []
-                       }
+                      ordered_record = {
+                          "id": record.get("id"),
+                          "url": record.get("url"),
+                          "task_type": record.get("task_type"),
+                          "created_at": record.get("created_at"),
+                          "metadata": record.get("metadata", {}),
+                          "annotations": [],
+                      }
+                      fout.write(json.dumps(ordered_record, separators=(",", ":")) + "\n")
+          PY
 
-                       fout.write(json.dumps(ordered_record, separators=(",", ":")) + "\n")
-          '
-
-          # 2) Unlock by restoring data/
           rm -rf data
-          if [ -d "data_processing" ]; then
-            mv data_processing data
-          fi
+          mv data_processing data
 
-          # 3) Build payload from current state
           rm -rf /tmp/data_payload
           mkdir -p /tmp/data_payload
-          if [ -d "data" ]; then
-            cp -r data /tmp/data_payload/data
-          fi
-          if [ -d "annotations" ]; then
-            cp -r annotations /tmp/data_payload/annotations
-          fi
+          cp -r data /tmp/data_payload/data
+          cp -r annotations /tmp/data_payload/annotations
 
-          # 4) Delete remote data branch and recreate as orphan with fresh snapshot
           git push origin --delete data || true
           git checkout --orphan data_orphan
           git rm -rf --quiet . || true
+
           mkdir -p data annotations
-          if [ -d "/tmp/data_payload/data" ]; then
-            cp -r /tmp/data_payload/data/* data/ || true
-          fi
-          if [ -d "/tmp/data_payload/annotations" ]; then
-            cp -r /tmp/data_payload/annotations/* annotations/ || true
-          fi
+          cp -r /tmp/data_payload/data/* data/ || true
+          cp -r /tmp/data_payload/annotations/* annotations/ || true
+
           git add -A data annotations
           git commit --allow-empty -m "chore(data): refresh task database and clean templates [skip ci]"
           git push --force origin HEAD:data

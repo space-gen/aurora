@@ -17,12 +17,17 @@ jobs:
       issues: write
 
     steps:
-      - name: Checkout data branch
+      - name: Checkout main for scripts
         uses: actions/checkout@v4
         with:
-          ref: data
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load annotations from data branch
+        run: |
+          git fetch origin data || true
+          git checkout origin/data -- annotations || true
+          mkdir -p annotations
 
       - name: Set up Python
         uses: actions/setup-python@v5
