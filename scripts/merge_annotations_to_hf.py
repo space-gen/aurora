@@ -193,19 +193,21 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
         log.info("No records to process for %s.", task_type)
         return
 
-    # Always write and upload as data/today.jsonl
+    # Always write and upload as data/YYYY-MM-DD.yml
     try:
+        from datetime import datetime
         from huggingface_hub import HfApi
 
         api = HfApi(token=token)
         tmp_dir = REPO_ROOT / "tmp_hf_uploads"
         tmp_dir.mkdir(parents=True, exist_ok=True)
-        local_path = tmp_dir / "today.jsonl"
+        date_key = datetime.utcnow().date().isoformat()
+        local_path = tmp_dir / f"{date_key}.yml"
         with open(local_path, "w", encoding="utf-8") as out_f:
             for r in local_url_map.values():
                 out_f.write(json.dumps(r, separators=(",", ":")) + "\n")
 
-        repo_path = "data/today.jsonl"
+        repo_path = f"data/{date_key}.yml"
         try:
             api.upload_file(
                 path_or_fileobj=str(local_path),
@@ -213,7 +215,7 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
                 repo_id=repo_id,
                 repo_type="dataset",
                 token=token,
-                commit_message="chore: update daily annotations in data/today.jsonl"
+                commit_message=f"chore: update daily annotations in {repo_path}"
             )
             log.info("Uploaded %s to %s:%s", local_path, repo_id, repo_path)
         except Exception as e:
