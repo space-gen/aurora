@@ -12,51 +12,23 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  lock:
-    name: Stage 01 · Lock Frontend
+  pull-urls:
+    name: Stage 2 · Pull New URLs
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout main for scripts
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare locked snapshot from data branch
+      - name: Load current data branch snapshot
         run: |
           git fetch origin data || true
           git checkout origin/data -- data annotations || true
-
           if [ -d "data" ]; then
             mv data data_processing
           fi
-          mkdir -p data_processing annotations
-
-      - name: Upload locked snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: locked-state
-          path: |
-            data_processing/
-            annotations/
-
-  pull-urls:
-    name: Stage 2 · Pull New URLs
-    needs: lock
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout main for scripts
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download locked snapshot
-        uses: actions/download-artifact@v4
-        with:
-          name: locked-state
-          path: .
+          mkdir -p data_processing
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -79,7 +51,6 @@ jobs:
 
   push-annotations:
     name: Stage 3 · Push Annotations to HF
-    needs: lock
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main for scripts
@@ -87,11 +58,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download locked snapshot
-        uses: actions/download-artifact@v4
-        with:
-          name: locked-state
-          path: .
+      - name: Load annotations from data branch
+        run: |
+          git fetch origin data || true
+          git checkout origin/data -- annotations || true
+          mkdir -p annotations
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -117,7 +88,7 @@ jobs:
           fi
 
   sync-and-unlock:
-    name: Stage 04-05 · Sync & Unlock
+    name: Stage 04 · Recreate and Sync
     needs: [pull-urls, push-annotations]
     runs-on: ubuntu-latest
     permissions:
@@ -135,7 +106,7 @@ jobs:
           name: fresh-task-data
           path: data_processing/
 
-      - name: Build annotations and recreate orphan data branch
+      - name: Recreate orphan data branch with latest snapshot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -180,6 +151,7 @@ jobs:
 
           rm -rf /tmp/data_payload
           mkdir -p /tmp/data_payload
+          cp README.md /tmp/data_payload/README.md
           cp -r data /tmp/data_payload/data
           cp -r annotations /tmp/data_payload/annotations
 
@@ -187,10 +159,11 @@ jobs:
           git checkout --orphan data_orphan
           git rm -rf --quiet . || true
 
+          cp /tmp/data_payload/README.md README.md
           mkdir -p data annotations
           cp -r /tmp/data_payload/data/* data/ || true
           cp -r /tmp/data_payload/annotations/* annotations/ || true
 
-          git add -A data annotations
+          git add -A README.md data annotations
           git commit --allow-empty -m "chore(data): refresh task database and clean templates [skip ci]"
           git push --force origin HEAD:data
