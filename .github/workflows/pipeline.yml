@@ -5,7 +5,7 @@ concurrency:
 
 on:
   repository_dispatch: 
-    types: nightly refresh
+    types: [nightly refresh]
    # 00:00 UTC daily
   workflow_dispatch:
 
@@ -19,77 +19,27 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout repository
+      - name: Checkout data branch
         uses: actions/checkout@v4
         with:
+          ref: data
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Rename data/ to data_processing/
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Safety: if both data/ and data_processing/ exist, attempt a safe merge to avoid manual intervention.
-          if [ -d "data" ] && [ -d "data_processing" ]; then
-            echo "::warning::Both data/ and data_processing/ exist — attempting safe merge of data -> data_processing."
-            # Merge new files from data into data_processing without overwriting existing files in data_processing.
-            # Use rsync for a safe, idempotent merge.
-            if command -v rsync >/dev/null 2>&1; then
-              rsync -a --ignore-existing data/ data_processing/ || true
-            else
-              # Portable fallback: copy files that don't already exist
-              mkdir -p data_processing
-              for f in data/*; do
-                bn=$(basename "$f")
-                if [ ! -e "data_processing/$bn" ]; then
-                  cp -r "data/$bn" "data_processing/" || true
-                fi
-              done
-            fi
-            # After merging, remove the old data/ directory to restore expected state.
-            rm -rf data || true
-            echo "Merged data/ into data_processing/ and removed data/ to recover pipeline state."
+          if [ -d "data" ]; then
+            mv data data_processing
           fi
 
-          if [ -d "data" ]; then
-            # Cleanly move to data_processing to lock the public frontend
-            mv data data_processing
-            
-            # Prepare orphan 'data' branch and commit only data files
-            # copy data_processing to temp to avoid polluting main
-            mkdir -p /tmp/data_pipeline || true
-            cp -r data_processing /tmp/data_pipeline/ || true
-
-            # Create orphan branch 'data' (delete local if exists)
-            if git rev-parse --verify data >/dev/null 2>&1; then
-              git branch -D data || true
-            fi
-            git checkout --orphan data
-
-            # Clear index and working tree for a clean branch
-            git rm -rf --quiet . || true
-
-            # Populate only the data files
-            mkdir -p data
-            if [ -d "/tmp/data_pipeline/data_processing" ]; then
-              cp -r /tmp/data_pipeline/data_processing/* data/ || true
-            fi
-
-            git add -f data || true
-            if git diff --cached --quiet; then
-              echo "No data changes to commit."
-            else
-              git commit -m "chore(data): update dataset [skip ci]
-
-              Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-              git push --force origin data
-            fi
-
-            # Return to main branch (clean workspace)
-            git checkout main || true
-            git reset --hard origin/main || true
-            echo "Frontend locked."
+          git add -A .
+          if git diff --cached --quiet; then
+            echo "Already locked."
           else
-            echo "System already locked."
+            git commit -m "chore(data): lock frontend for nightly processing [skip ci]"
+            git push origin HEAD:data
           fi
 
   pull-urls:
@@ -97,8 +47,12 @@ jobs:
     needs: lock
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout data branch
         uses: actions/checkout@v4
+        with:
+          ref: data
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -158,11 +112,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout repository
+      - name: Checkout data branch
         uses: actions/checkout@v4
         with:
+          ref: data
           fetch-depth: 0
-          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Download Pulled Data
         uses: actions/download-artifact@v4
         with:
@@ -173,11 +128,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 0. Pull latest changes (--autostash handles the downloaded artifact files)
-          git pull origin main --rebase --autostash
-
-          # 1. Reset annotations folder with latest images
-          # Ensure annotations directory exists (repo may not contain it on main)
+          # 1) Rebuild annotations from pulled daily files
           mkdir -p annotations
           python -c '
           import json, os, glob, shutil
@@ -199,87 +150,46 @@ jobs:
                       if not line.strip(): continue
                       record = json.loads(line)
                       
-                      # Enforce field order
-                      ordered_record = {
-                          "id": record.get("id"),
-                          "url": record.get("url"),
-                          "task_type": record.get("task_type"),
-                          "created_at": record.get("created_at"),
-                          "metadata": record.get("metadata", {}),
-                          "annotations": [] # Reset for new template
-                      }
-                      
-                      fout.write(json.dumps(ordered_record, separators=(",", ":")) + "\n")
-          '          
-          # 2. Unlock system (Rename processing -> data)
+                       # Enforce field order
+                       ordered_record = {
+                           "id": record.get("id"),
+                           "url": record.get("url"),
+                           "task_type": record.get("task_type"),
+                           "created_at": record.get("created_at"),
+                           "metadata": record.get("metadata", {}),
+                           "annotations": []
+                       }
+
+                       fout.write(json.dumps(ordered_record, separators=(",", ":")) + "\n")
+          '
+
+          # 2) Unlock by restoring data/
+          rm -rf data
           if [ -d "data_processing" ]; then
-            if [ -d "data" ]; then
-              echo "::warning::Both data/ and data_processing/ exist — attempting safe merge of data_processing -> data."
-              if command -v rsync >/dev/null 2>&1; then
-                rsync -a --ignore-existing data_processing/ data/ || true
-              else
-                mkdir -p data
-                for f in data_processing/*; do
-                  bn=$(basename "$f")
-                  if [ ! -e "data/$bn" ]; then
-                    cp -r "data_processing/$bn" "data/" || true
-                  fi
-                done
-              fi
-              rm -rf data_processing || true
-            else
-              mv data_processing data
-            fi
+            mv data_processing data
           fi
-          
-          # 3. Final Consolidated Commit
-          # Temporarily move data and annotations out of working tree so they won't be committed to main
+
+          # 3) Build payload from current state
+          rm -rf /tmp/data_payload
+          mkdir -p /tmp/data_payload
           if [ -d "data" ]; then
-            mkdir -p /tmp/data_pipeline || true
-            mv data /tmp/data_pipeline/data || true
+            cp -r data /tmp/data_payload/data
           fi
           if [ -d "annotations" ]; then
-            mkdir -p /tmp/data_pipeline || true
-            mv annotations /tmp/data_pipeline/annotations || true
+            cp -r annotations /tmp/data_payload/annotations
           fi
 
-          git add -A .
-          if git diff --cached --quiet; then
-            echo "No changes."
-          else
-            git commit -m "chore(pipeline): refresh task database and clean templates [skip ci]
-
-            Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-            git push origin main
+          # 4) Delete remote data branch and recreate as orphan with fresh snapshot
+          git push origin --delete data || true
+          git checkout --orphan data_orphan
+          git rm -rf --quiet . || true
+          mkdir -p data annotations
+          if [ -d "/tmp/data_payload/data" ]; then
+            cp -r /tmp/data_payload/data/* data/ || true
           fi
-
-          # 4. Publish data+annotations to orphan 'data' branch with no history
-          if [ -d "/tmp/data_pipeline/data" ] || [ -d "/tmp/data_pipeline/annotations" ]; then
-            if git rev-parse --verify data >/dev/null 2>&1; then
-              git branch -D data || true
-            fi
-            git checkout --orphan data
-            git rm -rf --quiet . || true
-            mkdir -p data
-            if [ -d "/tmp/data_pipeline/data" ]; then
-              cp -r /tmp/data_pipeline/data/* data/ || true
-            fi
-            mkdir -p annotations
-            if [ -d "/tmp/data_pipeline/annotations" ]; then
-              cp -r /tmp/data_pipeline/annotations/* annotations/ || true
-            fi
-            git add -f data annotations || true
-            if git diff --cached --quiet; then
-              echo "No data/annotation changes to commit."
-            else
-              git commit -m "chore(data): refresh dataset [skip ci]
-
-              Co-authored-by: soumyadipkarforma <soumyadipkarforma@gmail.com>"
-              git push --force origin data
-            fi
-            git checkout main || true
-            git reset --hard origin/main || true
+          if [ -d "/tmp/data_payload/annotations" ]; then
+            cp -r /tmp/data_payload/annotations/* annotations/ || true
           fi
-
-          # cleanup temp
-          rm -rf /tmp/data_pipeline || true
+          git add -A data annotations
+          git commit --allow-empty -m "chore(data): refresh task database and clean templates [skip ci]"
+          git push --force origin HEAD:data

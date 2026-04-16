@@ -193,54 +193,36 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
         log.info("No records to process for %s.", task_type)
         return
 
-    # Always write daily jsonl files and upload under data/YYYY-MM-DD.jsonl
+    # Always write and upload as data/today.jsonl
     try:
         from huggingface_hub import HfApi
-        from datetime import datetime
 
         api = HfApi(token=token)
         tmp_dir = REPO_ROOT / "tmp_hf_uploads"
         tmp_dir.mkdir(parents=True, exist_ok=True)
+        local_path = tmp_dir / "today.jsonl"
+        with open(local_path, "w", encoding="utf-8") as out_f:
+            for r in local_url_map.values():
+                out_f.write(json.dumps(r, separators=(",", ":")) + "\n")
 
-        records_by_date: dict[str, list[dict[str, Any]]] = {}
-        for rec in local_url_map.values():
-            date_str = None
-            created = rec.get("created_at")
-            if created:
-                try:
-                    # support ISO timestamps
-                    dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                    date_str = dt.date().isoformat()
-                except Exception:
-                    date_str = None
-            if not date_str:
-                date_str = datetime.utcnow().date().isoformat()
-            records_by_date.setdefault(date_str, []).append(rec)
-
-        for date_key, recs in records_by_date.items():
-            local_path = tmp_dir / f"{date_key}.jsonl"
-            with open(local_path, "w", encoding="utf-8") as out_f:
-                for r in recs:
-                    out_f.write(json.dumps(r, separators=(",", ":")) + "\n")
-
-            repo_path = f"data/{date_key}.jsonl"
+        repo_path = "data/today.jsonl"
+        try:
+            api.upload_file(
+                path_or_fileobj=str(local_path),
+                path_in_repo=repo_path,
+                repo_id=repo_id,
+                repo_type="dataset",
+                token=token,
+                commit_message="chore: update daily annotations in data/today.jsonl"
+            )
+            log.info("Uploaded %s to %s:%s", local_path, repo_id, repo_path)
+        except Exception as e:
+            log.warning("Failed to upload %s to %s: %s", local_path, repo_id, e)
+        finally:
             try:
-                api.upload_file(
-                    path_or_fileobj=str(local_path),
-                    path_in_repo=repo_path,
-                    repo_id=repo_id,
-                    repo_type="dataset",
-                    token=token,
-                    commit_message=f"chore: add daily annotations {date_key}"
-                )
-                log.info("Uploaded %s to %s:%s", local_path, repo_id, repo_path)
-            except Exception as e:
-                log.warning("Failed to upload %s to %s: %s", local_path, repo_id, e)
-            finally:
-                try:
-                    local_path.unlink()
-                except Exception:
-                    pass
+                local_path.unlink()
+            except Exception:
+                pass
 
         # cleanup tmp dir if empty
         try:

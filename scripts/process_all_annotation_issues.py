@@ -7,10 +7,8 @@ from __future__ import annotations
 
 import json
 import os
-import shlex
 import subprocess
 import sys
-import shutil
 from typing import Any
 
 import requests
@@ -108,54 +106,30 @@ def main() -> None:
         else:
             failures.append({"number": num, "error": err})
 
-    # After processing all issues, prepare annotation payload and publish to orphan data branch
-    issue_nums = [s["number"] for s in successes]
-    coauthors = ""
-    for s in successes:
-        coauthors += f"Co-authored-by: {s['author']} <>\n"
-    commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
-
-    # Copy annotations to a temporary location; if copy fails or folder empty, treat as no changes
-    tmpdir = "/tmp/annotations_payload"
-    try:
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
-        shutil.copytree(os.path.join(repo_dir, "annotations"), tmpdir)
-    except Exception:
-        print("Warning: failed to copy annotations to temporary dir; treating as no changes.")
-        tmpdir = None
-
+    run_cmd(["git", "add", "annotations/"], cwd=repo_dir)
+    _, staged_out, _ = run_cmd(["git", "diff", "--cached", "--name-only"], cwd=repo_dir)
     commit_ok = False
-    if tmpdir and os.path.isdir(tmpdir) and any(os.scandir(tmpdir)):
-        # Shell-safe quoted commit message
-        commit_msg_quoted = shlex.quote(commit_msg)
-
-        orphan_script = f"""
-        set -e
-        if git rev-parse --verify data >/dev/null 2>&1; then
-          git branch -D data || true
-        fi
-        git checkout --orphan data
-        git rm -rf --quiet . || true
-        mkdir -p annotations
-        cp -r {tmpdir}/* annotations/ || true
-        git add -f annotations || true
-        if git diff --cached --quiet; then
-          echo \"No annotation changes to commit.\"
-          git checkout main || true
-          git reset --hard origin/main || true
-          exit 0
-        fi
-        git commit -m {commit_msg_quoted}
-        git push --force origin data
-        git checkout main || true
-        git reset --hard origin/main || true
-        """
-        rc3, out3, err3 = run_cmd(["bash", "-lc", orphan_script], cwd=repo_dir)
-        print(f"orphan branch push rc={rc3}\n{out3}\n{err3}")
-        commit_ok = (rc3 == 0)
+    if staged_out.strip():
+        issue_nums = [s["number"] for s in successes]
+        coauthors = ""
+        for s in successes:
+            coauthors += f"Co-authored-by: {s['author']} <>\n"
+        commit_msg = (
+            "chore(annotation): record annotations from issues "
+            + ", ".join([f"#{n}" for n in issue_nums])
+            + " [skip ci]\n\n"
+            + coauthors
+        )
+        rc2, out2, err2 = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
+        print(f"commit rc={rc2}\nstdout:\n{out2}\nstderr:\n{err2}")
+        if rc2 == 0:
+            rc3, out3, err3 = run_cmd(["git", "push", "origin", "HEAD:data"], cwd=repo_dir)
+            print(f"push rc={rc3}\nstdout:\n{out3}\nstderr:\n{err3}")
+            commit_ok = (rc3 == 0)
+        else:
+            commit_ok = False
     else:
-        print("No annotation changes to commit (possibly duplicates or no annotations created)")
+        print("No annotation changes to commit (possibly duplicates)")
         commit_ok = True
 
     # Comment and close successes only if commit/push succeeded
