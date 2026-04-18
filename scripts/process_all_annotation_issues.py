@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import subprocess
 import sys
 from typing import Any
@@ -106,30 +107,27 @@ def main() -> None:
         else:
             failures.append({"number": num, "error": err})
 
+    # After processing all issues, commit any annotation changes once
     run_cmd(["git", "add", "annotations/"], cwd=repo_dir)
-    _, staged_out, _ = run_cmd(["git", "diff", "--cached", "--name-only"], cwd=repo_dir)
+    rc2, out2, err2 = run_cmd(["git", "diff", "--cached", "--name-only"], cwd=repo_dir)
     commit_ok = False
-    if staged_out.strip():
+    if out2.strip():
         issue_nums = [s["number"] for s in successes]
         coauthors = ""
         for s in successes:
             coauthors += f"Co-authored-by: {s['author']} <>\n"
-        commit_msg = (
-            "chore(annotation): record annotations from issues "
-            + ", ".join([f"#{n}" for n in issue_nums])
-            + " [skip ci]\n\n"
-            + coauthors
-        )
-        rc2, out2, err2 = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
-        print(f"commit rc={rc2}\nstdout:\n{out2}\nstderr:\n{err2}")
-        if rc2 == 0:
-            rc3, out3, err3 = run_cmd(["git", "push", "origin", "HEAD:data"], cwd=repo_dir)
-            print(f"push rc={rc3}\nstdout:\n{out3}\nstderr:\n{err3}")
-            commit_ok = (rc3 == 0)
+        commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
+        rc3, out3, err3 = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
+        print(f"git commit rc={rc3}\n{out3}\n{err3}")
+        if rc3 == 0:
+            rc4, out4, err4 = run_cmd(["git", "push", "origin", "HEAD:data"], cwd=repo_dir)
+            print(f"git push rc={rc4}\n{out4}\n{err4}")
+            commit_ok = (rc4 == 0)
         else:
-            commit_ok = False
+            print("Git commit failed; not pushing and not closing issues.")
     else:
         print("No annotation changes to commit (possibly duplicates)")
+        # treat as OK to close issues (parser produced no new changes)
         commit_ok = True
 
     # Comment and close successes only if commit/push succeeded
