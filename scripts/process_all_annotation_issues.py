@@ -10,7 +10,10 @@ import os
 import subprocess
 from typing import Any
 import requests
-from scripts.parse_issue_annotation import process_issue_submissions
+try:
+    from scripts.parse_issue_annotation import process_issue_submissions
+except ModuleNotFoundError:
+    from parse_issue_annotation import process_issue_submissions
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")  # owner/repo
