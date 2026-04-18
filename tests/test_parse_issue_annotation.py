@@ -154,7 +154,7 @@ beta,20,20,6
     assert "already annotated record mg-1" in failures[0]["error"]
 
 
-def test_missing_record_is_created_from_issue_image_url(tmp_path):
+def test_missing_record_is_marked_data_expired(tmp_path):
     annotations_dir = tmp_path / "annotations"
     annotations_dir.mkdir()
     sample = {
@@ -169,9 +169,6 @@ def test_missing_record_is_created_from_issue_image_url(tmp_path):
         f.write(json.dumps(sample, separators=(",", ":")) + "\n")
 
     body = """
-### Image URL
-https://jsoc1.stanford.edu/data/hmi/images/2026/04/17/20260417_001500_Ic_flat_1k.jpg
-
 ### Task Type
 sunspot
 
@@ -189,12 +186,6 @@ class_b,315,348,15
         annotations_dir=annotations_dir,
     )
 
-    assert len(successes) == 1
-    assert failures == []
-
-    lines = (annotations_dir / "sunspot.jsonl").read_text(encoding="utf-8").strip().splitlines()
-    new_record = [json.loads(line) for line in lines if '"id":"sp-3239"' in line][0]
-    assert new_record["url"].endswith("_Ic_flat_1k.jpg")
-    assert new_record["task_type"] == "sunspot"
-    assert new_record["metadata"]["source"] == "ISSUE_FORM_FALLBACK"
-    assert len(new_record["annotations"]) == 1
+    assert len(successes) == 0
+    assert len(failures) == 1
+    assert "data_expired: record sp-3239 not found in sunspot.jsonl" in failures[0]["error"]

@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from typing import Any
 import requests
 try:
@@ -35,6 +36,11 @@ COMMENT_BODY_SUCCESS = (
 )
 COMMENT_BODY_FAILURE = (
     "⚠️ **Annotation processing failed.** The automated parser could not process this issue."
+)
+COMMENT_BODY_DATA_EXPIRED = (
+    "⌛ **Annotation window expired.**\n\n"
+    "The record ID in this issue is no longer available in the current `annotations/` dataset. "
+    "Please open a new annotation issue using a fresh record from the latest dataset."
 )
 
 def run_cmd(cmd: list[str], cwd: str | None = None, env: dict | None = None) -> tuple[int, str, str]:
@@ -141,7 +147,13 @@ def main() -> None:
 
     for f in failures:
         try:
-            comment_issue(f["number"], f"{COMMENT_BODY_FAILURE}\n\nError output:\n```\n{f['error']}\n```")
+            error_text = str(f.get("error", ""))
+            if error_text.startswith("data_expired:"):
+                comment_issue(f["number"], COMMENT_BODY_DATA_EXPIRED)
+                close_issue(f["number"])
+                print(f"Closed expired issue #{f['number']}")
+            else:
+                comment_issue(f["number"], f"{COMMENT_BODY_FAILURE}\n\nError output:\n```\n{error_text}\n```")
         except Exception as e:
             print(f"Failed to post failure comment for issue #{f['number']}: {e}")
 

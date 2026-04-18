@@ -29,7 +29,6 @@ log = logging.getLogger(__name__)
 # Config
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
-DATA_DIR = REPO_ROOT / "data"
 
 # Valid labels for each task type
 VALID_LABELS: dict[str, set[str]] = {
@@ -150,51 +149,10 @@ def _ordered_task(task: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _extract_captured_at_from_url(url: str) -> str | None:
-    match = re.search(r"/(\d{4})/(\d{2})/(\d{2})/", url)
-    if not match:
-        return None
-    year, month, day = match.groups()
-    return f"{year}-{month}-{day}T00:00:00Z"
-
-
-def _build_fallback_task(item: dict[str, Any]) -> dict[str, Any]:
-    image_url = str(item.get("image_url", "") or "").strip()
-    metadata: dict[str, Any] = {"source": "ISSUE_FORM_FALLBACK"}
-    captured_at = _extract_captured_at_from_url(image_url)
-    if captured_at:
-        metadata["captured_at"] = captured_at
-    return {
-        "id": item["record_id"],
-        "url": image_url,
-        "task_type": item["task_type"],
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "metadata": metadata,
-        "annotations": [],
-    }
-
-
-def _load_data_record_index(task_type: str) -> dict[str, dict[str, Any]]:
-    data_path = DATA_DIR / f"{task_type}.jsonl"
-    if not data_path.exists():
-        return {}
-    out: dict[str, dict[str, Any]] = {}
-    with open(data_path, "r", encoding="utf-8") as f:
-        for line in f:
-            if not line.strip():
-                continue
-            task = json.loads(line)
-            task_id = str(task.get("id", "")).strip()
-            if task_id:
-                out[task_id] = _ordered_task(task)
-    return out
-
-
 def _parse_issue_submission(*, issue_number: Any, issue_body: str, issue_author: str) -> dict[str, Any]:
     fields = _parse_issue_body(issue_body)
     task_type = fields.get("task_type", "").strip().lower()
     record_id = fields.get("record_id", "").strip()
-    image_url = fields.get("image_url", "").strip()
 
     regions_raw = ""
     for key in ["your_label", "label", "pixel_coordinates", "regions", "coordinates"]:
@@ -238,7 +196,6 @@ def _parse_issue_submission(*, issue_number: Any, issue_body: str, issue_author:
         "issue_author": issue_author,
         "task_type": task_type,
         "record_id": record_id,
-        "image_url": image_url,
         "annotation": annotation,
     }
 
@@ -282,7 +239,6 @@ def process_issue_submissions(
                 )
             continue
 
-        data_record_index = _load_data_record_index(task_type)
         tasks: list[dict[str, Any]] = []
         index_by_id: dict[str, int] = {}
         with open(file_path, "r", encoding="utf-8") as f:
@@ -308,26 +264,17 @@ def process_issue_submissions(
         for item in batch:
             task_idx = index_by_id.get(item["record_id"])
             if task_idx is None:
-                data_task = data_record_index.get(item["record_id"])
-                if data_task is not None:
-                    tasks.append(_ordered_task(data_task))
-                    task_idx = len(tasks) - 1
-                    index_by_id[item["record_id"]] = task_idx
-                    changed = True
-                elif item.get("image_url"):
-                    tasks.append(_build_fallback_task(item))
-                    task_idx = len(tasks) - 1
-                    index_by_id[item["record_id"]] = task_idx
-                    changed = True
-                else:
-                    failures.append(
-                        {
-                            "number": item["issue_number"],
-                            "author": item["issue_author"],
-                            "error": f"record {item['record_id']} not found",
-                        }
-                    )
-                    continue
+                failures.append(
+                    {
+                        "number": item["issue_number"],
+                        "author": item["issue_author"],
+                        "error": (
+                            f"data_expired: record {item['record_id']} not found in "
+                            f"{task_type}.jsonl"
+                        ),
+                    }
+                )
+                continue
 
             task = tasks[task_idx]
             existing_annotations = task["annotations"]
