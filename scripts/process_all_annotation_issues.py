@@ -116,11 +116,11 @@ def main() -> None:
         coauthors = ""
         for s in successes:
             coauthors += f"Co-authored-by: {s['author']} <>\n"
-        commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
+        commit_msg = f"chore(annotation): record annotations from issues [skip ci]\n\n{coauthors}"
         rc3, out3, err3 = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
         print(f"git commit rc={rc3}\n{out3}\n{err3}")
         if rc3 == 0:
-            rc4, out4, err4 = run_cmd(["git", "push", "origin", "HEAD:data"], cwd=repo_dir)
+            rc4, out4, err4 = run_cmd(["git", "push", "origin", "data"], cwd=repo_dir)
             print(f"git push rc={rc4}\n{out4}\n{err4}")
             commit_ok = (rc4 == 0)
         else:
