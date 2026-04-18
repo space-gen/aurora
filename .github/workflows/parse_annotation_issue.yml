@@ -17,27 +17,30 @@ jobs:
       issues: write
 
     steps:
-      - name: Checkout main for scripts
+      - name: Checkout data branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: data           # Target branch for annotations
+          fetch-depth: 0      # Get full history to avoid push rejections
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Load annotations from data branch
+      - name: Ensure git identity
         run: |
-          git fetch origin data || true
-          git checkout origin/data -- annotations || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@://github.com"
+
+      - name: Load scripts from main
+        run: |
+          # Fetch main so we can grab the parser and processor
+          git fetch origin main
+          git checkout origin/main -- scripts/
+          # Ensure annotations directory exists on the data branch
           mkdir -p annotations
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Ensure git identity
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
         run: |
@@ -49,4 +52,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
+          # The script will now run on the 'data' branch context
           python scripts/process_all_annotation_issues.py
