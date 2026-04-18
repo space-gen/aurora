@@ -27,7 +27,7 @@ jobs:
       - name: Ensure git identity
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@://github.com"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Load scripts from main
         run: |

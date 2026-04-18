@@ -7,11 +7,10 @@ Intended to be run inside GitHub Actions with `GITHUB_TOKEN` available.
 from __future__ import annotations
 import json
 import os
-import shlex
 import subprocess
-import sys
 from typing import Any
 import requests
+from scripts.parse_issue_annotation import process_issue_submissions
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")  # owner/repo
@@ -80,25 +79,19 @@ def main() -> None:
     issues = list_annotation_issues()
     print(f"Found {len(issues)} open annotation issues")
     
-    successes = []
-    failures = []
-
-    for issue in issues:
-        num = issue["number"]
-        body = issue.get("body", "")
-        author = issue.get("user", {}).get("login", "unknown")
-        
-        print(f"Processing issue #{num} by {author}")
-        env = os.environ.copy()
-        env["ISSUE_NUMBER"] = str(num)
-        env["ISSUE_BODY"] = body
-        env["ISSUE_AUTHOR"] = author
-        
-        rc, out, err = run_cmd([sys.executable, "scripts/parse_issue_annotation.py"], cwd=repo_dir, env=env)
-        if rc == 0:
-            successes.append({"number": num, "author": author})
-        else:
-            failures.append({"number": num, "error": err})
+    issue_inputs = [
+        {
+            "number": issue["number"],
+            "body": issue.get("body", ""),
+            "author": issue.get("user", {}).get("login", "unknown"),
+        }
+        for issue in issues
+    ]
+    successes, failures = process_issue_submissions(issue_inputs)
+    for success in successes:
+        print(f"Processed issue #{success['number']} by {success['author']}")
+    for failure in failures:
+        print(f"Failed issue #{failure['number']}: {failure['error']}")
 
     # Prepare changes
     run_cmd(["git", "add", "annotations/"], cwd=repo_dir)
@@ -107,7 +100,8 @@ def main() -> None:
     commit_ok = False
     if out2.strip():
         issue_nums = [s["number"] for s in successes]
-        coauthors = "".join([f"Co-authored-by: {s['author']} <>\n" for s in successes])
+        coauthor_authors = sorted({s["author"] for s in successes})
+        coauthors = "".join([f"Co-authored-by: {author} <>\n" for author in coauthor_authors])
         commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
         
         # Commit locally
