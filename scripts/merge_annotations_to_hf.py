@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 import os
 import sys
 from pathlib import Path
@@ -38,82 +37,7 @@ def _normalize_url(url: Any) -> str:
     # If the URL is already absolute (starts with http), return as is
     return s
 
-def circle_to_rle(cx: float, cy: float, r: float, width: int = 1024) -> str:
-    """
-    Convert a circle (cx, cy, r) to a compressed RLE string.
-    Format: start1 length1 gap1 length2 gap2 length3 ...
-    gap is the distance from the end of the previous run to the start of the current one.
-    """
-    runs = []
-    for y in range(int(cy - r), int(cy + r) + 1):
-        if y < 0 or y >= 1024:
-            continue
-        dy = y - cy
-        dx = math.sqrt(max(0, r*r - dy*dy))
-        x1 = max(0, int(cx - dx))
-        x2 = min(width - 1, int(cx + dx))
-        if x1 <= x2:
-            runs.append((y * width + x1, x2 - x1 + 1))
-    
-    if not runs:
-        return ""
-        
-    rle_parts = [str(runs[0][0]), str(runs[0][1])]
-    last_end = runs[0][0] + runs[0][1]
-    
-    for i in range(1, len(runs)):
-        start, length = runs[i]
-        gap = start - last_end
-        rle_parts.extend([str(gap), str(length)])
-        last_end = start + length
-        
-    return " ".join(rle_parts)
 
-def _migrate_annotations(annotations: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Migrate legacy x,y,r or absolute RLE to compressed RLE."""
-    if not isinstance(annotations, list):
-        return annotations
-        
-    for a in annotations:
-        if "locations" in a:
-            new_locs = []
-            for loc in a["locations"]:
-                if not isinstance(loc, dict):
-                    continue
-                
-                # Case 1: Already has RLE, check if it needs compression
-                if "rle" in loc:
-                    rle_val = loc["rle"]
-                    parts = rle_val.split()
-                    if len(parts) > 2:
-                        try:
-                            p0, p1, p2 = int(parts[0]), int(parts[1]), int(parts[2])
-                            if p2 > p0 + p1: # Absolute RLE detected
-                                new_parts = [parts[0], parts[1]]
-                                last_end = p0 + p1
-                                for i in range(2, len(parts), 2):
-                                    start = int(parts[i])
-                                    length = parts[i+1]
-                                    gap = start - last_end
-                                    new_parts.extend([str(gap), length])
-                                    last_end = start + int(length)
-                                loc["rle"] = " ".join(new_parts)
-                        except (ValueError, IndexError):
-                            pass
-                    new_locs.append(loc)
-                
-                # Case 2: Legacy x,y,r
-                elif all(k in loc for k in ["x", "y"]):
-                    label = loc.get("label", "unknown")
-                    x, y = float(loc["x"]), float(loc["y"])
-                    r = float(loc.get("radius", loc.get("r", 0)))
-                    rle = circle_to_rle(x, y, r)
-                    new_locs.append({"label": label, "rle": rle})
-                
-                else:
-                    new_locs.append(loc)
-            a["locations"] = new_locs
-    return annotations
 
 def _safe_value(value: Any) -> Any:
     """Keep scalar values as-is; normalise dict/list into minified JSON strings."""
@@ -184,9 +108,6 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
         norm_r = _normalise_record(r)
         if "url" in norm_r:
             norm_r["url"] = _normalize_url(norm_r["url"])
-            # Pre-migrate local annotations
-            if "annotations" in norm_r and isinstance(r.get("annotations"), list):
-                norm_r["annotations"] = _safe_value(_migrate_annotations(r["annotations"]))
             local_url_map[norm_r["url"]] = norm_r
 
     if not local_url_map:
@@ -195,13 +116,14 @@ def _push_to_hf(task_type: str, local_records_raw: list[dict[str, Any]], token: 
 
     # Always write and upload as data/YYYY-MM-DD.yml
     try:
-        from datetime import datetime
+        from datetime import datetime, timedelta
         from huggingface_hub import HfApi
 
         api = HfApi(token=token)
         tmp_dir = REPO_ROOT / "tmp_hf_uploads"
         tmp_dir.mkdir(parents=True, exist_ok=True)
-        date_key = datetime.utcnow().date().isoformat()
+        # Use date 2 days before the current date
+        date_key = (datetime.utcnow().date() - timedelta(days=2)).isoformat()
         local_path = tmp_dir / f"{date_key}.yml"
         with open(local_path, "w", encoding="utf-8") as out_f:
             for r in local_url_map.values():
