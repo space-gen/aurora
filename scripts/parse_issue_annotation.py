@@ -34,6 +34,17 @@ ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 VALID_LABELS: dict[str, set[str]] = {
     "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
     "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
+    # AIA common solar feature classifications (unified for all wavelengths)
+    "aia_94": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
+    "aia_131": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
+    "aia_171": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
+    "aia_193": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
+    "aia_211": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
+    "aia_304": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
+    "aia_335": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
+    "aia_1600": {"bright_plage", "dark_filament", "sunspot_umbra", "active_region", "granulation", "quiet_sun", "none"},
+    "aia_1700": {"bright_plage", "dark_filament", "sunspot_umbra", "active_region", "granulation", "quiet_sun", "none"},
+    "aia_4500": {"bright_plage", "dark_sunspot", "active_region", "granulation", "quiet_sun", "none"},
 }
 VALID_TASK_TYPES = set(VALID_LABELS.keys())
 

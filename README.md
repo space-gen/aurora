@@ -81,6 +81,9 @@ SolarHub supports rigorous scientific standards for ML training:
 |-----------|---------------------|
 | `sunspot` | **McIntosh** |
 | `magnetogram` | **Mount Wilson** |
+| `aia_94`, `aia_131`, `aia_171`, `aia_193`, `aia_211`, `aia_304`, `aia_335` | **SDO/AIA Corona** |
+| `aia_1600`, `aia_1700` | **SDO/AIA Chromosphere** |
+| `aia_4500` | **SDO/AIA Photosphere** |
 
 ## Funding
 

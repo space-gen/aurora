@@ -15,12 +15,18 @@ body:
 
       | `sunspot` | `class_a`, `class_b`, `class_c`, `class_d`, `class_e`, `class_f`, `class_h`, `none` |
 
-      | `magnetogram` | `alpha`, `beta`, `gamma`, `beta-gamma`, `delta`, `beta-delta`, `beta-gamma-delta`, `gamma-delta`, `none` |'
+      | `magnetogram` | `alpha`, `beta`, `gamma`, `beta-gamma`, `delta`, `beta-delta`, `beta-gamma-delta`, `gamma-delta`, `none` |
+
+      | `aia_94`, `aia_131`, `aia_171`, `aia_193`, `aia_211`, `aia_304`, `aia_335` | `bright_loop`, `dark_filament`, `flare`, `active_region`, `coronal_mass`, `quiet_sun`, `none` |
+
+      | `aia_1600`, `aia_1700` | `bright_plage`, `dark_filament`, `sunspot_umbra`, `active_region`, `granulation`, `quiet_sun`, `none` |
+
+      | `aia_4500` | `bright_plage`, `dark_sunspot`, `active_region`, `granulation`, `quiet_sun`, `none` |'
   type: markdown
 - attributes:
     description: The full HTTPS URL of the solar observation image you are labelling.
     label: Image URL
-    placeholder: https://solar-data-source/image.jpg
+    placeholder: https://solar-data-source/image.jp2
   id: image_url
   type: input
   validations:
@@ -31,12 +37,22 @@ body:
     options:
     - sunspot
     - magnetogram
+    - aia_94
+    - aia_131
+    - aia_171
+    - aia_193
+    - aia_211
+    - aia_304
+    - aia_335
+    - aia_1600
+    - aia_1700
+    - aia_4500
   id: task_type
   type: dropdown
   validations:
     required: true
 - attributes:
-    description: The unique ID of this record (e.g. sp-123). Found in the task JSON.
+    description: The unique ID of this record (e.g. sp-123 or aia193-456). Found in the task JSON.
     label: Record ID
   id: record_id
   type: input
@@ -45,7 +61,7 @@ body:
 - attributes:
     description: 'Specify one or more labeled regions using the format `label,x,y,r`. Separate multiple regions with a semicolon (`;`).
 
-      Example: `class_a,100,150,30 ; class_h,500,200,15`.
+      Example: `class_a,100,150,30 ; class_h,500,200,15` (sunspot/magnetogram) or `bright_loop,250,300,50 ; active_region,600,400,80` (AIA).
 
       Labels must be valid for the selected Task Type (see table above). Coordinates (x, y) and radius (r) should be provided in pixels.
       '
