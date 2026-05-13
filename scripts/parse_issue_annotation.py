@@ -31,20 +31,25 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
 # Valid labels for each task type
+# NOAA SRS Hale classification: Primary type (A-F) + Reduction class modifier (x, o, i)
+# A: Unipolar (x=reduced, o=open, i=incomplete) B: Bipolar (x=bipolar, o=open, i=incomplete)
+# C: Complex (r=complex, x=extreme, o=open) D: Unipolar w/ no penumbra
+# E: Bipolar w/ no penumbra  F: Complex w/ no penumbra
 VALID_LABELS: dict[str, set[str]] = {
     "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
     "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
-    # AIA common solar feature classifications (unified for all wavelengths)
-    "aia_94": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
-    "aia_131": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
-    "aia_171": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
-    "aia_193": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
-    "aia_211": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
-    "aia_304": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
-    "aia_335": {"bright_loop", "dark_filament", "flare", "active_region", "coronal_mass", "quiet_sun", "none"},
-    "aia_1600": {"bright_plage", "dark_filament", "sunspot_umbra", "active_region", "granulation", "quiet_sun", "none"},
-    "aia_1700": {"bright_plage", "dark_filament", "sunspot_umbra", "active_region", "granulation", "quiet_sun", "none"},
-    "aia_4500": {"bright_plage", "dark_sunspot", "active_region", "granulation", "quiet_sun", "none"},
+    # AIA classifications using NOAA SRS Hale codes (established solar classification standard)
+    # Format: primary_class (A-F) + modifier (x, o, i, r)
+    "aia_94": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_131": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_171": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_193": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_211": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_304": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_335": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_1600": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_1700": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_4500": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
 }
 VALID_TASK_TYPES = set(VALID_LABELS.keys())
 
