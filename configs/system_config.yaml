@@ -15,6 +15,16 @@ data:
   task_types:
     - sunspot
     - magnetogram
+    - aia_94
+    - aia_131
+    - aia_171
+    - aia_193
+    - aia_211
+    - aia_304
+    - aia_335
+    - aia_1600
+    - aia_1700
+    - aia_4500
   source_apis:
     - name: SDO HMI/AIA
       base_url: https://jsoc.stanford.edu/

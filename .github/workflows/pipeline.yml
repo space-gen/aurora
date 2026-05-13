@@ -41,7 +41,7 @@ jobs:
       - name: Run Crawler
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/pull_new_urls.py
+        run: python scripts/pull_new_urls.py --include-aia
 
       - name: Upload Pull Results
         uses: actions/upload-artifact@v4

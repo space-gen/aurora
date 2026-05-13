@@ -3,7 +3,7 @@ pull_new_urls.py
 ================
 Stage 2 — Daily Solar Data Crawler
 
-Fetches sunspot and magnetogram JPG URLs for a specific day.
+Fetches sunspot and magnetogram JPG URLs (HMI) + AIA JP2 images for all wavelengths.
 Parallelized fetch for faster performance.
 """
 
@@ -15,6 +15,11 @@ import argparse
 from pathlib import Path
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import warnings
+import urllib3
+
+# Suppress SSL warnings for AIA HTTPS requests
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -24,20 +29,35 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
+# AIA wavelengths (in Angstroms) - all available instruments
+AIA_WAVELENGTHS = ["94", "131", "171", "193", "211", "304", "335", "1600", "1700", "4500"]
+
 SOURCE_MAP = {
     "sunspot": {
         "path": "http://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/",
         "filter": "_Ic_flat_1k.jpg",
-        "prefix": "sp"
+        "prefix": "sp",
+        "source_type": "JSOC_HMI_JPG"
     },
     "magnetogram": {
         "path": "http://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/",
         "filter": "_M_1k.jpg",
-        "prefix": "mg"
+        "prefix": "mg",
+        "source_type": "JSOC_HMI_JPG"
     },
 }
 
-LINK_REGEX = re.compile(r'href="([^"]+\.jpg)"')
+# Add AIA entries dynamically
+for wavelength in AIA_WAVELENGTHS:
+    SOURCE_MAP[f"aia_{wavelength}"] = {
+        "path": "https://jsoc1.stanford.edu/data/aia/images/{Y}/{M}/{D}/{wavelength}/",
+        "filter": f"SDO_AIA_AIA_{wavelength}.jp2",
+        "prefix": f"aia{wavelength}",
+        "wavelength": wavelength,
+        "source_type": "JSOC_AIA_JP2"
+    }
+
+LINK_REGEX = re.compile(r'href="([^"]+)"')
 
 MAX_WORKERS = 10
 
@@ -74,12 +94,19 @@ def _fetch_single_day(task_type, date_obj):
     d = date_obj.strftime("%d")
 
     cfg = SOURCE_MAP[task_type]
-    base_url = cfg["path"].format(Y=y, M=m, D=d)
+    
+    # For AIA, include wavelength in the URL
+    if task_type.startswith("aia_"):
+        wavelength = cfg.get("wavelength")
+        base_url = cfg["path"].format(Y=y, M=m, D=d, wavelength=wavelength)
+    else:
+        base_url = cfg["path"].format(Y=y, M=m, D=d)
 
     results = []
 
     try:
-        response = requests.get(base_url, timeout=15)
+        # Use verify=False for HTTPS URLs (AIA uses HTTPS)
+        response = requests.get(base_url, timeout=15, verify=False)
 
         if response.status_code == 200:
             matches = LINK_REGEX.findall(response.text)
@@ -118,6 +145,7 @@ def _fetch_day_urls_parallel(task_type, date_obj):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--days-back", type=int, default=1)
+    parser.add_argument("--include-aia", action="store_true", help="Include AIA data in the pull")
     args = parser.parse_args()
 
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
@@ -125,9 +153,19 @@ def main():
     target_date = datetime.date.today() - datetime.timedelta(days=args.days_back)
     log.info(f"Target date: {target_date}")
 
-    for task_type, cfg in SOURCE_MAP.items():
+    # Determine which task types to process
+    task_types_to_process = ["sunspot", "magnetogram"]
+    if args.include_aia:
+        task_types_to_process.extend([f"aia_{wl}" for wl in AIA_WAVELENGTHS])
+
+    for task_type in task_types_to_process:
         log.info(f"Processing {task_type}...")
 
+        if task_type not in SOURCE_MAP:
+            log.warning(f"Task type {task_type} not found in SOURCE_MAP")
+            continue
+
+        cfg = SOURCE_MAP[task_type]
         last_num = _get_last_id_numeric(task_type)
         prefix = cfg["prefix"]
 
@@ -138,15 +176,22 @@ def main():
         for url in urls:
             last_num += 1
 
+            metadata = {
+                "source": cfg.get("source_type", "JSOC_HMI_JPG"),
+                "captured_at": f"{target_date.isoformat()}T00:00:00Z"
+            }
+
+            # Add wavelength metadata for AIA
+            if task_type.startswith("aia_"):
+                wavelength = task_type.split("_")[1]
+                metadata["wavelength"] = f"{wavelength}Å"
+
             record = {
                 "id": f"{prefix}-{last_num}",
                 "url": url,
                 "task_type": task_type,
                 "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "metadata": {
-                    "source": "JSOC_HMI_JPG",
-                    "captured_at": f"{target_date.isoformat()}T00:00:00Z"
-                },
+                "metadata": metadata,
                 "annotations": [],
             }
 
