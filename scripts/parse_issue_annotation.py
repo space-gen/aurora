@@ -31,27 +31,60 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
 # Valid labels for each task type
-# NOAA SRS Hale classification: Primary type (A-F) + Reduction class modifier (x, o, i)
-# A: Unipolar (x=reduced, o=open, i=incomplete) B: Bipolar (x=bipolar, o=open, i=incomplete)
-# C: Complex (r=complex, x=extreme, o=open) D: Unipolar w/ no penumbra
-# E: Bipolar w/ no penumbra  F: Complex w/ no penumbra
+HOT_REGION_LABELS = {"bright_region", "coronal_loops", "none"}
+CORONAL_DARK_LABELS = {"coronal_hole", "filament", "none"}
+LOWER_ATMOSPHERE_LABELS = {"plage", "flare_ribbon", "sunspot", "none"}
 VALID_LABELS: dict[str, set[str]] = {
     "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
     "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
-    # AIA classifications using NOAA SRS Hale codes (established solar classification standard)
-    # Format: primary_class (A-F) + modifier (x, o, i, r)
-    "aia_94": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_131": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_171": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_193": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_211": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_304": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_335": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_1600": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_1700": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
-    "aia_4500": {"ax", "ao", "ai", "bx", "bo", "bi", "cr", "cx", "co", "d", "e", "f", "none"},
+    "aia_94": HOT_REGION_LABELS,
+    "aia_131": HOT_REGION_LABELS,
+    "aia_171": HOT_REGION_LABELS,
+    "aia_193": CORONAL_DARK_LABELS,
+    "aia_211": CORONAL_DARK_LABELS,
+    "aia_304": {"filament", "prominence", "bright_region", "none"},
+    "aia_335": HOT_REGION_LABELS,
+    "aia_1600": LOWER_ATMOSPHERE_LABELS,
+    "aia_1700": LOWER_ATMOSPHERE_LABELS,
 }
 VALID_TASK_TYPES = set(VALID_LABELS.keys())
+
+IMAGE_SIZE = 1024.0
+MAX_RADIUS = 300.0
+MAX_REGIONS = 50
+# Images keep the Sun centred. This radius covers HMI through the year and AIA edge prominences.
+SUN_CENTRE = (511.5, 511.5)
+MAX_MARK_DISTANCE = 480.0
+AIA_WAVELENGTHS = ("94", "131", "171", "193", "211", "304", "335", "1600", "1700")
+IMAGE_PATTERNS = {
+    "sunspot": re.compile(r"^https://jsoc1\.stanford\.edu/data/hmi/images/(\d{4})/(\d{2})/(\d{2})/\d{8}_\d{6}_Ic_flat_1k\.jpg$"),
+    "magnetogram": re.compile(r"^https://jsoc1\.stanford\.edu/data/hmi/images/(\d{4})/(\d{2})/(\d{2})/\d{8}_\d{6}_M_1k\.jpg$"),
+    **{
+        f"aia_{wavelength}": re.compile(
+            rf"^https://sdo\.gsfc\.nasa\.gov/assets/img/browse/(\d{{4}})/(\d{{2}})/(\d{{2}})/\d{{8}}_\d{{6}}_1024_{int(wavelength):04d}\.jpg$"
+        )
+        for wavelength in AIA_WAVELENGTHS
+    },
+}
+RECORD_ID_PATTERNS = {
+    "sunspot": re.compile(r"^sp-\d+$"),
+    "magnetogram": re.compile(r"^mg-\d+$"),
+    **{f"aia_{wavelength}": re.compile(rf"^aia{wavelength}-\d+$") for wavelength in AIA_WAVELENGTHS},
+}
+
+
+def canonical_image_url(url: str) -> str:
+    return re.sub(r"^https?://jsoc1?\.stanford\.edu/", "https://jsoc1.stanford.edu/", url.strip())
+
+
+def _valid_circle(label: str, x: float, y: float, r: float, task_type: str | None) -> bool:
+    if not all(math.isfinite(value) for value in (x, y, r)):
+        return False
+    if label == "none" and x == 0 and y == 0 and r == 0:
+        return True
+    if not (0 <= x <= IMAGE_SIZE and 0 <= y <= IMAGE_SIZE and 0 < r <= MAX_RADIUS):
+        return False
+    return math.hypot(x - SUN_CENTRE[0], y - SUN_CENTRE[1]) <= MAX_MARK_DISTANCE
 
 def circle_to_rle(cx: float, cy: float, r: float, width: int = 1024) -> str:
     """
@@ -100,7 +133,8 @@ def _parse_issue_body(body: str) -> dict[str, str]:
         if "(" in key:
             key = key.split("(")[0].strip()
         key = key.replace(" ", "_").replace("(optional)", "").rstrip("_").strip("_")
-        fields[key] = value
+        # The first heading wins, so free-text notes cannot replace earlier fields.
+        fields.setdefault(key, value)
     log.info(f"Parsed fields: {list(fields.keys())}")
     return fields
 
@@ -114,7 +148,7 @@ def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]
     if not regions_raw:
         return regions
     log.info(f"Parsing regions from: {regions_raw}")
-    for part in regions_raw.split(";"):
+    for part in regions_raw.split(";")[:MAX_REGIONS]:
         part = part.strip()
         if not part:
             continue
@@ -135,6 +169,9 @@ def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]
             # Format: label,x,y,r
             try:
                 x, y, r = map(float, bits[1:])
+                if not _valid_circle(label, x, y, r, task_type):
+                    log.warning(f"Skipping out-of-range region: {part}")
+                    continue
                 # Store circle coordinates directly in the 'region' field as comma-separated x,y,r
                 region_val = f"{x},{y},{r}"
                 regions.append({"label": label, "region": region_val})
@@ -178,7 +215,7 @@ def _parse_issue_submission(*, issue_number: Any, issue_body: str, issue_author:
 
     confidence_raw = fields.get("confidence_score", "100").strip()
     try:
-        confidence = float(re.sub(r"[^0-9.]", "", confidence_raw))
+        confidence = float(confidence_raw.rstrip("%").strip())
     except ValueError as exc:
         raise AnnotationParseError("confidence_score is invalid") from exc
 
@@ -212,7 +249,27 @@ def _parse_issue_submission(*, issue_number: Any, issue_body: str, issue_author:
         "issue_author": issue_author,
         "task_type": task_type,
         "record_id": record_id,
+        "image_url": fields.get("image_url", "").strip(),
         "annotation": annotation,
+    }
+
+
+def _restored_task(item: dict[str, Any]) -> dict[str, Any] | None:
+    """Rebuild a rotated-out task so a late contribution is not discarded."""
+    task_type = item["task_type"]
+    pattern = IMAGE_PATTERNS.get(task_type)
+    url = canonical_image_url(item.get("image_url", ""))
+    match = pattern.match(url) if pattern else None
+    if not match or not RECORD_ID_PATTERNS[task_type].match(item["record_id"]):
+        return None
+    year, month, day = match.groups()
+    return {
+        "id": item["record_id"],
+        "url": url,
+        "task_type": task_type,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "metadata": {"source": "SDO_AIA_BROWSE" if task_type.startswith("aia_") else "JSOC_HMI_JPG", "captured_at": f"{year}-{month}-{day}T00:00:00Z"},
+        "annotations": [],
     }
 
 
@@ -258,7 +315,7 @@ def process_issue_submissions(
         tasks: list[dict[str, Any]] = []
         index_by_id: dict[str, int] = {}
         with open(file_path, "r", encoding="utf-8") as f:
-            for idx, line in enumerate(f):
+            for line in f:
                 if not line.strip():
                     continue
                 task = json.loads(line)
@@ -273,26 +330,42 @@ def process_issue_submissions(
 
                 task_id = str(task.get("id", "")).strip()
                 if task_id:
-                    index_by_id[task_id] = idx
+                    index_by_id[task_id] = len(tasks)
                 tasks.append(_ordered_task(task))
 
         changed = False
         for item in batch:
             task_idx = index_by_id.get(item["record_id"])
             if task_idx is None:
+                restored = _restored_task(item)
+                if restored is None:
+                    failures.append(
+                        {
+                            "number": item["issue_number"],
+                            "author": item["issue_author"],
+                            "error": (
+                                f"data_expired: record {item['record_id']} not found in "
+                                f"{task_type}.jsonl"
+                            ),
+                        }
+                    )
+                    continue
+                task_idx = len(tasks)
+                tasks.append(restored)
+                index_by_id[item["record_id"]] = task_idx
+                changed = True
+
+            task = tasks[task_idx]
+            submitted_url = item.get("image_url", "")
+            if submitted_url and canonical_image_url(submitted_url) != canonical_image_url(str(task.get("url", ""))):
                 failures.append(
                     {
                         "number": item["issue_number"],
                         "author": item["issue_author"],
-                        "error": (
-                            f"data_expired: record {item['record_id']} not found in "
-                            f"{task_type}.jsonl"
-                        ),
+                        "error": f"image does not match record {item['record_id']}",
                     }
                 )
                 continue
-
-            task = tasks[task_idx]
             existing_annotations = task["annotations"]
             already_exists = any(
                 str(existing.get("user", "")).strip().lower() == item["issue_author"].lower()

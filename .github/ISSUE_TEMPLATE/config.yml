@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: SolarHub Frontend (Recommended)
-    url: https://space-gen.github.io/solarhub/
+    url: https://solarhub.skiono.me/
     about: Annotate data via the GUI (Frontend)
   - name: SolarHub - Aurora Documentation
     url: https://space-gen.github.io/aurora/

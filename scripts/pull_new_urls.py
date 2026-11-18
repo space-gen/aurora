@@ -3,7 +3,7 @@ pull_new_urls.py
 ================
 Stage 2 — Daily Solar Data Crawler
 
-Fetches sunspot and magnetogram JPG URLs (HMI) + AIA JP2 images for all wavelengths.
+Fetches sunspot and magnetogram JPG URLs (HMI) + NASA SDO 1024px AIA browse JPGs.
 Parallelized fetch for faster performance.
 """
 
@@ -12,14 +12,10 @@ import json
 import logging
 import datetime
 import argparse
+import sys
 from pathlib import Path
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import warnings
-import urllib3
-
-# Suppress SSL warnings for AIA HTTPS requests
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -29,18 +25,18 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
-# AIA wavelengths (in Angstroms) - all available instruments
-AIA_WAVELENGTHS = ["94", "131", "171", "193", "211", "304", "335", "1600", "1700", "4500"]
+# 4500 is omitted: its browse frames are overexposed and show no usable surface detail.
+AIA_WAVELENGTHS = ["94", "131", "171", "193", "211", "304", "335", "1600", "1700"]
 
 SOURCE_MAP = {
     "sunspot": {
-        "path": "http://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/",
+        "path": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/",
         "filter": "_Ic_flat_1k.jpg",
         "prefix": "sp",
         "source_type": "JSOC_HMI_JPG"
     },
     "magnetogram": {
-        "path": "http://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/",
+        "path": "https://jsoc1.stanford.edu/data/hmi/images/{Y}/{M}/{D}/",
         "filter": "_M_1k.jpg",
         "prefix": "mg",
         "source_type": "JSOC_HMI_JPG"
@@ -50,16 +46,34 @@ SOURCE_MAP = {
 # Add AIA entries dynamically
 for wavelength in AIA_WAVELENGTHS:
     SOURCE_MAP[f"aia_{wavelength}"] = {
-        "path": "https://jsoc1.stanford.edu/data/aia/images/{Y}/{M}/{D}/{wavelength}/",
-        "filter": f"SDO_AIA_AIA_{wavelength}.jp2",
+        "path": "https://sdo.gsfc.nasa.gov/assets/img/browse/{Y}/{M}/{D}/",
+        "filter": f"_1024_{int(wavelength):04d}.jpg",
         "prefix": f"aia{wavelength}",
         "wavelength": wavelength,
-        "source_type": "JSOC_AIA_JP2"
+        "source_type": "SDO_AIA_BROWSE"
     }
 
 LINK_REGEX = re.compile(r'href="([^"]+)"')
 
 MAX_WORKERS = 10
+REQUEST_HEADERS = {"User-Agent": "SolarHub-Aurora/1.0"}
+
+
+def _canonical_url(url):
+    return re.sub(r"^https?://jsoc1?\.stanford\.edu/", "https://jsoc1.stanford.edu/", url.strip())
+
+
+def existing_ids_by_url(path):
+    """Keeps record IDs stable when the same day is crawled again."""
+    if not path.exists():
+        return {}
+    ids = {}
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                item = json.loads(line)
+                ids[_canonical_url(item.get("url", ""))] = item.get("id")
+    return ids
 
 
 def _get_last_id_numeric(task_type):
@@ -105,14 +119,13 @@ def _fetch_single_day(task_type, date_obj):
     results = []
 
     try:
-        # Use verify=False for HTTPS URLs (AIA uses HTTPS)
-        response = requests.get(base_url, timeout=15, verify=False)
+        response = requests.get(base_url, timeout=30, headers=REQUEST_HEADERS)
 
         if response.status_code == 200:
             matches = LINK_REGEX.findall(response.text)
 
             for match in matches:
-                if cfg["filter"] in match:
+                if match.endswith(cfg["filter"]):
                     results.append(base_url + match)
         else:
             log.warning(f"Failed {base_url} ({response.status_code})")
@@ -149,6 +162,7 @@ def main():
     args = parser.parse_args()
 
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
+    (DATA_PROCESSING_DIR / "aia_4500.jsonl").unlink(missing_ok=True)
 
     target_date = datetime.date.today() - datetime.timedelta(days=args.days_back)
     log.info(f"Target date: {target_date}")
@@ -158,6 +172,7 @@ def main():
     if args.include_aia:
         task_types_to_process.extend([f"aia_{wl}" for wl in AIA_WAVELENGTHS])
 
+    total_records = 0
     for task_type in task_types_to_process:
         log.info(f"Processing {task_type}...")
 
@@ -170,11 +185,15 @@ def main():
         prefix = cfg["prefix"]
 
         urls = _fetch_day_urls_parallel(task_type, target_date)
+        known_ids = existing_ids_by_url(DATA_PROCESSING_DIR / f"{task_type}.jsonl")
 
         new_records = []
 
-        for url in urls:
-            last_num += 1
+        for url in sorted(urls):
+            record_id = known_ids.get(_canonical_url(url))
+            if not record_id:
+                last_num += 1
+                record_id = f"{prefix}-{last_num}"
 
             metadata = {
                 "source": cfg.get("source_type", "JSOC_HMI_JPG"),
@@ -187,7 +206,7 @@ def main():
                 metadata["wavelength"] = f"{wavelength}Å"
 
             record = {
-                "id": f"{prefix}-{last_num}",
+                "id": record_id,
                 "url": url,
                 "task_type": task_type,
                 "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -204,12 +223,14 @@ def main():
                 for record in new_records:
                     f.write(json.dumps(record, separators=(",", ":")) + "\n")
 
-            log.info(
-                f"{len(new_records)} records saved for {task_type} "
-                f"(IDs {prefix}-{last_num - len(new_records) + 1} → {prefix}-{last_num})"
-            )
+            total_records += len(new_records)
+            log.info(f"{len(new_records)} records saved for {task_type}")
         else:
             log.warning(f"No URLs found for {task_type} on {target_date}")
+
+    if total_records == 0:
+        log.error("No images were found, so the current task files will stay in place.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

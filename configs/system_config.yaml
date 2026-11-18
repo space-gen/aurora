@@ -24,7 +24,6 @@ data:
     - aia_335
     - aia_1600
     - aia_1700
-    - aia_4500
   source_apis:
     - name: SDO HMI/AIA
       base_url: https://jsoc.stanford.edu/

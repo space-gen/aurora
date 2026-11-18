@@ -1,9 +1,11 @@
 name: "Nightly Pipeline"
 concurrency:
-  group: aurora-nightly
+  group: aurora-data
   cancel-in-progress: false
 
 on:
+  schedule:
+    - cron: "5 0 * * *"
   repository_dispatch:
     types: [nightly refresh]
   workflow_dispatch:
@@ -23,8 +25,8 @@ jobs:
 
       - name: Load current data branch snapshot
         run: |
-          git fetch origin data || true
-          git checkout origin/data -- data annotations || true
+          git fetch origin data
+          git checkout origin/data -- data annotations
           if [ -d "data" ]; then
             mv data data_processing
           fi
@@ -60,8 +62,8 @@ jobs:
 
       - name: Load annotations from data branch
         run: |
-          git fetch origin data || true
-          git checkout origin/data -- annotations || true
+          git fetch origin data
+          git checkout origin/data -- annotations
           mkdir -p annotations
 
       - name: Set up Python
@@ -161,7 +163,6 @@ jobs:
           cp -r data /tmp/data_payload/data
           cp -r annotations /tmp/data_payload/annotations
 
-          git push origin --delete data || true
           git checkout --orphan data_orphan
           git rm -rf --quiet . || true
 

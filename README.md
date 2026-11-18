@@ -36,7 +36,7 @@ aurora/
 │   ├── pull_new_urls.py          # Daily solar data crawler
 │   ├── merge_annotations_to_hf.py # Push annotations to HuggingFace (Schema reconciled)
 │   ├── parse_issue_annotation.py  # Parse GitHub issue bodies into annotation JSON
-│   └── setup_platforms.py         # One-time HuggingFace initialisation
+│   └── process_all_annotation_issues.py # Process open annotation issues
 ├── configs/                 # System configuration (YAML)
 ├── docs/                    # Docusaurus documentation source
 ├── .github/ISSUE_TEMPLATE/  # GitHub issue forms for annotation submission
@@ -56,11 +56,11 @@ The data is stored in a compressed JSON Lines (JSONL) format. Each line is a min
 
 ## Submitting Annotations
 
-Users annotate solar observations by **opening a GitHub Issue** using the *Submit Solar Observation Annotation* template. When the `annotation` label is applied to an issue, the `Parse Annotation Issue` workflow automatically parses the form fields and writes the annotation to `annotations/`. It is merged into HuggingFace during the next nightly pipeline run.
+Users annotate solar observations by **opening a GitHub Issue** using the *Submit Solar Observation Annotation* template. The scheduled `Parse Annotation` workflow reads open issues that have the `annotation` label or a title starting with `[Annotation]`, validates them and writes the annotation to `annotations/`. It is merged into HuggingFace during the next nightly pipeline run.
 
 **When submitting annotations:**
 *   Use the `your_label` field to submit one or more annotations in the format `label,region`. Multiple annotations are separated by a semicolon (`;`). Example: `class_a,10 1 5 2 3 ; class_h,2 7 1 4`.
-*   Labels must be valid for the selected Task Type (see table above). The `region` payload is stored exactly as submitted.
+*   Labels must be valid for the selected Task Type (see table above). Circles use 1024-pixel image coordinates and must fall on the solar disk for sunspot and magnetogram tasks.
 *   A single GitHub username can annotate a given record ID only once. Repeat submissions for the same `id` by the same user are rejected by the parser.
 
 ## Documentation
@@ -81,7 +81,10 @@ SolarHub supports rigorous scientific standards for ML training:
 |-----------|---------------------|
 | `sunspot` | **McIntosh** |
 | `magnetogram` | **Mount Wilson** |
-| `aia_94`, `aia_131`, `aia_171`, `aia_193`, `aia_211`, `aia_304`, `aia_335`, `aia_1600`, `aia_1700`, `aia_4500` | **NOAA SRS Hale** |
+| `aia_94`, `aia_131`, `aia_171`, `aia_335` | Bright regions and coronal loops |
+| `aia_193`, `aia_211` | Coronal holes and filaments |
+| `aia_304` | Filaments, prominences and bright regions |
+| `aia_1600`, `aia_1700` | Plage, flare ribbons and sunspots |
 
 ## Funding
 

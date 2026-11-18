@@ -18,10 +18,8 @@ except ModuleNotFoundError:
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")  # owner/repo
-
-if not GITHUB_TOKEN or not GITHUB_REPOSITORY:
-    print("GITHUB_TOKEN and GITHUB_REPOSITORY must be set in env")
-    sys.exit(1)
+ISSUE_TITLE_PREFIX = "[Annotation]"
+REQUEST_TIMEOUT = 30
 
 API_BASE = f"https://api.github.com/repos/{GITHUB_REPOSITORY}"
 HEADERS = {
@@ -48,37 +46,50 @@ def run_cmd(cmd: list[str], cwd: str | None = None, env: dict | None = None) -> 
     out, err = p.communicate()
     return p.returncode, out.decode("utf-8", errors="replace"), err.decode("utf-8", errors="replace")
 
+def is_annotation_issue(issue: dict[str, Any]) -> bool:
+    """GitHub drops labels set by non-members, so the app's title prefix also counts."""
+    if "pull_request" in issue:
+        return False
+    labels = {label.get("name") for label in issue.get("labels", [])}
+    return "annotation" in labels or str(issue.get("title", "")).startswith(ISSUE_TITLE_PREFIX)
+
+
 def list_annotation_issues() -> list[dict[str, Any]]:
     issues = []
     page = 1
     while True:
         url = f"{API_BASE}/issues"
-        params = {"labels": "annotation", "state": "open", "per_page": 100, "page": page}
-        r = requests.get(url, headers=HEADERS, params=params)
+        params = {"state": "open", "per_page": 100, "page": page}
+        r = requests.get(url, headers=HEADERS, params=params, timeout=REQUEST_TIMEOUT)
         r.raise_for_status()
         batch = r.json()
         if not batch:
             break
         issues.extend(batch)
         page += 1
-    return [i for i in issues if 'pull_request' not in i]
+    # Oldest first, so the first submission for a record is the one that counts.
+    return sorted((issue for issue in issues if is_annotation_issue(issue)), key=lambda issue: issue["number"])
 
 def comment_issue(number: int, body: str) -> None:
     url = f"{API_BASE}/issues/{number}/comments"
-    r = requests.post(url, headers=HEADERS, json={"body": body})
+    r = requests.post(url, headers=HEADERS, json={"body": body}, timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
 
 def add_label(number: int, labels: list[str]) -> None:
     url = f"{API_BASE}/issues/{number}/labels"
-    r = requests.post(url, headers=HEADERS, json={"labels": labels})
+    r = requests.post(url, headers=HEADERS, json={"labels": labels}, timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
 
-def close_issue(number: int) -> None:
+def close_issue(number: int, reason: str = "completed") -> None:
     url = f"{API_BASE}/issues/{number}"
-    r = requests.patch(url, headers=HEADERS, json={"state": "closed"})
+    r = requests.patch(url, headers=HEADERS, json={"state": "closed", "state_reason": reason}, timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
 
 def main() -> None:
+    if not GITHUB_TOKEN or not GITHUB_REPOSITORY:
+        print("GITHUB_TOKEN and GITHUB_REPOSITORY must be set in env")
+        sys.exit(1)
+
     repo_dir = os.getcwd()
     
     # Pre-fetch the data branch so we have history to merge against
@@ -150,12 +161,18 @@ def main() -> None:
             error_text = str(f.get("error", ""))
             if error_text.startswith("data_expired:"):
                 comment_issue(f["number"], COMMENT_BODY_DATA_EXPIRED)
-                close_issue(f["number"])
+                close_issue(f["number"], "not_planned")
                 print(f"Closed expired issue #{f['number']}")
             else:
+                # Closing prevents the same failure comment from repeating every night.
                 comment_issue(f["number"], f"{COMMENT_BODY_FAILURE}\n\nError output:\n```\n{error_text}\n```")
+                add_label(f["number"], ["invalid"])
+                close_issue(f["number"], "not_planned")
         except Exception as e:
             print(f"Failed to post failure comment for issue #{f['number']}: {e}")
+
+    if not commit_ok:
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

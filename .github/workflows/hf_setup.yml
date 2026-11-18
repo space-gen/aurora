@@ -38,4 +38,5 @@ jobs:
       - name: Run Platform Cleanup
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/hf_setup.py ${{ github.event.inputs.tasks }}
+          TASKS: ${{ github.event.inputs.tasks }}
+        run: python scripts/hf_setup.py $TASKS

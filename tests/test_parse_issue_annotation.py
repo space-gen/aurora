@@ -17,7 +17,7 @@ Sunspot
 sp-2189
 
 ### Your label
-class_a,100,100,10
+class_a,500,500,10
 
 ### Confidence score
 85%
@@ -29,7 +29,7 @@ class_a,100,100,10
 
 
 def test_parse_regions_circle_to_region():
-    regions = _parse_regions("class_a,100,100,10", task_type="sunspot")
+    regions = _parse_regions("class_a,500,500,10", task_type="sunspot")
     assert len(regions) == 1
     r = regions[0]
     assert r["label"] == "class_a"
@@ -74,7 +74,7 @@ sunspot
 sp-1
 
 ### Your Label (label,x,y,r ; label2,x2,y2,r2)
-class_a,100,100,10
+class_a,500,500,10
 
 ### Confidence Score (0-100)
 90
@@ -87,7 +87,7 @@ sunspot
 sp-1
 
 ### Your Label (label,x,y,r ; label2,x2,y2,r2)
-class_b,120,120,8
+class_b,520,520,8
 
 ### Confidence Score (0-100)
 85
@@ -139,7 +139,7 @@ magnetogram
 mg-1
 
 ### Your Label (label,x,y,r ; label2,x2,y2,r2)
-beta,20,20,6
+beta,500,500,6
 
 ### Confidence Score (0-100)
 95

@@ -1,6 +1,12 @@
 name: "Parse Annotation"
 
+concurrency:
+  group: aurora-data
+  cancel-in-progress: false
+
 on:
+  schedule:
+    - cron: "40 23 * * *"
   repository_dispatch:
     types: [parse_annotation, "annotation update"]
   workflow_dispatch:
@@ -34,6 +40,7 @@ jobs:
           # Fetch main so we can grab the parser and processor
           git fetch origin main
           git checkout origin/main -- scripts/
+          git reset --quiet -- scripts/
           # Ensure annotations directory exists on the data branch
           mkdir -p annotations
 
