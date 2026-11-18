@@ -99,6 +99,7 @@ def test_aia_labels_follow_what_each_channel_shows():
     assert _parse_regions("coronal_hole,400,500,90", "aia_193")[0]["label"] == "coronal_hole"
     assert _parse_regions("coronal_hole,400,500,90", "aia_171") == []
     assert _parse_regions("prominence,512,40,40", "aia_304")[0]["label"] == "prominence"
+    assert _parse_regions("part_of_larger,400,500,60", "aia_171")[0]["label"] == "part_of_larger"
 
 
 def test_late_aia_annotation_restores_browse_image(tmp_path):
@@ -122,8 +123,16 @@ def sun_image(value):
 def test_finder_circles_clear_bright_and_dark_features():
     bright = find_candidates(sun_image(240), "aia_171")[0]
     dark = find_candidates(sun_image(0), "aia_193")[0]
-    assert abs(bright["x"] - 320) < 20 and abs(bright["y"] - 500) < 20
-    assert abs(dark["x"] - 320) < 20 and abs(dark["y"] - 500) < 20
+    for mark in (bright, dark):
+        assert np.hypot(mark["x"] - 320, mark["y"] - 500) <= mark["r"]
+
+
+def test_dark_region_at_the_limb_gets_a_whole_ring():
+    y, x = np.mgrid[0:1024, 0:1024]
+    disk = np.hypot(x - 511.5, y - 511.5) < 395
+    image = 150.0 * disk
+    image[disk & (np.hypot(x - 512, y - 860) < 70)] = 5
+    assert any(np.hypot(m["x"] - 512, m["y"] - 840) <= m["r"] and m["r"] >= 45 for m in find_candidates(image, "aia_193"))
 
 
 def test_late_annotation_restores_its_record(tmp_path):

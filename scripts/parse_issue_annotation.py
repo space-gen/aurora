@@ -31,9 +31,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 
 # Valid labels for each task type
-HOT_REGION_LABELS = {"bright_region", "coronal_loops", "none"}
-CORONAL_DARK_LABELS = {"coronal_hole", "filament", "none"}
-LOWER_ATMOSPHERE_LABELS = {"plage", "flare_ribbon", "sunspot", "none"}
+PART_OF_LARGER = "part_of_larger"
+HOT_REGION_LABELS = {"bright_region", "coronal_loops", PART_OF_LARGER, "none"}
+CORONAL_DARK_LABELS = {"coronal_hole", "filament", PART_OF_LARGER, "none"}
+LOWER_ATMOSPHERE_LABELS = {"plage", "flare_ribbon", "sunspot", PART_OF_LARGER, "none"}
 VALID_LABELS: dict[str, set[str]] = {
     "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
     "magnetogram": {"alpha", "beta", "gamma", "beta-gamma", "delta", "beta-delta", "beta-gamma-delta", "gamma-delta", "none"},
@@ -42,7 +43,7 @@ VALID_LABELS: dict[str, set[str]] = {
     "aia_171": HOT_REGION_LABELS,
     "aia_193": CORONAL_DARK_LABELS,
     "aia_211": CORONAL_DARK_LABELS,
-    "aia_304": {"filament", "prominence", "bright_region", "none"},
+    "aia_304": {"filament", "prominence", "bright_region", PART_OF_LARGER, "none"},
     "aia_335": HOT_REGION_LABELS,
     "aia_1600": LOWER_ATMOSPHERE_LABELS,
     "aia_1700": LOWER_ATMOSPHERE_LABELS,
