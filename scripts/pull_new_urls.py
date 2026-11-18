@@ -56,6 +56,7 @@ for wavelength in AIA_WAVELENGTHS:
 LINK_REGEX = re.compile(r'href="([^"]+)"')
 
 MAX_WORKERS = 10
+CANDIDATE_STRIDE = 8
 REQUEST_HEADERS = {"User-Agent": "SolarHub-Aurora/1.0"}
 
 
@@ -74,6 +75,25 @@ def existing_ids_by_url(path):
                 item = json.loads(line)
                 ids[_canonical_url(item.get("url", ""))] = item.get("id")
     return ids
+
+
+def add_candidates(task_type, records):
+    """Adds features to check on every eighth frame, which is what contributors see first."""
+    try:
+        from scripts.find_candidates import candidates_from_jpeg
+    except ModuleNotFoundError:
+        from find_candidates import candidates_from_jpeg
+
+    def enrich(record):
+        try:
+            response = requests.get(record["url"], timeout=30, headers=REQUEST_HEADERS)
+            response.raise_for_status()
+            record["metadata"]["candidates"] = candidates_from_jpeg(response.content, task_type)
+        except Exception as e:
+            log.warning(f"Could not find candidates in {record['url']}: {e}")
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        list(executor.map(enrich, records[::CANDIDATE_STRIDE]))
 
 
 def _get_last_id_numeric(task_type):
@@ -217,6 +237,8 @@ def main():
             new_records.append(record)
 
         if new_records:
+            if task_type.startswith("aia_"):
+                add_candidates(task_type, new_records)
             file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
 
             with open(file_path, "w", encoding="utf-8") as f:

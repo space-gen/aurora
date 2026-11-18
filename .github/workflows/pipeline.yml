@@ -38,7 +38,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests huggingface_hub datasets
+        run: pip install requests huggingface_hub datasets numpy pillow scipy
 
       - name: Run Crawler
         env:

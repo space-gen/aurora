@@ -2,4 +2,7 @@
 requests>=2.31.0
 huggingface_hub>=0.23.0
 datasets>=2.19.0
+numpy>=1.26.0
+pillow>=10.0.0
+scipy>=1.11.0
 pytest>=7.0.0

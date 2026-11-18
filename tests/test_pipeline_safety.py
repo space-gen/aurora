@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+import numpy as np
+
+from scripts.find_candidates import find_candidates
 from scripts.merge_annotations_to_hf import merge_rows, publish_all
 from scripts.parse_issue_annotation import _parse_issue_submission, _parse_regions, process_issue_submissions
 from scripts.process_all_annotation_issues import is_annotation_issue
@@ -106,6 +109,21 @@ def test_late_aia_annotation_restores_browse_image(tmp_path):
     assert failures == []
     assert successes[0]["task_type"] == "aia_193"
     assert json.loads((tmp_path / "aia_193.jsonl").read_text(encoding="utf-8"))["metadata"]["source"] == "SDO_AIA_BROWSE"
+
+
+def sun_image(value):
+    y, x = np.mgrid[0:1024, 0:1024]
+    image = np.zeros((1024, 1024)) + (np.hypot(x - 511.5, y - 511.5) < 395) * 100.0
+    image += np.sin(x / 9) * np.cos(y / 11) * 4
+    image[(x - 320) ** 2 + (y - 500) ** 2 < 45 ** 2] = value
+    return image
+
+
+def test_finder_circles_clear_bright_and_dark_features():
+    bright = find_candidates(sun_image(240), "aia_171")[0]
+    dark = find_candidates(sun_image(0), "aia_193")[0]
+    assert abs(bright["x"] - 320) < 20 and abs(bright["y"] - 500) < 20
+    assert abs(dark["x"] - 320) < 20 and abs(dark["y"] - 500) < 20
 
 
 def test_late_annotation_restores_its_record(tmp_path):
