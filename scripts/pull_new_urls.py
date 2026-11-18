@@ -13,6 +13,7 @@ import logging
 import datetime
 import argparse
 import sys
+from functools import lru_cache
 from pathlib import Path
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -57,6 +58,7 @@ LINK_REGEX = re.compile(r'href="([^"]+)"')
 
 MAX_WORKERS = 10
 CANDIDATE_STRIDE = 8
+MAX_BLEND_GAP_SECONDS = 1800
 REQUEST_HEADERS = {"User-Agent": "SolarHub-Aurora/1.0"}
 
 
@@ -77,18 +79,63 @@ def existing_ids_by_url(path):
     return ids
 
 
-def add_candidates(task_type, records):
-    """Adds features to check on every eighth frame, which is what contributors see first."""
+def _finder():
     try:
-        from scripts.find_candidates import candidates_from_jpeg
+        from scripts import find_candidates as finder
     except ModuleNotFoundError:
-        from find_candidates import candidates_from_jpeg
+        import find_candidates as finder
+    return finder
+
+
+def _download(url):
+    response = requests.get(url, timeout=30, headers=REQUEST_HEADERS)
+    response.raise_for_status()
+    return response.content
+
+
+def _clock_seconds(url):
+    clock = re.search(r"_(\d{2})(\d{2})(\d{2})_1024_", url)
+    return int(clock[1]) * 3600 + int(clock[2]) * 60 + int(clock[3])
+
+
+def nearest_frame(urls, url):
+    """Finds the closest frame in another channel, so a blend shows one moment."""
+    target = _clock_seconds(url)
+    best = min(urls, key=lambda item: abs(_clock_seconds(item) - target), default=None)
+    return best if best and abs(_clock_seconds(best) - target) <= MAX_BLEND_GAP_SECONDS else None
+
+
+@lru_cache(maxsize=8)
+def _channel_urls(wavelength, date_obj):
+    return tuple(sorted(_fetch_single_day(f"aia_{wavelength}", date_obj)))
+
+
+@lru_cache(maxsize=16)
+def _context_from(urls):
+    finder = _finder()
+    frames = {wavelength: finder.gray_from_jpeg(_download(url)) for wavelength, url in urls}
+    return finder.blend_context(frames)
+
+
+def _blend_context(url, date_obj):
+    finder = _finder()
+    urls = tuple((wavelength, nearest_frame(_channel_urls(wavelength, date_obj), url)) for wavelength in finder.BLEND_WAVELENGTHS)
+    return None if any(item is None for _, item in urls) else _context_from(urls)
+
+
+def add_candidates(task_type, records, date_obj):
+    """Adds features to check on every eighth frame, which is what contributors see first."""
+    finder = _finder()
 
     def enrich(record):
         try:
-            response = requests.get(record["url"], timeout=30, headers=REQUEST_HEADERS)
-            response.raise_for_status()
-            record["metadata"]["candidates"] = candidates_from_jpeg(response.content, task_type)
+            content = _download(record["url"])
+            try:
+                context = _blend_context(record["url"], date_obj)
+            except Exception as e:
+                log.warning(f"Using one channel for {record['url']}: {e}")
+                context = None
+            record["metadata"]["candidates"] = finder.candidates_from_jpeg(content, task_type, context)
         except Exception as e:
             log.warning(f"Could not find candidates in {record['url']}: {e}")
 
@@ -238,7 +285,7 @@ def main():
 
         if new_records:
             if task_type.startswith("aia_"):
-                add_candidates(task_type, new_records)
+                add_candidates(task_type, new_records, target_date)
             file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
 
             with open(file_path, "w", encoding="utf-8") as f:

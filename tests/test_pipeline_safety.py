@@ -3,11 +3,11 @@ from pathlib import Path
 
 import numpy as np
 
-from scripts.find_candidates import find_candidates
+from scripts.find_candidates import BLEND_WAVELENGTHS, _can_keep, blend_context, find_candidates
 from scripts.merge_annotations_to_hf import merge_rows, publish_all
 from scripts.parse_issue_annotation import _parse_issue_submission, _parse_regions, process_issue_submissions
 from scripts.process_all_annotation_issues import is_annotation_issue
-from scripts.pull_new_urls import existing_ids_by_url
+from scripts.pull_new_urls import existing_ids_by_url, nearest_frame
 
 URL = "https://jsoc1.stanford.edu/data/hmi/images/2026/07/18/20260718_001500_Ic_flat_1k.jpg"
 
@@ -133,6 +133,27 @@ def test_dark_region_at_the_limb_gets_a_whole_ring():
     image = 150.0 * disk
     image[disk & (np.hypot(x - 512, y - 860) < 70)] = 5
     assert any(np.hypot(m["x"] - 512, m["y"] - 840) <= m["r"] and m["r"] >= 45 for m in find_candidates(image, "aia_193"))
+
+
+def test_blend_finds_a_feature_too_faint_in_one_channel():
+    plain = sun_image(100)
+    bright = sun_image(240)
+    context = blend_context({name: bright for name in BLEND_WAVELENGTHS})
+    marks = find_candidates(plain, "aia_171", context)
+    assert any(np.hypot(m["x"] - 320, m["y"] - 500) <= max(m["r"], 36) for m in marks)
+
+
+def test_separate_feature_inside_a_large_ring_is_kept():
+    large = {"x": 500, "y": 500, "r": 120}
+    assert not _can_keep({"x": 505, "y": 500, "r": 30}, [large])
+    assert _can_keep({"x": 590, "y": 500, "r": 30}, [large])
+
+
+def test_blend_uses_only_frames_close_in_time():
+    base = "https://x/20261117_{}_1024_0171.jpg"
+    near, far = base.format("120500"), base.format("150000")
+    assert nearest_frame([near, far], base.format("120000")) == near
+    assert nearest_frame([far], base.format("120000")) is None
 
 
 def test_late_annotation_restores_its_record(tmp_path):
