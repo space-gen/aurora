@@ -65,7 +65,7 @@ Users annotate solar observations by **opening a GitHub Issue** using the *Submi
 
 ## Finder Reviews
 
-SolarHub works out the 193, 211 and 304 pictures itself from NASA's SDO browse archive. Every contributor starts at 20 November 2026 and walks back one day at a time to 1 October 2016, taking every frame (about 100 to 140 a day), so features can be tracked as they evolve. Each person's last finished picture is saved in their `solarhub-data` repository, so they carry on from there. Pictures with three accepted answers are skipped, using the counts Aurora publishes in `data/answered/<task>.json` on the `data` branch. Aurora publishes only flare tasks now.
+SolarHub works out the 193, 211 and 304 pictures itself from NASA's SDO browse archive. A fair coin toss on each contributor's GitHub username decides their direction: half walk back from 20 November 2026 and half walk forward from 1 October 2016, so the two groups meet in between. They move one day at a time, taking every frame (about 100 to 140 a day), so features can be tracked as they evolve. Each person's last finished picture is saved in their `solarhub-data` repository, so they carry on from there. Aurora publishes only flare tasks now.
 
 The browser runs a copy of `scripts/find_candidates.py` (`solarhub/src/utils/finder.ts`) to propose whole dark regions in 193 and 211 and edge flames in 304. Each proposal has a circle and a `mask` in COCO compressed run-length encoding. Contributors confirm, reshape, reject or delete each proposal and draw what was missed, and SolarHub sends those decisions in the optional `Finder Review` issue field.
 

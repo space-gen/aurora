@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from scripts.private_annotations import answer_counts, prune, seed
+from scripts.private_annotations import prune, seed
 
 
 def write(path, records):
@@ -38,16 +38,3 @@ def test_old_archive_picture_answered_recently_is_kept(tmp_path):
     prune(tmp_path, date(2026, 11, 19))
     assert [record["id"] for record in read(tmp_path / "aia_193.jsonl")] == ["aia193-20170101000000"]
 
-
-def test_answer_counts_count_people_and_never_shrink(tmp_path):
-    private, published = tmp_path / "private", tmp_path / "published"
-    private.mkdir()
-    write(private / "aia_193.jsonl", [
-        {"id": "a", "annotations": [{"user": "Ana"}, {"user": "ana"}, {"user": "bo"}, {"user": "solarhub-preannotator"}]},
-        {"id": "b", "annotations": []},
-    ])
-    published.mkdir()
-    (published / "aia_193.json").write_text('{"gone": 3}', encoding="utf-8")
-    answer_counts(private, published)
-    assert json.loads((published / "aia_193.json").read_text(encoding="utf-8")) == {"a": 2, "gone": 3}
-    assert json.loads((published / "aia_211.json").read_text(encoding="utf-8")) == {}
