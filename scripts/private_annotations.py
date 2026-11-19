@@ -42,6 +42,8 @@ def prune(private: Path, today: date, days: int = RETENTION_DAYS) -> None:
 
 
 ANSWER_COUNT_TASKS = ("aia_193", "aia_211", "aia_304")
+# Machine pre-annotations (ml/preannotate.py) never take one of the three places meant for people.
+MACHINE_USERS = {"solarhub-preannotator"}
 
 
 def answer_counts(private: Path, published: Path) -> None:
@@ -54,7 +56,7 @@ def answer_counts(private: Path, published: Path) -> None:
         target = published / f"{task}.json"
         counts = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
         for record in _records(private / f"{task}.jsonl"):
-            users = {str(item.get("user", "")).lower() for item in record.get("annotations") or [] if isinstance(item, dict) and item.get("user")}
+            users = {str(item.get("user", "")).lower() for item in record.get("annotations") or [] if isinstance(item, dict) and item.get("user")} - MACHINE_USERS
             if users and record.get("id"):
                 counts[record["id"]] = max(counts.get(record["id"], 0), len(users))
         target.write_text(json.dumps(dict(sorted(counts.items())), separators=(",", ":")), encoding="utf-8")

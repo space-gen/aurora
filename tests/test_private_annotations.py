@@ -43,7 +43,7 @@ def test_answer_counts_count_people_and_never_shrink(tmp_path):
     private, published = tmp_path / "private", tmp_path / "published"
     private.mkdir()
     write(private / "aia_193.jsonl", [
-        {"id": "a", "annotations": [{"user": "Ana"}, {"user": "ana"}, {"user": "bo"}]},
+        {"id": "a", "annotations": [{"user": "Ana"}, {"user": "ana"}, {"user": "bo"}, {"user": "solarhub-preannotator"}]},
         {"id": "b", "annotations": []},
     ])
     published.mkdir()
