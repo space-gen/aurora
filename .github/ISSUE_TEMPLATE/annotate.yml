@@ -82,6 +82,13 @@ body:
   validations:
     required: true
 - attributes:
+    description: Filled in by SolarHub. Leave this empty when using the form by hand.
+    label: Finder Review
+  id: finder_review
+  type: textarea
+  validations:
+    required: false
+- attributes:
     description: Any additional observations or comments about this image.
     label: Notes (optional)
     placeholder: Optional notes...

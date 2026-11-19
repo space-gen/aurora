@@ -297,6 +297,22 @@ def main():
         else:
             log.warning(f"No URLs found for {task_type} on {target_date}")
 
+    if args.include_aia:
+        try:
+            from scripts.flare_tasks import recent_flare_records
+        except ModuleNotFoundError:
+            from flare_tasks import recent_flare_records
+        try:
+            today = datetime.datetime.now(datetime.timezone.utc)
+            flares = recent_flare_records(today, lambda moment: list(_channel_urls("131", moment.date())))
+            with open(DATA_PROCESSING_DIR / "flare_source.jsonl", "w", encoding="utf-8") as f:
+                for record in flares:
+                    f.write(json.dumps(record, separators=(",", ":")) + "\n")
+            log.info(f"{len(flares)} flare tasks saved")
+        except Exception as e:
+            # Flare tasks depend on the HEK service; image tasks should still publish without them.
+            log.warning(f"Could not build flare tasks: {e}")
+
     if total_records == 0:
         log.error("No images were found, so the current task files will stay in place.")
         sys.exit(1)

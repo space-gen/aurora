@@ -60,11 +60,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Load annotations from data branch
-        run: |
-          git fetch origin data
-          git checkout origin/data -- annotations
-          mkdir -p annotations
+      - name: Checkout private annotations
+        uses: actions/checkout@v4
+        with:
+          repository: space-gen/aurora-annotations
+          token: ${{ secrets.ANNOTATIONS_TOKEN }}
+          path: private
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -72,12 +73,24 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests huggingface_hub datasets
+        run: pip install requests huggingface_hub datasets numpy pillow scipy
 
       - name: Merge to HuggingFace
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          ANNOTATIONS_DIR: private/annotations
         run: python scripts/merge_annotations_to_hf.py
+
+      - name: Keep 30 days of archived annotations
+        run: |
+          mkdir -p private/annotations
+          python scripts/private_annotations.py prune private/annotations
+          cd private
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add annotations
+          git diff --cached --quiet || git commit -m "chore: drop annotations past the 30-day window"
+          git push origin HEAD
 
       - name: Monthly HF history squash (1st of month)
         env:

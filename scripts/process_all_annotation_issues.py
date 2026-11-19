@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-Process all open issues labeled 'annotation': run parser per issue, 
-commit/push annotation changes, comment and close issues.
-Intended to be run inside GitHub Actions with `GITHUB_TOKEN` available.
+Process open annotation issues: validate them, commit the results to the private
+annotations repository, then delete each recorded issue.
+Intended to be run inside GitHub Actions with `GITHUB_TOKEN`, `ISSUE_DELETE_TOKEN`
+and `ANNOTATIONS_DIR` (a checkout of the private repository) available.
 """
 from __future__ import annotations
 import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any
 import requests
 try:
@@ -18,6 +20,9 @@ except ModuleNotFoundError:
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")  # owner/repo
+# Deleting issues needs an admin token; the workflow GITHUB_TOKEN cannot do it.
+ISSUE_DELETE_TOKEN = os.environ.get("ISSUE_DELETE_TOKEN")
+ANNOTATIONS_DIR = Path(os.environ.get("ANNOTATIONS_DIR", "annotations"))
 ISSUE_TITLE_PREFIX = "[Annotation]"
 REQUEST_TIMEOUT = 30
 
@@ -85,20 +90,31 @@ def close_issue(number: int, reason: str = "completed") -> None:
     r = requests.patch(url, headers=HEADERS, json={"state": "closed", "state_reason": reason}, timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
 
+def delete_issue(node_id: str) -> None:
+    r = requests.post(
+        "https://api.github.com/graphql",
+        headers={**HEADERS, "Authorization": f"bearer {ISSUE_DELETE_TOKEN}"},
+        json={"query": "mutation($id: ID!) { deleteIssue(input: {issueId: $id}) { clientMutationId } }", "variables": {"id": node_id}},
+        timeout=REQUEST_TIMEOUT,
+    )
+    r.raise_for_status()
+    if r.json().get("errors"):
+        raise RuntimeError(r.json()["errors"])
+
+
 def main() -> None:
     if not GITHUB_TOKEN or not GITHUB_REPOSITORY:
         print("GITHUB_TOKEN and GITHUB_REPOSITORY must be set in env")
         sys.exit(1)
 
-    repo_dir = os.getcwd()
-    
-    # Pre-fetch the data branch so we have history to merge against
-    print("Fetching remote 'data' branch...")
-    run_cmd(["git", "fetch", "origin", "data"], cwd=repo_dir)
+    if not ISSUE_DELETE_TOKEN or not ANNOTATIONS_DIR.is_dir():
+        print("ISSUE_DELETE_TOKEN and ANNOTATIONS_DIR (the private annotations checkout) must be set")
+        sys.exit(1)
+    repo_dir = str(ANNOTATIONS_DIR.parent)
 
     issues = list_annotation_issues()
     print(f"Found {len(issues)} open annotation issues")
-    
+
     issue_inputs = [
         {
             "number": issue["number"],
@@ -107,54 +123,58 @@ def main() -> None:
         }
         for issue in issues
     ]
-    successes, failures = process_issue_submissions(issue_inputs)
+    node_ids = {issue["number"]: issue["node_id"] for issue in issues}
+    successes, failures = process_issue_submissions(issue_inputs, ANNOTATIONS_DIR)
     for success in successes:
         print(f"Processed issue #{success['number']} by {success['author']}")
     for failure in failures:
         print(f"Failed issue #{failure['number']}: {failure['error']}")
 
     # Prepare changes
-    run_cmd(["git", "add", "annotations/"], cwd=repo_dir)
+    run_cmd(["git", "add", ANNOTATIONS_DIR.name], cwd=repo_dir)
     rc2, out2, _ = run_cmd(["git", "diff", "--cached", "--name-only"], cwd=repo_dir)
-    
+
     commit_ok = False
     if out2.strip():
         issue_nums = [s["number"] for s in successes]
         coauthor_authors = sorted({s["author"] for s in successes})
         coauthors = "".join([f"Co-authored-by: {author} <>\n" for author in coauthor_authors])
         commit_msg = f"chore(annotation): record annotations from issues {', '.join(['#'+str(n) for n in issue_nums])} [skip ci]\n\n{coauthors}"
-        
+
         # Commit locally
         rc3, out3, err3 = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
-        
+
         if rc3 == 0:
-            # Sync with remote 'data' branch without overwriting
-            print("Merging remote changes to avoid non-fast-forward error...")
-            run_cmd(["git", "merge", "origin/data", "--allow-unrelated-histories", "-X", "ours", "-m", "merge remote data"], cwd=repo_dir)
-            
-            # Push using explicit refspec
-            print("Pushing to data branch...")
-            rc4, out4, err4 = run_cmd(["git", "push", "origin", "HEAD:refs/heads/data"], cwd=repo_dir)
+            print("Pushing to the private annotations repository...")
+            rc4, out4, err4 = run_cmd(["git", "push", "origin", "HEAD"], cwd=repo_dir)
+            if rc4 != 0:
+                run_cmd(["git", "pull", "--rebase", "origin"], cwd=repo_dir)
+                rc4, out4, err4 = run_cmd(["git", "push", "origin", "HEAD"], cwd=repo_dir)
             print(f"git push rc={rc4}\n{out4}\n{err4}")
             commit_ok = (rc4 == 0)
         else:
             print(f"Git commit failed: {err3}")
     else:
         print("No new annotation changes to commit.")
-        commit_ok = True 
+        commit_ok = True
 
     if commit_ok:
         for s in successes:
             num = s["number"]
             try:
-                comment_issue(num, COMMENT_BODY_SUCCESS)
-                add_label(num, ["recorded"])
-                close_issue(num)
-                print(f"Closed issue #{num}")
+                # The annotation is stored privately, so the public issue is no longer needed.
+                delete_issue(node_ids[num])
+                print(f"Deleted issue #{num}")
             except Exception as e:
-                print(f"Failed to comment/close issue #{num}: {e}")
+                print(f"Could not delete issue #{num}, closing it instead: {e}")
+                try:
+                    comment_issue(num, COMMENT_BODY_SUCCESS)
+                    add_label(num, ["recorded"])
+                    close_issue(num)
+                except Exception as close_error:
+                    print(f"Failed to close issue #{num}: {close_error}")
     else:
-        print("Commit/push failed; skipping closing successful issues to avoid data loss.")
+        print("Commit/push failed; keeping successful issues so no annotation is lost.")
 
     for f in failures:
         try:

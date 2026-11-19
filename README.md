@@ -63,6 +63,28 @@ Users annotate solar observations by **opening a GitHub Issue** using the *Submi
 *   Labels must be valid for the selected Task Type (see table above). Circles use 1024-pixel image coordinates and must fall on the solar disk for sunspot and magnetogram tasks.
 *   A single GitHub username can annotate a given record ID only once. Repeat submissions for the same `id` by the same user are rejected by the parser.
 
+## Finder Reviews
+
+AIA tasks carry candidate features from `scripts/find_candidates.py`. The finder combines each channel with blended views of 131, 193, 211 and 1700 Å. Each candidate has a circle, and a `mask` in COCO compressed run-length encoding when the feature has a clear edge. SolarHub draws that mask as an outline and gives each contributor one of nine overlapping parts of the Sun.
+
+Contributors can confirm, move, outline, reject or delete a ring, and can draw around anything the finder missed. SolarHub sends those decisions in the optional `Finder Review` issue field. The parser validates that field and checks each ring against the candidates Aurora published. If the review is invalid, it is dropped and the labels are kept.
+
+## Science Datasets
+
+Validated annotations are committed to the private `space-gen/aurora-annotations` repository, and each annotation issue is deleted once its data is stored. Records stay there for 30 days after they reach the Hugging Face archive.
+
+Hugging Face datasets are private and contain science catalogues only. Raw submissions, including usernames and review details, go to the private `SpaceGen/solarhub-archive` dataset before the catalogues are rebuilt.
+
+| Path | Contents |
+| --- | --- |
+| `features/<split>/<date>.jsonl` | One row per solar feature, with class, agreement, mask and solar coordinates |
+| `observations/<date>.jsonl` | Image time, solar geometry and reviewed disk area |
+| `stats/summary.json` | Catalogue counts, Krippendorff's alpha and detector validation |
+| `stats/manifest.json` | Row counts and SHA-256 hashes |
+| `README.md` | Dataset card with schema, method and limitations |
+
+Splits are assigned by Carrington rotation. A publish stops if a merge would remove an archived image.
+
 ## Documentation
 
 Comprehensive documentation is available at [Aurora Docs](https://space-gen.github.io/aurora/):

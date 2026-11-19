@@ -48,11 +48,20 @@ VALID_LABELS: dict[str, set[str]] = {
     "aia_1600": LOWER_ATMOSPHERE_LABELS,
     "aia_1700": LOWER_ATMOSPHERE_LABELS,
 }
+# Flare answers name a NOAA region, which must be one the task offered.
+FLARE_LABELS = {"unnumbered_region", "behind_limb", "no_flare_visible"}
+FLARE_NO_LOCATION = {"behind_limb", "no_flare_visible"}
+FLARE_REGION = re.compile(r"^noaa_(\d{5})$")
+VALID_LABELS["flare_source"] = FLARE_LABELS
 VALID_TASK_TYPES = set(VALID_LABELS.keys())
 
 IMAGE_SIZE = 1024.0
 MAX_RADIUS = 300.0
 MAX_REGIONS = 50
+REVIEW_ACTIONS = {"confirmed", "moved", "outlined", "merged", "rejected", "deleted", "added"}
+MAX_OUTLINE_POINTS = 64
+MAX_PARTS = 64
+MAX_REVIEW_CHARS = 40000
 # Images keep the Sun centred. This radius covers HMI through the year and AIA edge prominences.
 SUN_CENTRE = (511.5, 511.5)
 MAX_MARK_DISTANCE = 480.0
@@ -67,7 +76,9 @@ IMAGE_PATTERNS = {
         for wavelength in AIA_WAVELENGTHS
     },
 }
+IMAGE_PATTERNS["flare_source"] = IMAGE_PATTERNS["aia_131"]
 RECORD_ID_PATTERNS = {
+    "flare_source": re.compile(r"^flare-[0-9a-f]{10}$"),
     "sunspot": re.compile(r"^sp-\d+$"),
     "magnetogram": re.compile(r"^mg-\d+$"),
     **{f"aia_{wavelength}": re.compile(rf"^aia{wavelength}-\d+$") for wavelength in AIA_WAVELENGTHS},
@@ -81,7 +92,7 @@ def canonical_image_url(url: str) -> str:
 def _valid_circle(label: str, x: float, y: float, r: float, task_type: str | None) -> bool:
     if not all(math.isfinite(value) for value in (x, y, r)):
         return False
-    if label == "none" and x == 0 and y == 0 and r == 0:
+    if (label == "none" or label in FLARE_NO_LOCATION) and x == 0 and y == 0 and r == 0:
         return True
     if not (0 <= x <= IMAGE_SIZE and 0 <= y <= IMAGE_SIZE and 0 < r <= MAX_RADIUS):
         return False
@@ -162,7 +173,7 @@ def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]
             
         label = bits[0].lower()
         # Validate label for the given task_type if possible
-        if task_type and label not in VALID_LABELS.get(task_type, set()):
+        if task_type and label not in VALID_LABELS.get(task_type, set()) and not (task_type == "flare_source" and FLARE_REGION.match(label)):
             log.warning(f"Skipping unknown label for task_type {task_type}: {label}")
             continue
 
@@ -186,6 +197,74 @@ def _parse_regions(regions_raw: str, task_type: str | None = None) -> list[dict]
             regions.append({"label": label, "region": region_val})
             
     return regions
+
+
+def _in_image(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and 0 <= value <= IMAGE_SIZE
+
+
+def _circle(value: Any) -> list[float] | None:
+    if not isinstance(value, list) or len(value) != 3 or not all(_in_image(item) for item in value):
+        return None
+    return value if _valid_circle("review", value[0], value[1], value[2], None) else None
+
+
+def _review_ring(ring: Any, task_type: str) -> dict[str, Any] | None:
+    if not isinstance(ring, dict) or ring.get("action") not in REVIEW_ACTIONS:
+        return None
+    action = ring["action"]
+    label = ring.get("label")
+    circle = _circle(ring.get("ring"))
+    finder = _circle(ring.get("finder")) if ring.get("finder") is not None else None
+    if circle is None or (finder is None) != (action == "added"):
+        return None
+    if (action == "deleted") != (label is None) or (label is not None and label not in VALID_LABELS[task_type]):
+        return None
+    result: dict[str, Any] = {"action": action, "label": label, "finder": finder, "ring": circle}
+    if ring.get("part_of_larger") is True:
+        result["part_of_larger"] = True
+    outline = ring.get("outline")
+    if outline is not None:
+        valid = isinstance(outline, list) and 3 <= len(outline) <= MAX_OUTLINE_POINTS and all(
+            isinstance(point, list) and len(point) == 2 and all(_in_image(item) for item in point) for point in outline
+        )
+        if not valid:
+            return None
+        result["outline"] = outline
+    return result
+
+
+def _parse_review(raw: str, task_type: str) -> dict[str, Any] | None:
+    """Validates optional corrections; bad ones are dropped without losing the labels."""
+    if not raw or len(raw) > MAX_REVIEW_CHARS:
+        return None
+    try:
+        data = json.loads(raw)
+    except ValueError:
+        log.warning("Ignoring unreadable finder review")
+        return None
+    if not isinstance(data, dict) or data.get("v") != 1 or not isinstance(data.get("rings"), list):
+        return None
+    part, parts = data.get("part"), data.get("parts")
+    if not (isinstance(part, int) and isinstance(parts, int) and 1 <= part <= parts <= MAX_PARTS):
+        return None
+    rings = [_review_ring(ring, task_type) for ring in data["rings"][:MAX_REGIONS]]
+    if not rings or any(ring is None for ring in rings):
+        log.warning("Ignoring invalid finder review")
+        return None
+    return {"v": 1, "part": part, "parts": parts, "rings": rings}
+
+
+def _verify_review(annotation: dict[str, Any], task: dict[str, Any]) -> None:
+    """Marks which reviewed rings really came from the task's published finder output."""
+    metadata = task.get("metadata") if isinstance(task.get("metadata"), dict) else {}
+    known = {(item.get("x"), item.get("y"), item.get("r")): item for item in metadata.get("candidates") or [] if isinstance(item, dict)}
+    for ring in annotation.get("review", {}).get("rings", []):
+        candidate = known.get(tuple(ring["finder"])) if ring["finder"] else None
+        ring["finder_verified"] = candidate is not None
+        # Copied from Aurora's own task, so a contributor cannot alter the finder's shape.
+        if candidate and candidate.get("mask"):
+            ring["finder_mask"] = candidate["mask"]
 
 
 class AnnotationParseError(Exception):
@@ -245,6 +324,9 @@ def _parse_issue_submission(*, issue_number: Any, issue_body: str, issue_author:
         "issue_number": normalized_issue_number,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+    review = _parse_review(fields.get("finder_review", ""), task_type)
+    if review:
+        annotation["review"] = review
     return {
         "issue_number": normalized_issue_number,
         "issue_author": issue_author,
@@ -382,6 +464,11 @@ def process_issue_submissions(
                 )
                 continue
 
+            offered = {f"noaa_{item.get('noaa')}" for item in (task.get("metadata") or {}).get("candidates") or [] if isinstance(item, dict)}
+            if task_type == "flare_source" and any(FLARE_REGION.match(spot["label"]) and spot["label"] not in offered for spot in item["annotation"]["locations"]):
+                failures.append({"number": item["issue_number"], "author": item["issue_author"], "error": "flare region was not one of the offered regions"})
+                continue
+            _verify_review(item["annotation"], task)
             existing_annotations.append(item["annotation"])
             try:
                 existing_annotations.sort(key=lambda a: a.get("timestamp", ""))

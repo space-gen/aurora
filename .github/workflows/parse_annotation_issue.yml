@@ -23,26 +23,23 @@ jobs:
       issues: write
 
     steps:
-      - name: Checkout data branch
+      - name: Checkout main for scripts
+        uses: actions/checkout@v4
+
+      - name: Checkout private annotations
         uses: actions/checkout@v4
         with:
-          ref: data           # Target branch for annotations
-          fetch-depth: 0      # Get full history to avoid push rejections
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: space-gen/aurora-annotations
+          token: ${{ secrets.ANNOTATIONS_TOKEN }}
+          path: private
 
-      - name: Ensure git identity
+      - name: Add today's task records
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Load scripts from main
-        run: |
-          # Fetch main so we can grab the parser and processor
-          git fetch origin main
-          git checkout origin/main -- scripts/
-          git reset --quiet -- scripts/
-          # Ensure annotations directory exists on the data branch
-          mkdir -p annotations
+          git fetch origin data
+          git checkout origin/data -- annotations
+          python scripts/private_annotations.py seed annotations private/annotations
+          git -C private config user.name "github-actions[bot]"
+          git -C private config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -58,6 +55,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          # The script will now run on the 'data' branch context
-          python scripts/process_all_annotation_issues.py
+          ISSUE_DELETE_TOKEN: ${{ secrets.ANNOTATIONS_TOKEN }}
+          ANNOTATIONS_DIR: private/annotations
+        run: python scripts/process_all_annotation_issues.py

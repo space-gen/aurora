@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from scripts.find_candidates import BLEND_WAVELENGTHS, _can_keep, blend_context, find_candidates
+from scripts.find_candidates import BLEND_WAVELENGTHS, _can_keep, blend_context, decode_mask, encode_mask, find_candidates
 from scripts.merge_annotations_to_hf import merge_rows, publish_all
 from scripts.parse_issue_annotation import _parse_issue_submission, _parse_regions, process_issue_submissions
 from scripts.process_all_annotation_issues import is_annotation_issue
@@ -56,6 +56,12 @@ class FakeApi:
     def create_repo(self, **kwargs):
         pass
 
+    def repo_exists(self, repo_id, repo_type):
+        return any(repo == repo_id for repo, _ in self.files)
+
+    def update_repo_settings(self, repo_id, repo_type, private):
+        self.private = {*getattr(self, "private", set()), repo_id}
+
     def file_exists(self, repo_id, filename, repo_type):
         return (repo_id, filename) in self.files
 
@@ -64,10 +70,15 @@ class FakeApi:
         path.write_text(self.files[(repo_id, filename)], encoding="utf-8")
         return str(path)
 
-    def upload_file(self, path_or_fileobj, path_in_repo, repo_id, **kwargs):
+    def list_repo_files(self, repo_id, repo_type):
+        return [path for repo, path in self.files if repo == repo_id]
+
+    def upload_folder(self, folder_path, repo_id, **kwargs):
         if self.fail:
             raise RuntimeError("401")
-        self.files[(repo_id, path_in_repo)] = path_or_fileobj.decode("utf-8")
+        for path in Path(folder_path).rglob("*"):
+            if path.is_file():
+                self.files[(repo_id, path.relative_to(folder_path).as_posix())] = path.read_text(encoding="utf-8")
 
 
 def test_outside_contributor_issues_are_selected_without_a_label():
@@ -136,11 +147,37 @@ def test_dark_region_at_the_limb_gets_a_whole_ring():
 
 
 def test_blend_finds_a_feature_too_faint_in_one_channel():
-    plain = sun_image(100)
+    plain = sun_image(108)
     bright = sun_image(240)
     context = blend_context({name: bright for name in BLEND_WAVELENGTHS})
     marks = find_candidates(plain, "aia_171", context)
     assert any(np.hypot(m["x"] - 320, m["y"] - 500) <= max(m["r"], 36) for m in marks)
+
+
+def test_mask_round_trips_through_coco_encoding():
+    mask = np.zeros((1024, 1024), dtype=bool)
+    mask[200:260, 100:130] = True
+    mask[240:260, 130:190] = True
+    ys, xs = np.where(mask)
+    assert np.array_equal(decode_mask(encode_mask(xs, ys)), mask)
+
+
+def test_finder_keeps_the_uneven_shape_of_a_feature():
+    y, x = np.mgrid[0:1024, 0:1024]
+    image = 100.0 * (np.hypot(x - 511.5, y - 511.5) < 395) + np.sin(x / 9) * np.cos(y / 11) * 4
+    feature = ((x - 400) / 90) ** 2 + ((y - 500) / 25) ** 2 < 1
+    image[feature] = 240
+    mark = find_candidates(image, "aia_171")[0]
+    shape = decode_mask(mark["mask"])
+    assert (shape & feature).sum() / (shape | feature).sum() > 0.6
+    assert mark["score"] > 0
+
+
+def test_quiet_sun_is_not_offered_as_a_feature():
+    y, x = np.mgrid[0:1024, 0:1024]
+    image = 100.0 * (np.hypot(x - 511.5, y - 511.5) < 395) + np.sin(x / 9) * np.cos(y / 11) * 4
+    image[(x - 320) ** 2 + (y - 500) ** 2 < 20 ** 2] += 1
+    assert not any(np.hypot(m["x"] - 320, m["y"] - 500) < 20 for m in find_candidates(image, "aia_171"))
 
 
 def test_separate_feature_inside_a_large_ring_is_kept():
@@ -191,7 +228,7 @@ def test_empty_records_do_not_overwrite_a_published_day(tmp_path):
     file = source / "sunspot.jsonl"
     file.write_text(json.dumps(record([annotation("alice", 1)])) + "\n", encoding="utf-8")
     assert publish_all(api, source, "2026-01-01") == []
-    key = ("SpaceGen/solarhub-sunspot", "data/2026-07-18.yml")
+    key = ("SpaceGen/solarhub-archive", "annotations/sunspot/2026-07-18.jsonl")
     published = api.files[key]
     file.write_text(json.dumps(record([])) + "\n", encoding="utf-8")
     assert publish_all(api, source, "2026-01-01") == []

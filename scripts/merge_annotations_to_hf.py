@@ -1,11 +1,12 @@
 """
 merge_annotations_to_hf.py
 ==========================
-Pipeline Stage 3: publish annotated records to per-task Hugging Face datasets.
+Pipeline Stage 3: archive raw annotations and publish private science catalogues.
 
-Records are written to data/<capture-date>.yml. Existing rows are merged by image
-URL, so running the pipeline twice cannot erase published annotations. Any failure
-exits non-zero so the next stage does not reset annotations that were not published.
+Raw submissions are merged by image URL into a private archive first. Catalogue
+datasets are then rebuilt from that archive, so they never contain usernames,
+issue numbers or interface data. Any failure exits non-zero so the next stage does
+not reset annotations that were not stored.
 """
 
 from __future__ import annotations
@@ -15,17 +16,28 @@ import logging
 import os
 import re
 import sys
+import tempfile
+import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts.finder_review import review_rows, tally
+    from scripts.science_dataset import build_catalogue, dataset_card, jsonl, manifest
+except ModuleNotFoundError:
+    from finder_review import review_rows, tally
+    from science_dataset import build_catalogue, dataset_card, jsonl, manifest
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-ANNOTATIONS_DIR = REPO_ROOT / "annotations"
+ANNOTATIONS_DIR = Path(os.environ.get("ANNOTATIONS_DIR", REPO_ROOT / "annotations"))
 HF_DATASET_REPO_PREFIX = "SpaceGen/solarhub-"
+HF_ARCHIVE_REPO = "SpaceGen/solarhub-archive"
+UPLOAD_ATTEMPTS = 3
 PREFERRED_KEY_ORDER = ["id", "url", "task_type", "created_at", "metadata", "annotations"]
 
 
@@ -121,6 +133,31 @@ def _read_existing(api: Any, repo_id: str, path: str) -> str:
     return Path(local_path).read_text(encoding="utf-8")
 
 
+def _rows_by_url(text: str) -> set[str]:
+    return {_normalize_url(json.loads(line).get("url", "")) for line in text.splitlines() if line.strip()}
+
+
+def _commit_files(api: Any, repo_id: str, files: dict[str, str], message: str) -> None:
+    """Uploads every file in one commit, so readers never see a half-finished update."""
+    with tempfile.TemporaryDirectory() as folder:
+        for path, content in files.items():
+            target = Path(folder) / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+        for attempt in range(UPLOAD_ATTEMPTS):
+            try:
+                api.upload_folder(folder_path=folder, repo_id=repo_id, repo_type="dataset", commit_message=message)
+                return
+            except Exception:
+                if attempt == UPLOAD_ATTEMPTS - 1:
+                    raise
+                time.sleep(2**attempt)
+
+
+def _rows(text: str) -> list[dict[str, Any]]:
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+
 def push_task_file(api: Any, task_file: Path, fallback_date: str) -> int:
     task_type = task_file.stem
     repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
@@ -135,27 +172,75 @@ def push_task_file(api: Any, task_file: Path, fallback_date: str) -> int:
         log.info("No annotations to publish for %s.", task_type)
         return 0
 
-    api.create_repo(repo_id=repo_id, repo_type="dataset", exist_ok=True)
-    published = 0
-    for date_key, records in sorted(by_date.items()):
-        path = f"data/{date_key}.yml"
-        content = merge_rows(_read_existing(api, repo_id, path), records)
-        api.upload_file(
-            path_or_fileobj=content.encode("utf-8"),
-            path_in_repo=path,
-            repo_id=repo_id,
-            repo_type="dataset",
-            commit_message=f"chore: merge annotations into {path}",
-        )
-        published += len(records)
-        log.info("Published %d annotated records to %s:%s", len(records), repo_id, path)
-    return published
+    api.create_repo(repo_id=repo_id, repo_type="dataset", private=True, exist_ok=True)
+    api.create_repo(repo_id=HF_ARCHIVE_REPO, repo_type="dataset", private=True, exist_ok=True)
+    public_paths = set(api.list_repo_files(repo_id=repo_id, repo_type="dataset"))
+    archive_paths = set(api.list_repo_files(repo_id=HF_ARCHIVE_REPO, repo_type="dataset"))
+    archive_prefix = f"annotations/{task_type}/"
+    days = set(by_date)
+    days |= {Path(path).stem for path in public_paths if re.fullmatch(r"data/\d{4}-\d{2}-\d{2}\.yml", path)}
+    days |= {Path(path).stem for path in archive_paths if path.startswith(archive_prefix)}
+
+    archive_files: dict[str, str] = {}
+    changed_archive: dict[str, str] = {}
+    for day in sorted(days):
+        path = f"{archive_prefix}{day}.jsonl"
+        legacy = f"data/{day}.yml"
+        # Older public day files seed the archive once.
+        before = _read_existing(api, HF_ARCHIVE_REPO, path) if path in archive_paths else _read_existing(api, repo_id, legacy) if legacy in public_paths else ""
+        content = merge_rows(before, by_date.get(day, []))
+        if not _rows_by_url(before) <= _rows_by_url(content):
+            raise ValueError(f"merge would remove archived rows from {path}")
+        archive_files[path] = content
+        if path not in archive_paths or content != before:
+            changed_archive[path] = content
+    if changed_archive:
+        _commit_files(api, HF_ARCHIVE_REPO, changed_archive, f"chore: archive {task_type} annotations")
+
+    records = [row for text in archive_files.values() for row in _rows(text)]
+    observations, features, summary = build_catalogue(task_type, records)
+    files: dict[str, str] = {}
+    day_of = lambda row: (row.get("t_obs") or row["t_peak"])[:10]
+    for day in sorted({day_of(row) for row in observations + features}):
+        if any(day_of(row) == day for row in observations):
+            files[f"observations/{day}.jsonl"] = jsonl([row for row in observations if day_of(row) == day])
+        for split in ("train", "validation", "test"):
+            selected = [row for row in features if day_of(row) == day and row["split"] == split]
+            if selected:
+                files[f"features/{split}/{day}.jsonl"] = jsonl(selected)
+    detector = tally(review_rows(records, task_type, ""))
+    splits = [split for split in ("train", "validation", "test") if any(path.startswith(f"features/{split}/") for path in files)]
+    files["stats/summary.json"] = json.dumps({**summary, "detector_validation": detector_public(detector)}, indent=2, sort_keys=True) + "\n"
+    files["stats/manifest.json"] = json.dumps(manifest(files), indent=2, sort_keys=True) + "\n"
+    files["README.md"] = dataset_card(task_type, summary, detector, splits)
+
+    changed = {path: text for path, text in files.items() if path not in public_paths or text != _read_existing(api, repo_id, path)}
+    if changed:
+        _commit_files(api, repo_id, changed, f"data: update {task_type} science catalogue")
+    log.info("Archived %d records and published %d features to %s", len(records), len(features), repo_id)
+    return len(records)
+
+
+def detector_public(stats: dict[str, Any]) -> dict[str, Any]:
+    """Keeps detector scores and drops annotator counts tied to the review interface."""
+    return {
+        "proposals_reviewed": stats["rings_reviewed"],
+        "precision": stats["finder_precision"],
+        "accepted_with_corrections_share": stats["rings_corrected_share"],
+        "annotator_added_share": stats["human_added_share"],
+        "median_shape_iou_with_annotators": stats["finder_shape_overlap_median"],
+        "repeat_review_agreement": stats["reviewer_agreement"],
+    }
 
 
 def publish_all(api: Any, annotations_dir: Path, fallback_date: str) -> list[str]:
     failed = []
     for task_file in sorted(annotations_dir.glob("*.jsonl")):
         try:
+            repo_id = f"{HF_DATASET_REPO_PREFIX}{task_file.stem.replace('_', '-')}"
+            # Datasets stay private until the project chooses to release them.
+            if api.repo_exists(repo_id=repo_id, repo_type="dataset"):
+                api.update_repo_settings(repo_id=repo_id, repo_type="dataset", private=True)
             push_task_file(api, task_file, fallback_date)
         except Exception as exc:
             log.error("Could not publish %s: %s", task_file.name, exc)
