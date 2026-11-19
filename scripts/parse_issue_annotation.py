@@ -20,7 +20,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 # Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -83,6 +83,27 @@ RECORD_ID_PATTERNS = {
     "magnetogram": re.compile(r"^mg-\d+$"),
     **{f"aia_{wavelength}": re.compile(rf"^aia{wavelength}-\d+$") for wavelength in AIA_WAVELENGTHS},
 }
+
+
+# Contributors walk back through NASA's archive between these dates; the browser works out the addresses.
+ARCHIVE_FIRST = "2016-10-01"
+ARCHIVE_LAST = "2026-11-20"
+ARCHIVE_TASKS = {"aia_193", "aia_211", "aia_304"}
+ARCHIVE_ID = re.compile(r"^aia(\d+)-(\d{14})$")
+# The browser runs a copy of Aurora's finder; small decoding differences may move a ring slightly.
+FINDER_MATCH_PIXELS = 6
+FINDER_MATCH_RADIUS = 0.15
+
+
+def download_image(url: str) -> bytes | None:
+    import requests
+
+    try:
+        response = requests.get(url, timeout=60)
+    except requests.RequestException:
+        return None
+    is_jpeg = response.ok and response.content[:3] == b"\xff\xd8\xff"
+    return response.content if is_jpeg else None
 
 
 def canonical_image_url(url: str) -> str:
@@ -255,12 +276,22 @@ def _parse_review(raw: str, task_type: str) -> dict[str, Any] | None:
     return {"v": 1, "part": part, "parts": parts, "rings": rings}
 
 
+def _finder_match(finder: list[float], candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
+    x, y, r = finder
+    for item in candidates:
+        if not isinstance(item, dict) or not all(isinstance(item.get(key), (int, float)) for key in ("x", "y", "r")):
+            continue
+        if math.hypot(item["x"] - x, item["y"] - y) <= FINDER_MATCH_PIXELS and abs(item["r"] - r) <= max(4, FINDER_MATCH_RADIUS * item["r"]):
+            return item
+    return None
+
+
 def _verify_review(annotation: dict[str, Any], task: dict[str, Any]) -> None:
-    """Marks which reviewed rings really came from the task's published finder output."""
+    """Marks which reviewed rings really came from Aurora's own finder output for this image."""
     metadata = task.get("metadata") if isinstance(task.get("metadata"), dict) else {}
-    known = {(item.get("x"), item.get("y"), item.get("r")): item for item in metadata.get("candidates") or [] if isinstance(item, dict)}
+    candidates = metadata.get("candidates") or []
     for ring in annotation.get("review", {}).get("rings", []):
-        candidate = known.get(tuple(ring["finder"])) if ring["finder"] else None
+        candidate = _finder_match(ring["finder"], candidates) if ring["finder"] else None
         ring["finder_verified"] = candidate is not None
         # Copied from Aurora's own task, so a contributor cannot alter the finder's shape.
         if candidate and candidate.get("mask"):
@@ -337,8 +368,32 @@ def _parse_issue_submission(*, issue_number: Any, issue_body: str, issue_author:
     }
 
 
-def _restored_task(item: dict[str, Any]) -> dict[str, Any] | None:
-    """Rebuild a rotated-out task so a late contribution is not discarded."""
+def _archive_candidates(task_type: str, url: str, record_id: str, fetch_image: Callable[[str], bytes | None]) -> list[dict[str, Any]] | None:
+    """Checks an archive picture the browser chose and reruns Aurora's finder on it; None means reject."""
+    archive_id = ARCHIVE_ID.match(record_id)
+    stamp = re.search(r"/(\d{8})_(\d{6})_1024_(\d{4})\.jpg$", url)
+    if not archive_id or not stamp or archive_id.group(2) != stamp.group(1) + stamp.group(2) or int(archive_id.group(1)) != int(stamp.group(3)):
+        return None
+    day = f"{stamp.group(1)[:4]}-{stamp.group(1)[4:6]}-{stamp.group(1)[6:]}"
+    if not ARCHIVE_FIRST <= day <= ARCHIVE_LAST:
+        return None
+    content = fetch_image(url)
+    if content is None:
+        return None
+    try:
+        from scripts.find_candidates import candidates_from_jpeg
+    except ModuleNotFoundError:  # run as a script from scripts/
+        from find_candidates import candidates_from_jpeg
+
+    try:
+        return candidates_from_jpeg(content, task_type)
+    except Exception:
+        log.warning("Finder failed on %s", url)
+        return None
+
+
+def _restored_task(item: dict[str, Any], fetch_image: Callable[[str], bytes | None] = download_image) -> dict[str, Any] | None:
+    """Rebuild a task from its image address, so late and archive contributions are kept."""
     task_type = item["task_type"]
     pattern = IMAGE_PATTERNS.get(task_type)
     url = canonical_image_url(item.get("image_url", ""))
@@ -346,7 +401,12 @@ def _restored_task(item: dict[str, Any]) -> dict[str, Any] | None:
     if not match or not RECORD_ID_PATTERNS[task_type].match(item["record_id"]):
         return None
     year, month, day = match.groups()
-    return {
+    candidates = None
+    if task_type in ARCHIVE_TASKS:
+        candidates = _archive_candidates(task_type, url, item["record_id"], fetch_image)
+        if candidates is None:
+            return None
+    restored = {
         "id": item["record_id"],
         "url": url,
         "task_type": task_type,
@@ -354,10 +414,15 @@ def _restored_task(item: dict[str, Any]) -> dict[str, Any] | None:
         "metadata": {"source": "SDO_AIA_BROWSE" if task_type.startswith("aia_") else "JSOC_HMI_JPG", "captured_at": f"{year}-{month}-{day}T00:00:00Z"},
         "annotations": [],
     }
+    if candidates is not None:
+        hhmmss = item["record_id"][-6:]
+        restored["metadata"]["captured_at"] = f"{year}-{month}-{day}T{hhmmss[:2]}:{hhmmss[2:4]}:{hhmmss[4:]}Z"
+        restored["metadata"]["candidates"] = candidates
+    return restored
 
 
 def process_issue_submissions(
-    issues: list[dict[str, Any]], annotations_dir: Path = ANNOTATIONS_DIR
+    issues: list[dict[str, Any]], annotations_dir: Path = ANNOTATIONS_DIR, fetch_image: Callable[[str], bytes | None] = download_image
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     parsed: list[dict[str, Any]] = []
     failures: list[dict[str, Any]] = []
@@ -384,6 +449,10 @@ def process_issue_submissions(
     successes: list[dict[str, Any]] = []
     for task_type, batch in by_task_type.items():
         file_path = annotations_dir / f"{task_type}.jsonl"
+        if not file_path.exists() and task_type in ARCHIVE_TASKS:
+            # Archive pictures need no published task list; the first answer starts the file.
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            file_path.touch()
         if not file_path.exists():
             for item in batch:
                 failures.append(
@@ -420,7 +489,7 @@ def process_issue_submissions(
         for item in batch:
             task_idx = index_by_id.get(item["record_id"])
             if task_idx is None:
-                restored = _restored_task(item)
+                restored = _restored_task(item, fetch_image)
                 if restored is None:
                     failures.append(
                         {

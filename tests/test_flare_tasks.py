@@ -84,7 +84,8 @@ def test_flare_catalogue_gives_a_majority_region_without_names():
     flare = flares[0]
     assert flare["noaa_number"] == 14549 and flare["n_annotators"] == 3 and flare["attribution_agreement"] == round(2 / 3, 4)
     assert flare["stonyhurst_latitude_deg"] is not None and summary["agreement_with_ssw_latest_events"] == 1
-    assert '"ana"' not in json.dumps(flares)
+    assert flare["annotators"] == ["ana", "bo", "cy"]
+    assert '"ana"' not in json.dumps({key: value for key, value in flare.items() if key != "annotators"})
 
 
 def test_flash_is_the_area_that_brightened_not_a_single_speck():

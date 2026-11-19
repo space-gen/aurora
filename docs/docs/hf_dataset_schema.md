@@ -4,8 +4,8 @@ The private `SpaceGen/solarhub-*` datasets are science catalogues. Each dataset 
 
 | Path | Contents |
 |------|----------|
-| `features/<split>/<date>.jsonl` | One row per solar feature |
-| `observations/<date>.jsonl` | One row per annotated image |
+| `features/<split>/<year>/<month>.jsonl` | One row per solar feature |
+| `observations/<year>/<month>.jsonl` | One row per annotated image |
 | `stats/summary.json` | Counts, agreement and detector validation |
 | `stats/manifest.json` | Row counts and SHA-256 hashes |
 

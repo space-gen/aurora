@@ -137,7 +137,7 @@ def _rows_by_url(text: str) -> set[str]:
     return {_normalize_url(json.loads(line).get("url", "")) for line in text.splitlines() if line.strip()}
 
 
-def _commit_files(api: Any, repo_id: str, files: dict[str, str], message: str) -> None:
+def _commit_files(api: Any, repo_id: str, files: dict[str, str], message: str, delete: list[str] | None = None) -> None:
     """Uploads every file in one commit, so readers never see a half-finished update."""
     with tempfile.TemporaryDirectory() as folder:
         for path, content in files.items():
@@ -146,7 +146,8 @@ def _commit_files(api: Any, repo_id: str, files: dict[str, str], message: str) -
             target.write_text(content, encoding="utf-8")
         for attempt in range(UPLOAD_ATTEMPTS):
             try:
-                api.upload_folder(folder_path=folder, repo_id=repo_id, repo_type="dataset", commit_message=message)
+                extra = {"delete_patterns": delete} if delete else {}
+                api.upload_folder(folder_path=folder, repo_id=repo_id, repo_type="dataset", commit_message=message, **extra)
                 return
             except Exception:
                 if attempt == UPLOAD_ATTEMPTS - 1:
@@ -200,14 +201,15 @@ def push_task_file(api: Any, task_file: Path, fallback_date: str) -> int:
     records = [row for text in archive_files.values() for row in _rows(text)]
     observations, features, summary = build_catalogue(task_type, records)
     files: dict[str, str] = {}
-    day_of = lambda row: (row.get("t_obs") or row["t_peak"])[:10]
-    for day in sorted({day_of(row) for row in observations + features}):
-        if any(day_of(row) == day for row in observations):
-            files[f"observations/{day}.jsonl"] = jsonl([row for row in observations if day_of(row) == day])
+    # Filed by observation month, since contributors now work back through years of the archive.
+    month_of = lambda row: (row.get("t_obs") or row["t_peak"])[:7].replace("-", "/")
+    for month in sorted({month_of(row) for row in observations + features}):
+        if any(month_of(row) == month for row in observations):
+            files[f"observations/{month}.jsonl"] = jsonl([row for row in observations if month_of(row) == month])
         for split in ("train", "validation", "test"):
-            selected = [row for row in features if day_of(row) == day and row["split"] == split]
+            selected = [row for row in features if month_of(row) == month and row["split"] == split]
             if selected:
-                files[f"features/{split}/{day}.jsonl"] = jsonl(selected)
+                files[f"features/{split}/{month}.jsonl"] = jsonl(selected)
     detector = tally(review_rows(records, task_type, ""))
     splits = [split for split in ("train", "validation", "test") if any(path.startswith(f"features/{split}/") for path in files)]
     files["stats/summary.json"] = json.dumps({**summary, "detector_validation": detector_public(detector)}, indent=2, sort_keys=True) + "\n"
@@ -215,8 +217,10 @@ def push_task_file(api: Any, task_file: Path, fallback_date: str) -> int:
     files["README.md"] = dataset_card(task_type, summary, detector, splits)
 
     changed = {path: text for path, text in files.items() if path not in public_paths or text != _read_existing(api, repo_id, path)}
-    if changed:
-        _commit_files(api, repo_id, changed, f"data: update {task_type} science catalogue")
+    # Catalogue files are rebuilt in full, so older layouts (one file per day) are removed rather than loaded twice.
+    stale = sorted(path for path in public_paths if path.startswith(("features/", "observations/")) and path not in files)
+    if changed or stale:
+        _commit_files(api, repo_id, changed, f"data: update {task_type} science catalogue", stale)
     log.info("Archived %d records and published %d features to %s", len(records), len(features), repo_id)
     return len(records)
 

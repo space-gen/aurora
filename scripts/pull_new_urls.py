@@ -232,74 +232,10 @@ def main():
     args = parser.parse_args()
 
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
-    # Retired task types are removed so the site stops offering them.
+    # Only flares are published now: the site works out 193, 211 and 304 pictures from NASA's archive itself.
     for path in DATA_PROCESSING_DIR.glob("*.jsonl"):
-        if path.stem not in RESEARCH_TASKS and path.stem != "flare_source":
+        if path.stem != "flare_source":
             path.unlink()
-
-    target_date = datetime.date.today() - datetime.timedelta(days=args.days_back)
-    log.info(f"Target date: {target_date}")
-
-    # Determine which task types to process
-    task_types_to_process = RESEARCH_TASKS if args.include_aia else []
-
-    total_records = 0
-    for task_type in task_types_to_process:
-        log.info(f"Processing {task_type}...")
-
-        if task_type not in SOURCE_MAP:
-            log.warning(f"Task type {task_type} not found in SOURCE_MAP")
-            continue
-
-        cfg = SOURCE_MAP[task_type]
-        last_num = _get_last_id_numeric(task_type)
-        prefix = cfg["prefix"]
-
-        urls = _fetch_day_urls_parallel(task_type, target_date)
-        known_ids = existing_ids_by_url(DATA_PROCESSING_DIR / f"{task_type}.jsonl")
-
-        new_records = []
-
-        for url in sorted(urls):
-            record_id = known_ids.get(_canonical_url(url))
-            if not record_id:
-                last_num += 1
-                record_id = f"{prefix}-{last_num}"
-
-            metadata = {
-                "source": cfg.get("source_type", "JSOC_HMI_JPG"),
-                "captured_at": f"{target_date.isoformat()}T00:00:00Z"
-            }
-
-            # Add wavelength metadata for AIA
-            if task_type.startswith("aia_"):
-                wavelength = task_type.split("_")[1]
-                metadata["wavelength"] = f"{wavelength}Å"
-
-            record = {
-                "id": record_id,
-                "url": url,
-                "task_type": task_type,
-                "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "metadata": metadata,
-                "annotations": [],
-            }
-
-            new_records.append(record)
-
-        if new_records:
-            if task_type.startswith("aia_"):
-                add_candidates(task_type, new_records, target_date)
-            file_path = DATA_PROCESSING_DIR / f"{task_type}.jsonl"
-
-            with open(file_path, "w", encoding="utf-8") as f:
-                for record in new_records:
-                    f.write(json.dumps(record, separators=(",", ":")) + "\n")
-
-            total_records += len(new_records)
-            log.info(f"{len(new_records)} records saved for {task_type}")
-        else:
-            log.warning(f"No URLs found for {task_type} on {target_date}")
 
     if args.include_aia:
         try:
@@ -317,9 +253,6 @@ def main():
             # Flare tasks depend on the HEK service; image tasks should still publish without them.
             log.warning(f"Could not build flare tasks: {e}")
 
-    if total_records == 0:
-        log.error("No images were found, so the current task files will stay in place.")
-        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -144,10 +144,12 @@ class Api:
         target.write_text(self.files[(repo_id, filename)], encoding="utf-8")
         return str(target)
 
-    def upload_folder(self, folder_path, repo_id, repo_type, commit_message):
+    def upload_folder(self, folder_path, repo_id, repo_type, commit_message, delete_patterns=None):
         if self.fail:
             raise RuntimeError("offline")
         self.commits += 1
+        for stale in delete_patterns or []:
+            self.files.pop((repo_id, stale), None)
         for path in Path(folder_path).rglob("*"):
             if path.is_file():
                 self.files[(repo_id, path.relative_to(folder_path).as_posix())] = path.read_text(encoding="utf-8")
@@ -167,9 +169,12 @@ def test_publish_keeps_raw_data_private_and_science_data_clean(tmp_path):
     repo = "SpaceGen/solarhub-aia-171"
     assert ("SpaceGen/solarhub-archive", "annotations/aia_171/2026-11-17.jsonl") in api.files
     public = {path: text for (name, path), text in api.files.items() if name == repo}
-    assert "observations/2026-11-17.jsonl" in public and "README.md" in public and "stats/manifest.json" in public
+    assert "observations/2026/11.jsonl" in public and "README.md" in public and "stats/manifest.json" in public
     assert any(path.startswith("features/") for path in public)
-    combined = "\n".join(text for path, text in public.items() if path.endswith(".jsonl"))
+    # Usernames are credited only in the annotators column.
+    rows = [json.loads(line) for path, text in public.items() if path.endswith(".jsonl") for line in text.splitlines()]
+    assert any("ana" in item.get("annotators", []) for item in rows)
+    combined = json.dumps([{key: value for key, value in item.items() if key != "annotators"} for item in rows])
     for private_word in ('"ana"', '"user"', "issue_number", "confidence_score", "finder", '"ring"', '"part"'):
         assert private_word not in combined
     commits = api.commits
@@ -177,3 +182,15 @@ def test_publish_keeps_raw_data_private_and_science_data_clean(tmp_path):
     assert api.commits == commits
     assert publish_all(api, source, "2026-01-01") == []
     assert repo in api.private
+
+
+def test_publish_replaces_old_day_files_with_month_files(tmp_path):
+    api, source = Api(tmp_path), published_source(tmp_path)
+    repo = "SpaceGen/solarhub-aia-171"
+    api.files[(repo, "features/train/2026-11-17.jsonl")] = "{}"
+    api.files[(repo, "observations/2026-11-17.jsonl")] = "{}"
+    api.files[(repo, "notes/keep.txt")] = "kept"
+    publish_all(api, source, "2026-01-01")
+    public = {path for name, path in api.files if name == repo}
+    assert "features/train/2026-11-17.jsonl" not in public and "observations/2026-11-17.jsonl" not in public
+    assert "observations/2026/11.jsonl" in public and "notes/keep.txt" in public

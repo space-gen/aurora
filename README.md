@@ -65,9 +65,11 @@ Users annotate solar observations by **opening a GitHub Issue** using the *Submi
 
 ## Finder Reviews
 
-AIA tasks carry candidate features from `scripts/find_candidates.py`. The finder combines each channel with blended views of 131, 193, 211 and 1700 Å. Each candidate has a circle, and a `mask` in COCO compressed run-length encoding when the feature has a clear edge. SolarHub draws that mask as an outline and gives each contributor one of nine overlapping parts of the Sun.
+SolarHub works out the 193, 211 and 304 pictures itself from NASA's SDO browse archive. Every contributor starts at 20 November 2026 and walks back one day at a time to 1 October 2016, taking every eighth frame (about 15 a day). Each person's last finished picture is saved in their `solarhub-data` repository, so they carry on from there. Pictures with three accepted answers are skipped, using the counts Aurora publishes in `data/answered/<task>.json` on the `data` branch. Aurora publishes only flare tasks now.
 
-Contributors can confirm, move, outline, reject or delete a ring, and can draw around anything the finder missed. SolarHub sends those decisions in the optional `Finder Review` issue field. The parser validates that field and checks each ring against the candidates Aurora published. If the review is invalid, it is dropped and the labels are kept.
+The browser runs a copy of `scripts/find_candidates.py` (`solarhub/src/utils/finder.ts`) to propose whole dark regions in 193 and 211 and edge flames in 304. Each proposal has a circle and a `mask` in COCO compressed run-length encoding. Contributors confirm, reshape, reject or delete each proposal and draw what was missed, and SolarHub sends those decisions in the optional `Finder Review` issue field.
+
+The browser is not trusted. For an archive picture the parser checks that the address matches NASA's pattern, that the record ID matches the image time, that the date is inside the archive range, and that the image downloads. It then reruns the Python finder on the image and counts a ring as the finder's only if Aurora's own finder found it there; the stored finder shape is always Aurora's. Anything that does not fit is rejected. An invalid review is dropped and the labels are kept.
 
 ## Science Datasets
 
@@ -77,8 +79,8 @@ Hugging Face datasets are private and contain science catalogues only. Raw submi
 
 | Path | Contents |
 | --- | --- |
-| `features/<split>/<date>.jsonl` | One row per solar feature, with class, agreement, mask and solar coordinates |
-| `observations/<date>.jsonl` | Image time, solar geometry and reviewed disk area |
+| `features/<split>/<year>/<month>.jsonl` | One row per solar feature, with class, agreement, mask and solar coordinates |
+| `observations/<year>/<month>.jsonl` | Image time, solar geometry and reviewed disk area |
 | `stats/summary.json` | Catalogue counts, Krippendorff's alpha and detector validation |
 | `stats/manifest.json` | Row counts and SHA-256 hashes |
 | `README.md` | Dataset card with schema, method and limitations |

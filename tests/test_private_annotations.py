@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from scripts.private_annotations import prune, seed
+from scripts.private_annotations import answer_counts, prune, seed
 
 
 def write(path, records):
@@ -28,3 +28,26 @@ def test_prune_keeps_only_the_retention_window(tmp_path):
     ])
     prune(tmp_path, date(2026, 11, 19))
     assert [record["id"] for record in read(tmp_path / "aia_171.jsonl")] == ["new"]
+
+
+def test_old_archive_picture_answered_recently_is_kept(tmp_path):
+    write(tmp_path / "aia_193.jsonl", [
+        {"id": "aia193-20170101000000", "metadata": {"captured_at": "2017-01-01T00:00:00Z"}, "annotations": [{"user": "ana", "timestamp": "2026-11-15T10:00:00+00:00"}]},
+        {"id": "aia193-20170102000000", "metadata": {"captured_at": "2017-01-02T00:00:00Z"}, "annotations": [{"user": "bo", "timestamp": "2026-09-01T10:00:00+00:00"}]},
+    ])
+    prune(tmp_path, date(2026, 11, 19))
+    assert [record["id"] for record in read(tmp_path / "aia_193.jsonl")] == ["aia193-20170101000000"]
+
+
+def test_answer_counts_count_people_and_never_shrink(tmp_path):
+    private, published = tmp_path / "private", tmp_path / "published"
+    private.mkdir()
+    write(private / "aia_193.jsonl", [
+        {"id": "a", "annotations": [{"user": "Ana"}, {"user": "ana"}, {"user": "bo"}]},
+        {"id": "b", "annotations": []},
+    ])
+    published.mkdir()
+    (published / "aia_193.json").write_text('{"gone": 3}', encoding="utf-8")
+    answer_counts(private, published)
+    assert json.loads((published / "aia_193.json").read_text(encoding="utf-8")) == {"a": 2, "gone": 3}
+    assert json.loads((published / "aia_211.json").read_text(encoding="utf-8")) == {}

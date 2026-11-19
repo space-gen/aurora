@@ -28,11 +28,36 @@ def seed(templates: Path, private: Path) -> None:
         _write(target, stored + [record for record in _records(template) if record.get("id") not in known])
 
 
+def _recent(record: dict, cutoff: str) -> bool:
+    # Archive pictures can be years old, so age is the newest answer, or the capture time for unanswered tasks.
+    answered = [str(item.get("timestamp", ""))[:10] for item in record.get("annotations") or [] if isinstance(item, dict)]
+    return max(answered or [str((record.get("metadata") or {}).get("captured_at", ""))[:10]]) >= cutoff
+
+
 def prune(private: Path, today: date, days: int = RETENTION_DAYS) -> None:
-    """Drops records older than the retention window. Run only after a successful archive."""
+    """Drops records with no answer inside the retention window. Run only after a successful archive."""
     cutoff = (today - timedelta(days=days)).isoformat()
     for path in sorted(private.glob("*.jsonl")):
-        _write(path, [record for record in _records(path) if str((record.get("metadata") or {}).get("captured_at", ""))[:10] >= cutoff])
+        _write(path, [record for record in _records(path) if _recent(record, cutoff)])
+
+
+ANSWER_COUNT_TASKS = ("aia_193", "aia_211", "aia_304")
+
+
+def answer_counts(private: Path, published: Path) -> None:
+    """Publishes how many people answered each archive picture, so browsers can skip full ones.
+
+    Counts only grow: a pruned record keeps the count it was last published with.
+    """
+    published.mkdir(parents=True, exist_ok=True)
+    for task in ANSWER_COUNT_TASKS:
+        target = published / f"{task}.json"
+        counts = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
+        for record in _records(private / f"{task}.jsonl"):
+            users = {str(item.get("user", "")).lower() for item in record.get("annotations") or [] if isinstance(item, dict) and item.get("user")}
+            if users and record.get("id"):
+                counts[record["id"]] = max(counts.get(record["id"], 0), len(users))
+        target.write_text(json.dumps(dict(sorted(counts.items())), separators=(",", ":")), encoding="utf-8")
 
 
 if __name__ == "__main__":
@@ -41,5 +66,7 @@ if __name__ == "__main__":
         seed(Path(paths[0]), Path(paths[1]))
     elif command == "prune":
         prune(Path(paths[0]), date.today())
+    elif command == "counts":
+        answer_counts(Path(paths[0]), Path(paths[1]))
     else:
         sys.exit(f"unknown command: {command}")

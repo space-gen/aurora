@@ -1,7 +1,9 @@
+import io
 import json
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 
 from scripts.find_candidates import BLEND_WAVELENGTHS, _can_keep, blend_context, decode_mask, encode_mask, find_candidates
 from scripts.merge_annotations_to_hf import merge_rows, publish_all
@@ -114,14 +116,46 @@ def test_aia_labels_follow_what_each_channel_shows():
     assert _parse_regions("part_of_larger,400,500,60", "aia_171")[0]["label"] == "part_of_larger"
 
 
-def test_late_aia_annotation_restores_browse_image(tmp_path):
-    (tmp_path / "aia_193.jsonl").write_text("", encoding="utf-8")
-    url = "https://sdo.gsfc.nasa.gov/assets/img/browse/2026/07/18/20260718_000829_1024_0193.jpg"
-    text = body("aia193-7", url, "coronal_hole,400,500,90").replace("### Task Type\nsunspot", "### Task Type\naia_193")
-    successes, failures = process_issue_submissions([{"number": 9, "body": text, "author": "alice"}], tmp_path)
+ARCHIVE_URL = "https://sdo.gsfc.nasa.gov/assets/img/browse/2026/07/18/20260718_000829_1024_0193.jpg"
+
+
+def archive_issue(tmp_path, record_id="aia193-20260718000829", url=ARCHIVE_URL, fetch=None):
+    text = body(record_id, url, "coronal_hole,400,500,90").replace("### Task Type\nsunspot", "### Task Type\naia_193")
+    jpeg = io.BytesIO()
+    Image.fromarray(sun_image(100.0).astype(np.uint8)).save(jpeg, "JPEG")
+    fetched = []
+    def default_fetch(address):
+        fetched.append(address)
+        return jpeg.getvalue()
+    result = process_issue_submissions([{"number": 9, "body": text, "author": "alice"}], tmp_path, fetch or default_fetch)
+    return result, fetched
+
+
+def test_archive_picture_is_rebuilt_from_its_address_and_finder_rerun(tmp_path):
+    (successes, failures), fetched = archive_issue(tmp_path)
     assert failures == []
     assert successes[0]["task_type"] == "aia_193"
-    assert json.loads((tmp_path / "aia_193.jsonl").read_text(encoding="utf-8"))["metadata"]["source"] == "SDO_AIA_BROWSE"
+    assert fetched == [ARCHIVE_URL]
+    task = json.loads((tmp_path / "aia_193.jsonl").read_text(encoding="utf-8"))
+    assert task["metadata"]["source"] == "SDO_AIA_BROWSE"
+    assert task["metadata"]["captured_at"] == "2026-07-18T00:08:29Z"
+    assert isinstance(task["metadata"]["candidates"], list)
+    assert task["annotations"][0]["user"] == "alice"
+
+
+def test_archive_task_file_is_started_by_the_first_answer(tmp_path):
+    (successes, failures), _ = archive_issue(tmp_path / "fresh")
+    assert failures == [] and successes
+
+
+def test_archive_pictures_that_do_not_fit_are_rejected(tmp_path):
+    (_, wrong_id), _ = archive_issue(tmp_path, record_id="aia193-20260718000830")
+    (_, old_style), _ = archive_issue(tmp_path, record_id="aia193-7")
+    too_early = ARCHIVE_URL.replace("2026/07/18/20260718", "2016/09/30/20160930")
+    (_, early), _ = archive_issue(tmp_path, record_id="aia193-20160930000829", url=too_early)
+    (_, missing), _ = archive_issue(tmp_path, fetch=lambda address: None)
+    for failures in (wrong_id, old_style, early, missing):
+        assert failures and "data_expired" in failures[0]["error"]
 
 
 def sun_image(value):

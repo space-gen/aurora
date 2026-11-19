@@ -52,7 +52,9 @@ def test_majority_feature_has_agreement_and_no_private_fields():
     assert feature["class_agreement"] == round(2 / 3, 4) and feature["shape_agreement_iou"] == 1
     assert feature["area_millionths_hemisphere"] > 0 and feature["mask_rle"]["size"] == [1024, 1024]
     assert 0 < observations[0]["reviewed_disk_fraction"] < 1
-    text = json.dumps([observations, features, summary])
+    assert "ana" in feature["annotators"]
+    # Usernames are credited only in the annotators column.
+    text = json.dumps([observations, [{key: value for key, value in row.items() if key != "annotators"} for row in features], summary])
     assert not any(word in text for word in ('"ana"', "issue_number", "confidence_score", "finder", '"ring"', '"user"'))
 
 

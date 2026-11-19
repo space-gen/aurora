@@ -49,7 +49,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install requests
+          # The finder reruns on every archive picture people answer.
+          pip install requests numpy pillow scipy
 
       - name: Run processor for all annotation issues
         env:
@@ -58,3 +59,16 @@ jobs:
           ISSUE_DELETE_TOKEN: ${{ secrets.ANNOTATIONS_TOKEN }}
           ANNOTATIONS_DIR: private/annotations
         run: python scripts/process_all_annotation_issues.py
+
+      - name: Publish answer counts
+        run: |
+          git fetch origin data
+          git worktree add data-branch origin/data
+          python scripts/private_annotations.py counts private/annotations data-branch/data/answered
+          cd data-branch
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/answered
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(data): update answer counts [skip ci]"
+          git push origin HEAD:data

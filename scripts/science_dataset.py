@@ -59,7 +59,7 @@ FEATURE_COLUMNS = {
     "shape_agreement_iou": "float64", "geometry_source": "string", "centroid_x_pixel": "float64", "centroid_y_pixel": "float64", "bbox_pixel": "ints",
     "mask_rle": "mask", "extent_radius_arcsec": "float64", "helioprojective_x_arcsec": "float64", "helioprojective_y_arcsec": "float64",
     "stonyhurst_latitude_deg": "float64", "stonyhurst_longitude_deg": "float64", "mu": "float64", "disk_pixel_fraction": "float64",
-    "area_millionths_hemisphere": "float64", "quality_flags": "strings", "split": "string",
+    "area_millionths_hemisphere": "float64", "quality_flags": "strings", "split": "string", "annotators": "strings",
 }
 OBSERVATION_COLUMNS = {
     "observation_id": "string", "t_obs": "string", "instrument": "string", "wavelength_angstrom": "int64", "measurement": "string", "image_url": "string",
@@ -285,6 +285,8 @@ def _feature_row(group: list[dict[str, Any]], observation: dict[str, Any], chann
         "classification_scheme": channel["scheme"],
         "class_votes": [{"feature_class": name, "votes": votes} for name, votes in sorted(counts.items())],
         "n_annotators": len(group),
+        # GitHub usernames, so contributors can be credited and their record weighed.
+        "annotators": sorted({vote["annotator"] for vote in group}),
         "class_agreement": round(count / len(group), 4),
         "shape_agreement_iou": round(median(pairs), 4) if pairs else None,
         "geometry_source": source,
@@ -407,7 +409,7 @@ def dataset_card(task_type: str, summary: dict[str, Any], detector: dict[str, An
     channel = CHANNELS[task_type]
     name = f"{channel['instrument']} {channel['wavelength_angstrom']} Å {channel['measurement']}"
     repo = f"SpaceGen/solarhub-{task_type.replace('_', '-')}"
-    configs = "".join(f"  - split: {split}\n    path: features/{split}/*.jsonl\n" for split in splits) or "  - split: train\n    path: features/*/*.jsonl\n"
+    configs = "".join(f"  - split: {split}\n    path: features/{split}/**/*.jsonl\n" for split in splits) or "  - split: train\n    path: features/**/*.jsonl\n"
     rate = lambda value: "not enough data" if value is None else f"{value:.3f}"
     classes = "\n".join(f"| `{label}` | {count} |" for label, count in summary["feature_classes"].items()) or "| None yet | 0 |"
     return f"""---
@@ -425,7 +427,7 @@ dataset_info:
   default: true
   data_files:
 {configs}- config_name: observations
-  data_files: observations/*.jsonl
+  data_files: observations/**/*.jsonl
 ---
 
 # SolarHub feature catalogue: {name}
@@ -484,6 +486,7 @@ For conservative work, keep rows with `n_annotators >= 2`, a non-null `feature_c
 | `feature_class`, `classification_scheme` | Majority class and its vocabulary. Null means no majority. |
 | `class_votes` | Vote count per class, including `not_a_feature` and `unclassified`. |
 | `n_annotators`, `class_agreement` | Independent annotators and the share choosing the leading class. |
+| `annotators` | GitHub usernames of the people whose votes formed this feature. |
 | `shape_agreement_iou` | Median pairwise intersection over union of submitted shapes. |
 | `geometry_source` | `annotator_outline`, `detector_mask` (accepted by an annotator) or `circle`. |
 | `centroid_x_pixel`, `centroid_y_pixel`, `bbox_pixel` | Image position. The box is `[x, y, width, height]`. |
@@ -535,7 +538,7 @@ FLARE_COLUMNS = {
     "nearest_region_auto": "int64", "attribution": "string", "noaa_number": "int64", "answer_votes": "answers",
     "n_annotators": "int64", "attribution_agreement": "float64", "candidate_noaa_numbers": "ints", "source_x_pixel": "float64",
     "source_y_pixel": "float64", "helioprojective_x_arcsec": "float64", "helioprojective_y_arcsec": "float64",
-    "stonyhurst_latitude_deg": "float64", "stonyhurst_longitude_deg": "float64", "swpc_noaa_number": "int64",
+    "stonyhurst_latitude_deg": "float64", "stonyhurst_longitude_deg": "float64", "swpc_noaa_number": "int64", "annotators": "strings",
     "other_catalogue_noaa_numbers": "catalogues", "quality_flags": "strings", "split": "string",
 }
 COLUMN_YAML["answers"] = "    list:\n    - name: answer\n      dtype: string\n    - name: votes\n      dtype: int64\n"
@@ -599,6 +602,7 @@ def build_flare_catalogue(rows: list[dict[str, Any]]) -> tuple[list[dict[str, An
             "noaa_number": int(label[5:]) if majority and label.startswith("noaa_") else None,
             "answer_votes": [{"answer": answer, "votes": votes} for answer, votes in sorted(counts.items())],
             "n_annotators": len(answers),
+            "annotators": sorted({str(item.get("user", "")).lower() for item in _as_list(row.get("annotations")) if isinstance(item, dict) and _flare_answer(item) and item.get("user")}),
             "attribution_agreement": round(count / len(answers), 4),
             "candidate_noaa_numbers": [item["noaa"] for item in metadata.get("candidates", [])],
             "source_x_pixel": round(median(p[0] for p in points), 1) if points else None,
@@ -631,7 +635,7 @@ def build_flare_catalogue(rows: list[dict[str, Any]]) -> tuple[list[dict[str, An
 
 
 def flare_card(summary: dict[str, Any], splits: list[str]) -> str:
-    configs = "".join(f"  - split: {split}\n    path: features/{split}/*.jsonl\n" for split in splits) or "  - split: train\n    path: features/*/*.jsonl\n"
+    configs = "".join(f"  - split: {split}\n    path: features/{split}/**/*.jsonl\n" for split in splits) or "  - split: train\n    path: features/**/*.jsonl\n"
     rate = lambda value: "not enough data" if value is None else f"{value:.3f}"
     return f"""---
 license: agpl-3.0
@@ -687,6 +691,7 @@ Flare forecasting models are trained on flares linked to their source active reg
 | `nearest_region_auto` | The NOAA region nearest the brightening, within 60 pixels. A simple baseline to compare with annotators. |
 | `attribution`, `noaa_number` | Majority answer, and the NOAA region number when that answer is a region. Null means no majority. |
 | `answer_votes`, `n_annotators`, `attribution_agreement` | Vote counts and the share choosing the majority answer. |
+| `annotators` | GitHub usernames of the people who answered. |
 | `candidate_noaa_numbers` | Regions offered to annotators. |
 | `source_x_pixel`, `source_y_pixel` | Median marked position, when the answer has one. |
 | `helioprojective_*`, `stonyhurst_*` | That position on the sky and on the Sun. Stonyhurst is null off disk. |
