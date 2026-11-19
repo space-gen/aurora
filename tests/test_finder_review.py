@@ -126,8 +126,9 @@ class Api:
     def create_repo(self, **kwargs):
         pass
 
-    def repo_exists(self, repo_id, repo_type):
-        return any(repo == repo_id for repo, _ in self.files)
+    def list_datasets(self, author):
+        from types import SimpleNamespace
+        return [SimpleNamespace(id=repo, private=repo in getattr(self, "private", set())) for repo in {repo for repo, _ in self.files}]
 
     def update_repo_settings(self, repo_id, repo_type, private):
         self.private = {*getattr(self, "private", set()), repo_id}
@@ -174,4 +175,5 @@ def test_publish_keeps_raw_data_private_and_science_data_clean(tmp_path):
     commits = api.commits
     assert publish_all(api, source, "2026-01-01") == []
     assert api.commits == commits
+    assert publish_all(api, source, "2026-01-01") == []
     assert repo in api.private

@@ -56,8 +56,9 @@ class FakeApi:
     def create_repo(self, **kwargs):
         pass
 
-    def repo_exists(self, repo_id, repo_type):
-        return any(repo == repo_id for repo, _ in self.files)
+    def list_datasets(self, author):
+        from types import SimpleNamespace
+        return [SimpleNamespace(id=repo, private=repo in getattr(self, "private", set())) for repo in {repo for repo, _ in self.files}]
 
     def update_repo_settings(self, repo_id, repo_type, private):
         self.private = {*getattr(self, "private", set()), repo_id}

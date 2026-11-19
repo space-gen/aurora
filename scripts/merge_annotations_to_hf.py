@@ -233,14 +233,23 @@ def detector_public(stats: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def publish_all(api: Any, annotations_dir: Path, fallback_date: str) -> list[str]:
+def make_private(api: Any) -> list[str]:
+    """Datasets stay private until the project chooses to release them."""
     failed = []
+    for dataset in api.list_datasets(author=HF_DATASET_REPO_PREFIX.split("/")[0]):
+        if dataset.id.startswith(HF_DATASET_REPO_PREFIX) and dataset.private is not True:
+            try:
+                api.update_repo_settings(repo_id=dataset.id, repo_type="dataset", private=True)
+            except Exception as exc:
+                log.error("Could not make %s private: %s", dataset.id, exc)
+                failed.append(dataset.id)
+    return failed
+
+
+def publish_all(api: Any, annotations_dir: Path, fallback_date: str) -> list[str]:
+    failed = make_private(api)
     for task_file in sorted(annotations_dir.glob("*.jsonl")):
         try:
-            repo_id = f"{HF_DATASET_REPO_PREFIX}{task_file.stem.replace('_', '-')}"
-            # Datasets stay private until the project chooses to release them.
-            if api.repo_exists(repo_id=repo_id, repo_type="dataset"):
-                api.update_repo_settings(repo_id=repo_id, repo_type="dataset", private=True)
             push_task_file(api, task_file, fallback_date)
         except Exception as exc:
             log.error("Could not publish %s: %s", task_file.name, exc)
