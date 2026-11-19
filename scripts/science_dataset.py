@@ -531,7 +531,8 @@ Images courtesy of NASA/SDO and the AIA, EVE and HMI science teams. Cite this da
 
 FLARE_COLUMNS = {
     "flare_id": "string", "catalogue_id": "string", "goes_class": "string", "t_start": "string", "t_peak": "string", "t_end": "string",
-    "image_url": "string", "before_image_url": "string", "attribution": "string", "noaa_number": "int64", "answer_votes": "answers",
+    "image_url": "string", "before_image_url": "string", "flash_x_pixel": "int64", "flash_y_pixel": "int64", "flash_clarity": "float64",
+    "nearest_region_auto": "int64", "attribution": "string", "noaa_number": "int64", "answer_votes": "answers",
     "n_annotators": "int64", "attribution_agreement": "float64", "candidate_noaa_numbers": "ints", "source_x_pixel": "float64",
     "source_y_pixel": "float64", "helioprojective_x_arcsec": "float64", "helioprojective_y_arcsec": "float64",
     "stonyhurst_latitude_deg": "float64", "stonyhurst_longitude_deg": "float64", "swpc_noaa_number": "int64",
@@ -541,6 +542,7 @@ COLUMN_YAML["answers"] = "    list:\n    - name: answer\n      dtype: string\n  
 COLUMN_YAML["catalogues"] = "    list:\n    - name: catalogue\n      dtype: string\n    - name: noaa_number\n      dtype: int64\n"
 FLARE_CHANNEL = CHANNELS["aia_131"]
 BEFORE_MINUTES = 20
+MIN_FLASH_CLARITY = 1.5
 FLARE_ANSWERS = {"unnumbered_region", "behind_limb", "no_flare_visible"}
 
 
@@ -589,6 +591,10 @@ def build_flare_catalogue(rows: list[dict[str, Any]]) -> tuple[list[dict[str, An
             "t_start": flare["start"], "t_peak": flare["peak"], "t_end": flare["end"],
             "image_url": row.get("url"),
             "before_image_url": metadata.get("before_url"),
+            "flash_x_pixel": (metadata.get("flash") or {}).get("x"),
+            "flash_y_pixel": (metadata.get("flash") or {}).get("y"),
+            "flash_clarity": (metadata.get("flash") or {}).get("clarity"),
+            "nearest_region_auto": metadata.get("nearest_region_auto"),
             "attribution": label if majority else None,
             "noaa_number": int(label[5:]) if majority and label.startswith("noaa_") else None,
             "answer_votes": [{"answer": answer, "votes": votes} for answer, votes in sorted(counts.items())],
@@ -664,7 +670,8 @@ Flare forecasting models are trained on flares linked to their source active reg
 ## Method
 
 1. Flares come from the HEK SWPC list: GOES class C or above, with no NOAA region.
-2. Each task shows an AIA 131 Å image taken {BEFORE_MINUTES} minutes before flare start and the image nearest the GOES peak.
+2. The flare is located automatically as the area that brightened most between a frame {BEFORE_MINUTES} minutes before flare start and the frame nearest the GOES peak, in AIA 131 and 94 Å together. Flares without one clear brightening (the strongest at least {MIN_FLASH_CLARITY} times the next) are not offered.
+2a. Annotators see a zoomed view around that brightening, before and at peak, with the nearby numbered regions.
 3. The numbered regions offered are NOAA SWPC regions recorded within one day before to two days after the peak, rotated to the peak time with Snodgrass differential rotation. Regions numbered after the flare are included.
 4. Volunteers choose the region that brightened, mark an unnumbered location, or answer `behind_limb` or `no_flare_visible`.
 5. Annotators never see what other catalogues report. Those values are stored only for comparison.
@@ -676,6 +683,8 @@ Flare forecasting models are trained on flares linked to their source active reg
 | `flare_id`, `catalogue_id` | Stable identifier and the HEK event identifier. |
 | `goes_class`, `t_start`, `t_peak`, `t_end` | GOES class and times from SWPC (UTC). |
 | `image_url`, `before_image_url` | The peak and pre-flare AIA 131 Å images shown. |
+| `flash_x_pixel`, `flash_y_pixel`, `flash_clarity` | Automatic brightening location and how much it stood out. |
+| `nearest_region_auto` | The NOAA region nearest the brightening, within 60 pixels. A simple baseline to compare with annotators. |
 | `attribution`, `noaa_number` | Majority answer, and the NOAA region number when that answer is a region. Null means no majority. |
 | `answer_votes`, `n_annotators`, `attribution_agreement` | Vote counts and the share choosing the majority answer. |
 | `candidate_noaa_numbers` | Regions offered to annotators. |

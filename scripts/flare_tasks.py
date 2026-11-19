@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import math
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable
 
 import numpy as np
 import requests
+from PIL import Image
+from scipy import ndimage
 
 try:
     from scripts.science_dataset import CHANNELS, ephemeris, pixel_from_stonyhurst, solar_coordinates
@@ -26,6 +29,13 @@ MAX_FRAME_GAP_MINUTES = 15
 REGION_RING = 40
 REGION_DAYS_BEFORE = 1
 REGION_DAYS_AFTER = 2
+FLASH_CHANNELS = ("131", "94")
+FLASH_BLUR = 8
+FLASH_DISK = 430
+FLASH_SEPARATION = 60
+MIN_FLASH_CLARITY = 1.5
+VIEW_SIZE = 256
+AUTO_REGION_PIXELS = 60
 OTHER_CATALOGUES = ("SSW Latest Events", "Flare Detective - Trigger Module")
 
 
@@ -100,7 +110,25 @@ def regions_at(regions: list[dict[str, Any]], moment: datetime) -> list[dict[str
     return [candidates[number] for number in sorted(candidates)]
 
 
-def flare_records(start: datetime, end: datetime, frames_for_day: Callable[[datetime], list[str]]) -> list[dict[str, Any]]:
+def _gray(content: bytes) -> np.ndarray:
+    return np.asarray(Image.open(io.BytesIO(content)).convert("L").resize((1024, 1024)), dtype=float)
+
+
+def locate_flash(pairs: list[tuple[np.ndarray, np.ndarray]]) -> tuple[int, int, float]:
+    """Finds the area that brightened most between the two frames, in both hot channels together."""
+    yy, xx = np.mgrid[0:1024, 0:1024]
+    disk = np.hypot(xx - 511.5, yy - 511.5) < FLASH_DISK
+    total = np.zeros((1024, 1024))
+    for after, before in pairs:
+        change = (after - before) * disk
+        # Summing positive change over an area ignores single bright specks.
+        total += ndimage.gaussian_filter(np.clip(change, 0, None), FLASH_BLUR) / (np.std(change) + 1)
+    y, x = np.unravel_index(np.argmax(total), total.shape)
+    rest = np.where(np.hypot(xx - x, yy - y) < FLASH_SEPARATION, 0, total)
+    return int(x), int(y), float(total[y, x] / max(rest.max(), 1e-6))
+
+
+def flare_records(start: datetime, end: datetime, frames_for_day: Callable[[str, datetime], list[str]], download: Callable[[str], bytes]) -> list[dict[str, Any]]:
     flares = hek_events("fl", start, end, "frm_name,fl_goescls,ar_noaanum,hpc_x,hpc_y,event_starttime,event_peaktime,event_endtime,kb_archivid")
     regions = hek_events("ar", start - timedelta(days=REGION_DAYS_BEFORE), end + timedelta(days=REGION_DAYS_AFTER), "frm_name,ar_noaanum,hpc_x,hpc_y,event_starttime,event_endtime")
     regions = [item for item in regions if item.get("frm_name") == "NOAA SWPC Observer"]
@@ -111,11 +139,22 @@ def flare_records(start: datetime, end: datetime, frames_for_day: Callable[[date
         if flare.get("frm_name") != "SWPC" or not goes.startswith(FLARE_CLASSES) or flare.get("ar_noaanum"):
             continue
         peak, began = _time(flare["event_peaktime"]), _time(flare["event_starttime"])
-        day_frames = frames_for_day(peak)
-        after, before = nearest_url(day_frames, peak), nearest_url(day_frames + frames_for_day(began - timedelta(minutes=BEFORE_MINUTES)), began - timedelta(minutes=BEFORE_MINUTES))
-        candidates = regions_at(regions, peak)
-        if not after or not before or before == after:
+        quiet = began - timedelta(minutes=BEFORE_MINUTES)
+        frames = {}
+        for wavelength in FLASH_CHANNELS:
+            urls = frames_for_day(wavelength, peak) + frames_for_day(wavelength, quiet)
+            frames[wavelength] = (nearest_url(urls, peak), nearest_url(urls, quiet))
+        after, before = frames[FLASH_CHANNELS[0]]
+        if any(not a or not b or a == b for a, b in frames.values()):
             continue
+        x, y, clarity = locate_flash([(_gray(download(a)), _gray(download(b))) for a, b in frames.values()])
+        # Without one clear brightening, a zoomed view would point people at the wrong place.
+        if clarity < MIN_FLASH_CLARITY:
+            continue
+        candidates = regions_at(regions, peak)
+        nearest = min(candidates, key=lambda item: math.hypot(item["x"] - x, item["y"] - y), default=None)
+        auto = nearest["noaa"] if nearest and math.hypot(nearest["x"] - x, nearest["y"] - y) <= AUTO_REGION_PIXELS else None
+        place = lambda value: int(np.clip(value - VIEW_SIZE // 2, 0, 1024 - VIEW_SIZE))
         nearby = [item for item in others if abs((_time(item["event_peaktime"]) - peak).total_seconds()) <= MATCH_MINUTES * 60]
         records.append({
             "id": "flare-" + hashlib.sha256(flare["kb_archivid"].encode()).hexdigest()[:10],
@@ -126,6 +165,10 @@ def flare_records(start: datetime, end: datetime, frames_for_day: Callable[[date
                 "source": "SDO_AIA_BROWSE",
                 "captured_at": peak.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "before_url": before,
+                "flash": {"x": x, "y": y, "clarity": round(clarity, 2)},
+                "view": {"x": place(x), "y": place(y), "size": VIEW_SIZE},
+                # Kept for comparison in the catalogue; SolarHub never shows it.
+                "nearest_region_auto": auto,
                 "flare": {
                     "catalogue_id": flare["kb_archivid"],
                     "goes_class": goes,
@@ -145,5 +188,5 @@ def flare_records(start: datetime, end: datetime, frames_for_day: Callable[[date
     return records
 
 
-def recent_flare_records(today: datetime, frames_for_day: Callable[[datetime], list[str]]) -> list[dict[str, Any]]:
-    return flare_records(today - timedelta(days=LOOKBACK_DAYS), today, frames_for_day)
+def recent_flare_records(today: datetime, frames_for_day: Callable[[str, datetime], list[str]], download: Callable[[str], bytes]) -> list[dict[str, Any]]:
+    return flare_records(today - timedelta(days=LOOKBACK_DAYS), today, frames_for_day, download)

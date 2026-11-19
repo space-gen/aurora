@@ -85,3 +85,14 @@ def test_flare_catalogue_gives_a_majority_region_without_names():
     assert flare["noaa_number"] == 14549 and flare["n_annotators"] == 3 and flare["attribution_agreement"] == round(2 / 3, 4)
     assert flare["stonyhurst_latitude_deg"] is not None and summary["agreement_with_ssw_latest_events"] == 1
     assert '"ana"' not in json.dumps(flares)
+
+
+def test_flash_is_the_area_that_brightened_not_a_single_speck():
+    from scripts.flare_tasks import locate_flash
+    y, x = np.mgrid[0:1024, 0:1024]
+    before = 100.0 * (np.hypot(x - 511.5, y - 511.5) < 400)
+    after = before.copy()
+    after[(x - 300) ** 2 + (y - 600) ** 2 < 15 ** 2] += 60
+    after[700, 700] += 255
+    fx, fy, clarity = locate_flash([(after, before)])
+    assert abs(fx - 300) < 5 and abs(fy - 600) < 5 and clarity > 1.5

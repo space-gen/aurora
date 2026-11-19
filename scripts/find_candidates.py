@@ -21,7 +21,7 @@ REGION_RING = 150
 COMPACT_RING = 42
 MAX_FEATURES = 40
 # Tuned on 16 days of NOAA regions and coronal holes, keeping nearly everything they found.
-MIN_SCORES = {"aia_94": 2, "aia_131": 5, "aia_171": 6, "aia_193": 5, "aia_211": 1, "aia_304": 10, "aia_335": 2, "aia_1600": 3, "aia_1700": 2}
+MIN_SCORES = {"aia_94": 2, "aia_131": 5, "aia_171": 6, "aia_193": 0, "aia_211": 0, "aia_304": 0, "aia_335": 2, "aia_1600": 3, "aia_1700": 2}
 DARK_RATIOS = (0.45, 0.6)
 BRIGHT_LEVELS = (6.0, 3.5)
 MIN_REGION_AREA = 250
@@ -268,7 +268,7 @@ def blend_context(frames: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
 
 def _blended_features(context: dict[str, np.ndarray], task_type: str, disk: np.ndarray, sun: np.ndarray, reach: int) -> list[list[dict[str, int]]]:
     groups: list[list[dict[str, int]]] = []
-    if task_type not in DARK_REGION_TYPES:
+    if task_type not in DARK_REGION_TYPES and task_type != "aia_304":
         bright = context["bright"]
         groups += [
             _features(_band(bright, 10, 70, sun), disk, 1.1, 14, 81, REGION_RING, reach),
@@ -301,19 +301,13 @@ def score_candidates(gray: np.ndarray, task_type: str, context: dict[str, np.nda
         ]
     elif task_type in DARK_REGION_TYPES:
         sign = -1
-        groups = [
-            _dark_regions(gray, flat, sun, radius),
-            _features(-_band(flat, 12, 90, sun), disk, 1.2, 12, 101, 120, reach),
-            _features(-_band(flat, 3, 24, sun), disk, 2.2, 16, 45, 58, reach),
-        ]
+        # Whole dark regions match HEK coronal holes; thin filaments are drawn by people instead,
+        # because band filters mostly pick dark gaps between loops in these images.
+        groups = [_dark_regions(gray, flat, sun, radius)]
     elif task_type == "aia_304":
         edge = (radius > 398) & with_edge
-        groups = [
-            _bright_regions(gray, flat, disk, radius, reach),
-            _features(_band(flat, 3, 22), edge, 2.0, 10, 45, 58),
-            _features(_band(flat, 13, 75, sun), disk, 1.2, 12, 81, 125, reach),
-            _features(-_band(flat, 3, 24, sun), disk, 2.0, 12, 45, 55, reach),
-        ]
+        # Prominences above the limb are proposed; filaments on the disk are drawn by people.
+        groups = [_features(_band(flat, 3, 22), edge, 2.0, 10, 45, 58)]
     else:
         groups = [
             _bright_regions(gray, flat, disk, radius, reach),
@@ -321,13 +315,17 @@ def score_candidates(gray: np.ndarray, task_type: str, context: dict[str, np.nda
             _features(_band(flat, 4, 26, sun), disk, 2.0, 16, 45, 55, reach),
             _features(-_band(flat, 2, 20, sun), disk, 3.5, 8, 35, COMPACT_RING, reach),
         ]
-    if context is not None:
+    if context is not None and task_type not in DARK_REGION_TYPES and task_type != "aia_304":
         groups[1:1] = _blended_features(context, task_type, disk, sun, reach)
     return _rank(_merge(groups), flat, disk, sign)
 
 
 def find_candidates(gray: np.ndarray, task_type: str, context: dict[str, np.ndarray] | None = None) -> list[dict[str, Any]]:
-    return [mark for mark in score_candidates(gray, task_type, context) if mark["score"] >= MIN_SCORES.get(task_type, 0)][:MAX_FEATURES]
+    marks = [mark for mark in score_candidates(gray, task_type, context) if mark["score"] >= MIN_SCORES.get(task_type, 0)]
+    if task_type == "aia_304":
+        # Above the limb, a find without a clear edge was sky glow in every case checked.
+        marks = [mark for mark in marks if "mask" in mark]
+    return marks[:MAX_FEATURES]
 
 
 def gray_from_jpeg(content: bytes) -> np.ndarray:

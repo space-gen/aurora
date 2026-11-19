@@ -28,6 +28,9 @@ DATA_PROCESSING_DIR = REPO_ROOT / "data_processing"
 
 # 4500 is omitted: its browse frames are overexposed and show no usable surface detail.
 AIA_WAVELENGTHS = ["94", "131", "171", "193", "211", "304", "335", "1600", "1700"]
+# Only tasks that produce data researchers lack: coronal holes, filaments and prominences.
+RESEARCH_TASKS = ["aia_193", "aia_211", "aia_304"]
+NO_BLEND_TASKS = set(RESEARCH_TASKS)
 
 SOURCE_MAP = {
     "sunspot": {
@@ -131,7 +134,7 @@ def add_candidates(task_type, records, date_obj):
         try:
             content = _download(record["url"])
             try:
-                context = _blend_context(record["url"], date_obj)
+                context = None if task_type in NO_BLEND_TASKS else _blend_context(record["url"], date_obj)
             except Exception as e:
                 log.warning(f"Using one channel for {record['url']}: {e}")
                 context = None
@@ -229,15 +232,16 @@ def main():
     args = parser.parse_args()
 
     DATA_PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
-    (DATA_PROCESSING_DIR / "aia_4500.jsonl").unlink(missing_ok=True)
+    # Retired task types are removed so the site stops offering them.
+    for path in DATA_PROCESSING_DIR.glob("*.jsonl"):
+        if path.stem not in RESEARCH_TASKS and path.stem != "flare_source":
+            path.unlink()
 
     target_date = datetime.date.today() - datetime.timedelta(days=args.days_back)
     log.info(f"Target date: {target_date}")
 
     # Determine which task types to process
-    task_types_to_process = ["sunspot", "magnetogram"]
-    if args.include_aia:
-        task_types_to_process.extend([f"aia_{wl}" for wl in AIA_WAVELENGTHS])
+    task_types_to_process = RESEARCH_TASKS if args.include_aia else []
 
     total_records = 0
     for task_type in task_types_to_process:
@@ -304,7 +308,7 @@ def main():
             from flare_tasks import recent_flare_records
         try:
             today = datetime.datetime.now(datetime.timezone.utc)
-            flares = recent_flare_records(today, lambda moment: list(_channel_urls("131", moment.date())))
+            flares = recent_flare_records(today, lambda wavelength, moment: list(_channel_urls(wavelength, moment.date())), _download)
             with open(DATA_PROCESSING_DIR / "flare_source.jsonl", "w", encoding="utf-8") as f:
                 for record in flares:
                     f.write(json.dumps(record, separators=(",", ":")) + "\n")
