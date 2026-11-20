@@ -34,6 +34,7 @@ FLASH_BLUR = 8
 FLASH_DISK = 430
 FLASH_SEPARATION = 60
 MIN_FLASH_CLARITY = 1.5
+CHECK_EVERY = 10
 VIEW_SIZE = 256
 AUTO_REGION_PIXELS = 60
 OTHER_CATALOGUES = ("SSW Latest Events", "Flare Detective - Trigger Module")
@@ -136,7 +137,11 @@ def flare_records(start: datetime, end: datetime, frames_for_day: Callable[[str,
     records = []
     for flare in flares:
         goes = str(flare.get("fl_goescls") or "")
-        if flare.get("frm_name") != "SWPC" or not goes.startswith(FLARE_CLASSES) or flare.get("ar_noaanum"):
+        if flare.get("frm_name") != "SWPC" or not goes.startswith(FLARE_CLASSES):
+            continue
+        # About one in ten flares NOAA did assign are mixed in as hidden checks, to measure volunteer accuracy.
+        check = full_noaa(flare.get("ar_noaanum")) if flare.get("ar_noaanum") else None
+        if check and int(hashlib.sha256(flare["kb_archivid"].encode()).hexdigest(), 16) % CHECK_EVERY:
             continue
         peak, began = _time(flare["event_peaktime"]), _time(flare["event_starttime"])
         quiet = began - timedelta(minutes=BEFORE_MINUTES)
@@ -152,6 +157,8 @@ def flare_records(start: datetime, end: datetime, frames_for_day: Callable[[str,
         if clarity < MIN_FLASH_CLARITY:
             continue
         candidates = regions_at(regions, peak)
+        if check and check not in {item["noaa"] for item in candidates}:
+            continue
         nearest = min(candidates, key=lambda item: math.hypot(item["x"] - x, item["y"] - y), default=None)
         auto = nearest["noaa"] if nearest and math.hypot(nearest["x"] - x, nearest["y"] - y) <= AUTO_REGION_PIXELS else None
         place = lambda value: int(np.clip(value - VIEW_SIZE // 2, 0, 1024 - VIEW_SIZE))
@@ -177,6 +184,8 @@ def flare_records(start: datetime, end: datetime, frames_for_day: Callable[[str,
                     "end": flare["event_endtime"] + "Z",
                 },
                 "candidates": candidates,
+                # Hidden check: NOAA's own region for this flare. SolarHub never shows it.
+                **({"check_noaa": check} if check else {}),
                 # Kept for comparison in the catalogue; SolarHub never shows these to volunteers.
                 "other_catalogues": [
                     {"catalogue": item["frm_name"], "noaa": full_noaa(item.get("ar_noaanum")), "hpc_x": round(item["hpc_x"], 1), "hpc_y": round(item["hpc_y"], 1)}

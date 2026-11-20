@@ -173,7 +173,10 @@ def test_publish_keeps_raw_data_private_and_science_data_clean(tmp_path):
     assert any(path.startswith("features/") for path in public)
     # Usernames are credited only in the annotators column.
     rows = [json.loads(line) for path, text in public.items() if path.endswith(".jsonl") for line in text.splitlines()]
-    assert any("ana" in item.get("annotators", []) for item in rows)
+    # Published rows carry anonymous IDs; only the private archive knows they belong to "ana".
+    ids = json.loads(api.files[("SpaceGen/solarhub-archive", "contributors/ids.json")])
+    assert any(ids["ana"] in item.get("annotators", []) for item in rows)
+    assert not any("ana" in item.get("annotators", []) for item in rows)
     combined = json.dumps([{key: value for key, value in item.items() if key != "annotators"} for item in rows])
     for private_word in ('"ana"', '"user"', "issue_number", "confidence_score", "finder", '"ring"', '"part"'):
         assert private_word not in combined
@@ -194,3 +197,20 @@ def test_publish_replaces_old_day_files_with_month_files(tmp_path):
     public = {path for name, path in api.files if name == repo}
     assert "features/train/2026-11-17.jsonl" not in public and "observations/2026-11-17.jsonl" not in public
     assert "observations/2026/11.jsonl" in public and "notes/keep.txt" in public
+
+
+def test_dark_patch_and_eruption_answers_are_accepted():
+    patch = {"v": 1, "part": 1, "parts": 1, "rings": [
+        {"action": "confirmed", "label": "filament_channel", "finder": [500, 400, 60], "ring": [500, 400, 60], "catalogue": "SPoCA"},
+        {"action": "confirmed", "label": "unclear", "finder": [300, 300, 50], "ring": [300, 300, 50]},
+    ]}
+    parsed = _parse_review(json.dumps(patch), "aia_193")
+    assert [ring["label"] for ring in parsed["rings"]] == ["filament_channel", "unclear"]
+    movie = {"v": 1, "part": 1, "parts": 1, "rings": [
+        {"action": "added", "label": "eruption", "finder": None, "ring": [120, 300, 40], "onset": "2017-03-01T03:24:10Z"},
+        {"action": "added", "label": "no_eruption", "finder": None, "ring": [768, 256, 256]},
+        {"action": "added", "label": "eruption", "finder": None, "ring": [700, 700, 40], "onset": "soon"},
+    ]}
+    rings = _parse_review(json.dumps(movie), "aia_304")["rings"]
+    assert rings[0]["onset"] == "2017-03-01T03:24:10Z" and "onset" not in rings[2]
+    assert rings[1]["label"] == "no_eruption"

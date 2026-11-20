@@ -97,3 +97,12 @@ def test_flash_is_the_area_that_brightened_not_a_single_speck():
     after[700, 700] += 255
     fx, fy, clarity = locate_flash([(after, before)])
     assert abs(fx - 300) < 5 and abs(fy - 600) < 5 and clarity > 1.5
+
+
+def test_hidden_check_flares_measure_accuracy_and_stay_out_of_the_catalogue():
+    answers = [{"user": user, "locations": [{"label": label, "region": "405.0,485.0,40.0"}]} for user, label in (("ana", "noaa_14549"), ("bo", "noaa_14547"))]
+    task = flare_task(answers)
+    task["metadata"]["check_noaa"] = 14549
+    _, flares, summary = build_catalogue("flare_source", [task])
+    assert flares == []
+    assert summary["check_flare_answers"] == 2 and summary["check_flare_accuracy"] == 0.5

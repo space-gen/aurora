@@ -159,6 +159,30 @@ def _rows(text: str) -> list[dict[str, Any]]:
     return [json.loads(line) for line in text.splitlines() if line.strip()]
 
 
+CONTRIBUTOR_IDS = "contributors/ids.json"
+
+
+def pseudonymise(api: Any, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Published rows carry stable anonymous IDs; the private archive keeps who is who, for credit."""
+    text = _read_existing(api, HF_ARCHIVE_REPO, CONTRIBUTOR_IDS)
+    ids: dict[str, str] = json.loads(text) if text else {}
+    known = len(ids)
+    published = []
+    for record in records:
+        annotations = []
+        for annotation in _as_list(record.get("annotations")):
+            if not isinstance(annotation, dict):
+                continue
+            name = str(annotation.get("user", "")).strip().lower()
+            if name and name not in ids:
+                ids[name] = f"c{len(ids) + 1:06d}"
+            annotations.append({**annotation, "user": ids.get(name, "")})
+        published.append({**record, "annotations": annotations})
+    if len(ids) != known:
+        _commit_files(api, HF_ARCHIVE_REPO, {CONTRIBUTOR_IDS: json.dumps(ids, indent=1, sort_keys=True) + "\n"}, "chore: assign contributor IDs")
+    return published
+
+
 def push_task_file(api: Any, task_file: Path, fallback_date: str) -> int:
     task_type = task_file.stem
     repo_id = f"{HF_DATASET_REPO_PREFIX}{task_type.replace('_', '-')}"
@@ -198,7 +222,7 @@ def push_task_file(api: Any, task_file: Path, fallback_date: str) -> int:
     if changed_archive:
         _commit_files(api, HF_ARCHIVE_REPO, changed_archive, f"chore: archive {task_type} annotations")
 
-    records = [row for text in archive_files.values() for row in _rows(text)]
+    records = pseudonymise(api, [row for text in archive_files.values() for row in _rows(text)])
     observations, features, summary = build_catalogue(task_type, records)
     files: dict[str, str] = {}
     # Filed by observation month, since contributors now work back through years of the archive.

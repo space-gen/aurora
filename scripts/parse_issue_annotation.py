@@ -33,7 +33,7 @@ ANNOTATIONS_DIR = REPO_ROOT / "annotations"
 # Valid labels for each task type
 PART_OF_LARGER = "part_of_larger"
 HOT_REGION_LABELS = {"bright_region", "coronal_loops", PART_OF_LARGER, "none"}
-CORONAL_DARK_LABELS = {"coronal_hole", "filament", PART_OF_LARGER, "none"}
+CORONAL_DARK_LABELS = {"coronal_hole", "filament", "filament_channel", "unclear", PART_OF_LARGER, "none"}
 LOWER_ATMOSPHERE_LABELS = {"plage", "flare_ribbon", "sunspot", PART_OF_LARGER, "none"}
 VALID_LABELS: dict[str, set[str]] = {
     "sunspot": {"class_a", "class_b", "class_c", "class_d", "class_e", "class_f", "class_h", "none"},
@@ -43,7 +43,8 @@ VALID_LABELS: dict[str, set[str]] = {
     "aia_171": HOT_REGION_LABELS,
     "aia_193": CORONAL_DARK_LABELS,
     "aia_211": CORONAL_DARK_LABELS,
-    "aia_304": {"filament", "prominence", "bright_region", PART_OF_LARGER, "none"},
+    # 304 eruption movies: does material lift off in this quarter of the Sun, and when.
+    "aia_304": {"filament", "prominence", "bright_region", "eruption", "no_eruption", "unclear", PART_OF_LARGER, "none"},
     "aia_335": HOT_REGION_LABELS,
     "aia_1600": LOWER_ATMOSPHERE_LABELS,
     "aia_1700": LOWER_ATMOSPHERE_LABELS,
@@ -93,6 +94,7 @@ ARCHIVE_ID = re.compile(r"^aia(\d+)-(\d{14})$")
 # The browser runs a copy of Aurora's finder; small decoding differences may move a ring slightly.
 FINDER_MATCH_PIXELS = 6
 KNOWN_CATALOGUES = {"SPoCA", "AAFDCC"}
+ONSET = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 FINDER_MATCH_RADIUS = 0.15
 
 
@@ -248,6 +250,9 @@ def _review_ring(ring: Any, task_type: str) -> dict[str, Any] | None:
     # Suggestions taken from a published catalogue rather than Aurora's finder; never counted as the finder's.
     if ring.get("catalogue") in KNOWN_CATALOGUES and finder is not None:
         result["catalogue"] = ring["catalogue"]
+    onset = ring.get("onset")
+    if label == "eruption" and isinstance(onset, str) and ONSET.match(onset):
+        result["onset"] = onset
     outline = ring.get("outline")
     if outline is not None:
         valid = isinstance(outline, list) and 3 <= len(outline) <= MAX_OUTLINE_POINTS and all(

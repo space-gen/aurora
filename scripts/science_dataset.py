@@ -59,7 +59,7 @@ FEATURE_COLUMNS = {
     "shape_agreement_iou": "float64", "geometry_source": "string", "centroid_x_pixel": "float64", "centroid_y_pixel": "float64", "bbox_pixel": "ints",
     "mask_rle": "mask", "extent_radius_arcsec": "float64", "helioprojective_x_arcsec": "float64", "helioprojective_y_arcsec": "float64",
     "stonyhurst_latitude_deg": "float64", "stonyhurst_longitude_deg": "float64", "mu": "float64", "disk_pixel_fraction": "float64",
-    "area_millionths_hemisphere": "float64", "quality_flags": "strings", "split": "string", "annotators": "strings",
+    "area_millionths_hemisphere": "float64", "quality_flags": "strings", "split": "string", "annotators": "strings", "onset_times": "strings",
 }
 OBSERVATION_COLUMNS = {
     "observation_id": "string", "t_obs": "string", "instrument": "string", "wavelength_angstrom": "int64", "measurement": "string", "image_url": "string",
@@ -175,8 +175,8 @@ def _votes(annotation: dict[str, Any], task_type: str) -> list[dict[str, Any]]:
             if action == "merged" or (label == "part_of_larger" and not ring.get("outline")):
                 continue
             mask, source = ring_mask(ring)
-            value = NOT_A_FEATURE if action == "deleted" else UNCLASSIFIED if label in (None, "none", "part_of_larger") else _scientific_class(task_type, label)
-            votes.append({"annotator": annotator, "label": value, "mask": mask, "source": source})
+            value = NOT_A_FEATURE if action == "deleted" else UNCLASSIFIED if label in (None, "none", "part_of_larger", "unclear") else _scientific_class(task_type, label)
+            votes.append({"annotator": annotator, "label": value, "mask": mask, "source": source, **({"onset": ring["onset"]} if ring.get("onset") else {})})
         return votes
     for location in annotation.get("locations", []) if isinstance(annotation.get("locations"), list) else []:
         match = CIRCLE_PATTERN.match(str(location.get("region", "")))
@@ -285,8 +285,10 @@ def _feature_row(group: list[dict[str, Any]], observation: dict[str, Any], chann
         "classification_scheme": channel["scheme"],
         "class_votes": [{"feature_class": name, "votes": votes} for name, votes in sorted(counts.items())],
         "n_annotators": len(group),
-        # GitHub usernames, so contributors can be credited and their record weighed.
+        # Anonymous contributor IDs; the private archive maps them to people for credit.
         "annotators": sorted({vote["annotator"] for vote in group}),
+        # 304 eruption movies: when each person saw material start to lift off.
+        "onset_times": sorted(vote["onset"] for vote in group if vote.get("onset")),
         "class_agreement": round(count / len(group), 4),
         "shape_agreement_iou": round(median(pairs), 4) if pairs else None,
         "geometry_source": source,
@@ -358,7 +360,7 @@ def build_catalogue(task_type: str, rows: list[dict[str, Any]]) -> tuple[list[di
             "n_annotators": len({str(item.get("user", "")).lower() for item in annotations}),
             "reviewed_boxes_pixel": boxes,
             "reviewed_disk_fraction": _disk_share(boxes, channel, sun),
-            "split": SPLITS[int(sun["carrington_rotation"]) % 5],
+            "split": SPLITS[moment.year % 5],
         }
         votes = [vote for annotation in annotations for vote in _votes(annotation, task_type)]
         found = 0
@@ -413,7 +415,7 @@ def dataset_card(task_type: str, summary: dict[str, Any], detector: dict[str, An
     rate = lambda value: "not enough data" if value is None else f"{value:.3f}"
     classes = "\n".join(f"| `{label}` | {count} |" for label, count in summary["feature_classes"].items()) or "| None yet | 0 |"
     return f"""---
-license: agpl-3.0
+license: cc-by-4.0
 pretty_name: SolarHub feature catalogue, {name}
 tags:
 - heliophysics
@@ -486,7 +488,8 @@ For conservative work, keep rows with `n_annotators >= 2`, a non-null `feature_c
 | `feature_class`, `classification_scheme` | Majority class and its vocabulary. Null means no majority. |
 | `class_votes` | Vote count per class, including `not_a_feature` and `unclassified`. |
 | `n_annotators`, `class_agreement` | Independent annotators and the share choosing the leading class. |
-| `annotators` | GitHub usernames of the people whose votes formed this feature. |
+| `annotators` | Anonymous contributor IDs of the people whose votes formed this feature; stable across datasets. |
+| `onset_times` | 304 eruption movies: when each person saw material start to lift off (UTC). |
 | `shape_agreement_iou` | Median pairwise intersection over union of submitted shapes. |
 | `geometry_source` | `annotator_outline`, `detector_mask` (accepted by an annotator) or `circle`. |
 | `centroid_x_pixel`, `centroid_y_pixel`, `bbox_pixel` | Image position. The box is `[x, y, width, height]`. |
@@ -513,7 +516,7 @@ Among proposals annotators reviewed, {rate(detector.get('finder_precision'))} we
 
 ## Splits
 
-Splits are assigned by Carrington rotation number modulo 5: 0 to 2 train, 3 validation, 4 test. All images in one rotation stay together, which prevents near-duplicate frames crossing splits. Long-lived regions can survive into a neighbouring rotation.
+Splits are assigned by observation year modulo 5: 0 to 2 train, 3 validation, 4 test. Coronal holes can last several solar rotations, so splitting by rotation would put the same hole in two splits; whole years keep long-lived features together.
 
 ## Known limitations
 
@@ -563,6 +566,7 @@ def build_flare_catalogue(rows: list[dict[str, Any]]) -> tuple[list[dict[str, An
     """One row per flare: which region volunteers saw brighten, and how other catalogues compare."""
     flares, units = [], []
     excluded = Counter()
+    checks = Counter()
     for row in sorted(rows, key=lambda item: str(item.get("url"))):
         metadata = row.get("metadata")
         metadata = json.loads(metadata) if isinstance(metadata, str) else metadata or {}
@@ -572,6 +576,11 @@ def build_flare_catalogue(rows: list[dict[str, Any]]) -> tuple[list[dict[str, An
             continue
         if not flare:
             excluded["answers_without_flare_details"] += 1
+            continue
+        if metadata.get("check_noaa"):
+            # Hidden checks have a known NOAA region; they measure accuracy and are not catalogue rows.
+            checks["answers"] += len(answers)
+            checks["correct"] += sum(label == f"noaa_{metadata['check_noaa']}" for label, _ in answers)
             continue
         counts = Counter(label for label, _ in answers)
         ordered = counts.most_common()
@@ -614,7 +623,7 @@ def build_flare_catalogue(rows: list[dict[str, Any]]) -> tuple[list[dict[str, An
             "swpc_noaa_number": None,
             "other_catalogue_noaa_numbers": others,
             "quality_flags": flags,
-            "split": SPLITS[int(sun["carrington_rotation"]) % 5],
+            "split": SPLITS[peak.year % 5],
         })
     attributed = [item for item in flares if item["noaa_number"]]
     compared = [item for item in attributed if any(other["noaa_number"] for other in item["other_catalogue_noaa_numbers"])]
@@ -623,6 +632,8 @@ def build_flare_catalogue(rows: list[dict[str, Any]]) -> tuple[list[dict[str, An
         "flares": len(flares),
         "flares_attributed_to_noaa_region": len(attributed),
         "flares_with_two_or_more_annotators": sum(item["n_annotators"] > 1 for item in flares),
+        "check_flare_answers": checks["answers"],
+        "check_flare_accuracy": round(checks["correct"] / checks["answers"], 4) if checks["answers"] else None,
         "attributions": dict(sorted(Counter(item["attribution"] or "no_majority" for item in flares).items())),
         "krippendorff_alpha_attribution": krippendorff_alpha(units),
         "agreement_with_ssw_latest_events": round(sum(any(other["noaa_number"] == item["noaa_number"] for other in item["other_catalogue_noaa_numbers"]) for item in compared) / len(compared), 4) if compared else None,
@@ -638,7 +649,7 @@ def flare_card(summary: dict[str, Any], splits: list[str]) -> str:
     configs = "".join(f"  - split: {split}\n    path: features/{split}/**/*.jsonl\n" for split in splits) or "  - split: train\n    path: features/**/*.jsonl\n"
     rate = lambda value: "not enough data" if value is None else f"{value:.3f}"
     return f"""---
-license: agpl-3.0
+license: cc-by-4.0
 pretty_name: SolarHub flare source regions
 tags:
 - heliophysics
@@ -663,6 +674,7 @@ GOES flares that the SWPC event list publishes without an active region (`ar_noa
 | Flares | {summary['flares']} |
 | Attributed to a NOAA region | {summary['flares_attributed_to_noaa_region']} |
 | Flares with two or more annotators | {summary['flares_with_two_or_more_annotators']} |
+| Accuracy on hidden check flares (NOAA region known) | {summary.get('check_flare_accuracy')} over {summary.get('check_flare_answers', 0)} answers |
 | Krippendorff's alpha, attribution | {rate(summary['krippendorff_alpha_attribution'])} |
 | Agreement with SSW Latest Events, where it names a region | {rate(summary['agreement_with_ssw_latest_events'])} |
 | Peak times (UTC) | {summary['first_flare']} to {summary['last_flare']} |
@@ -691,14 +703,14 @@ Flare forecasting models are trained on flares linked to their source active reg
 | `nearest_region_auto` | The NOAA region nearest the brightening, within 60 pixels. A simple baseline to compare with annotators. |
 | `attribution`, `noaa_number` | Majority answer, and the NOAA region number when that answer is a region. Null means no majority. |
 | `answer_votes`, `n_annotators`, `attribution_agreement` | Vote counts and the share choosing the majority answer. |
-| `annotators` | GitHub usernames of the people who answered. |
+| `annotators` | Anonymous contributor IDs of the people who answered; stable across datasets. |
 | `candidate_noaa_numbers` | Regions offered to annotators. |
 | `source_x_pixel`, `source_y_pixel` | Median marked position, when the answer has one. |
 | `helioprojective_*`, `stonyhurst_*` | That position on the sky and on the Sun. Stonyhurst is null off disk. |
 | `swpc_noaa_number` | The SWPC region, always null here by selection. |
 | `other_catalogue_noaa_numbers` | Regions given by SSW Latest Events and the Flare Detective trigger module near the same peak. Four-digit numbers are converted to five digits. |
 | `quality_flags` | `single_annotator`, `no_majority`. |
-| `split` | By Carrington rotation of the peak: modulo 5 values 0 to 2 train, 3 validation, 4 test. |
+| `split` | By year of the peak, modulo 5: 0 to 2 train, 3 validation, 4 test. |
 
 For conservative work, keep rows with `n_annotators >= 2` and a non-null `noaa_number`.
 
