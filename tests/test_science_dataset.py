@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import numpy as np
 
 from scripts.find_candidates import encode_mask
-from scripts.science_dataset import CHANNELS, build_catalogue, ephemeris, krippendorff_alpha, observation_time, solar_coordinates
+from scripts.science_dataset import CHANNELS, build_catalogue, channel_at, ephemeris, krippendorff_alpha, observation_time, solar_coordinates
 
 URL = "https://sdo.gsfc.nasa.gov/assets/img/browse/2026/11/17/20261117_115558_1024_0171.jpg"
 
@@ -85,3 +85,10 @@ def test_alpha_rewards_agreement_beyond_chance():
     assert krippendorff_alpha([["a", "a"], ["b", "b"]]) == 1
     assert krippendorff_alpha([["a", "b"], ["b", "a"]]) < 0
     assert krippendorff_alpha([["a"]]) is None
+
+
+def test_red_centre_moves_on_2018_03_31():
+    before = channel_at("aia_304", datetime(2018, 3, 30, 23, 59, tzinfo=timezone.utc))
+    after = channel_at("aia_304", datetime(2018, 3, 31, tzinfo=timezone.utc))
+    assert before["center"] == (517.0, 521.0) and after["center"] == (511.5, 511.5)
+    assert channel_at("aia_193", datetime(2017, 1, 1, tzinfo=timezone.utc))["center"] == (511.5, 511.5)

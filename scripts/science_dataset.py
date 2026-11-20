@@ -50,6 +50,14 @@ CHANNELS: dict[str, dict[str, Any]] = {
         for wavelength in (94, 131, 171, 193, 211, 304, 335, 1600, 1700)
     },
 }
+# Limb fits on 304 browse JPEGs: the disk sits at (517, 521) until 2018-03-30 and is centred from 2018-03-31.
+RED_RECENTRED = datetime(2018, 3, 31, tzinfo=timezone.utc)
+RED_EARLY_CENTER = (517.0, 521.0)
+
+
+def channel_at(task_type: str, moment: datetime) -> dict[str, Any]:
+    channel = CHANNELS[task_type]
+    return {**channel, "center": RED_EARLY_CENTER} if task_type == "aia_304" and moment < RED_RECENTRED else channel
 
 
 # Declared types keep files loadable when a nullable column is empty for a whole day.
@@ -339,6 +347,7 @@ def build_catalogue(task_type: str, rows: list[dict[str, Any]]) -> tuple[list[di
             excluded["observations_without_timestamp"] += 1
             continue
         sun = ephemeris(moment)
+        channel = channel_at(task_type, moment)
         boxes = _reviewed_boxes(annotations)
         observation = {
             "observation_id": hashlib.sha256(url.encode()).hexdigest()[:16],
