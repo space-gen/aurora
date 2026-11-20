@@ -92,6 +92,7 @@ ARCHIVE_TASKS = {"aia_193", "aia_211", "aia_304"}
 ARCHIVE_ID = re.compile(r"^aia(\d+)-(\d{14})$")
 # The browser runs a copy of Aurora's finder; small decoding differences may move a ring slightly.
 FINDER_MATCH_PIXELS = 6
+KNOWN_CATALOGUES = {"SPoCA", "AAFDCC"}
 FINDER_MATCH_RADIUS = 0.15
 
 
@@ -244,6 +245,9 @@ def _review_ring(ring: Any, task_type: str) -> dict[str, Any] | None:
     result: dict[str, Any] = {"action": action, "label": label, "finder": finder, "ring": circle}
     if ring.get("part_of_larger") is True:
         result["part_of_larger"] = True
+    # Suggestions taken from a published catalogue rather than Aurora's finder; never counted as the finder's.
+    if ring.get("catalogue") in KNOWN_CATALOGUES and finder is not None:
+        result["catalogue"] = ring["catalogue"]
     outline = ring.get("outline")
     if outline is not None:
         valid = isinstance(outline, list) and 3 <= len(outline) <= MAX_OUTLINE_POINTS and all(
