@@ -214,3 +214,15 @@ def test_dark_patch_and_eruption_answers_are_accepted():
     rings = _parse_review(json.dumps(movie), "aia_304")["rings"]
     assert rings[0]["onset"] == "2017-03-01T03:24:10Z" and "onset" not in rings[2]
     assert rings[1]["label"] == "no_eruption"
+
+
+def test_edge_movie_answers_cover_whole_quarters():
+    # The site now asks one question per quarter of the Sun's edge, with no marking or start time.
+    quarters = [(256, 256), (768, 256), (256, 768), (768, 768)]
+    labels = ["no_eruption", "no_eruption", "unclear", "eruption"]
+    movie = {"v": 1, "part": 1, "parts": 1, "rings": [
+        {"action": "added", "label": label, "finder": None, "ring": [x, y, 256]} for (x, y), label in zip(quarters, labels)
+    ]}
+    rings = _parse_review(json.dumps(movie), "aia_304")["rings"]
+    assert [ring["label"] for ring in rings] == labels
+    assert all("onset" not in ring for ring in rings)
