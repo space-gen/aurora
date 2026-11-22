@@ -92,3 +92,20 @@ def test_red_centre_moves_on_2018_03_31():
     after = channel_at("aia_304", datetime(2018, 3, 31, tzinfo=timezone.utc))
     assert before["center"] == (517.0, 521.0) and after["center"] == (511.5, 511.5)
     assert channel_at("aia_193", datetime(2017, 1, 1, tzinfo=timezone.utc))["center"] == (511.5, 511.5)
+
+
+def test_hidden_check_movies_measure_false_eruptions():
+    # 2017-09-12 09:00-12:00 is a check window whose top-right edge is busy but nothing leaves.
+    check = "https://sdo.gsfc.nasa.gov/assets/img/browse/2017/09/12/20170912_090530_1024_0304.jpg"
+    ordinary = "https://sdo.gsfc.nasa.gov/assets/img/browse/2017/09/13/20170913_090530_1024_0304.jpg"
+    def movie(user, top_right):
+        labels = ["no_eruption", top_right, "no_eruption", "eruption"]
+        spots = [(256, 256), (768, 256), (256, 768), (768, 768)]
+        return annotation(user, [{"action": "added", "label": label, "finder": None, "ring": [x, y, 256]} for (x, y), label in zip(spots, labels)])
+    rows = [
+        {"url": check, "annotations": json.dumps([movie("ana", "no_eruption"), movie("bo", "eruption")])},
+        {"url": ordinary, "annotations": json.dumps([movie("cy", "eruption")])},
+    ]
+    summary = build_catalogue("aia_304", rows)[2]
+    assert summary["check_movie_answers"] == 2 and summary["check_movie_accuracy"] == 0.5
+    assert "check_movie_answers" not in build_catalogue("aia_171", [{"url": URL, "annotations": json.dumps([annotation("ana", [ring("bright_region")])])}])[2]

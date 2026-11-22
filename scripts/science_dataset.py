@@ -332,17 +332,59 @@ def krippendorff_alpha(units: list[list[str]]) -> float | None:
     return round(1 - sum(weight for (a, b), weight in pairs.items() if a != b) / expected, 4) if expected else None
 
 
+# Hidden check movies for the 304 edge job: 3-hour windows (UTC start) and the answer for one quarter each.
+# Chosen from windows with no catalogued limb eruption within two days, and checked by eye: busy edges where
+# gas moves but nothing leaves. They measure how often movement alone is mistaken for an eruption.
+# The site lists the same windows in src/services/checkMovies.ts, without the answers.
+ERUPTION_CHECKS = {
+    "2017-09-12T09": {"top_right": "no_eruption"},
+    "2017-12-10T09": {"bottom_left": "no_eruption"},
+    "2017-10-22T09": {"top_left": "no_eruption"},
+    "2017-02-13T09": {"top_left": "no_eruption"},
+    "2017-07-12T09": {"bottom_left": "no_eruption"},
+    "2017-11-04T09": {"top_right": "no_eruption"},
+}
+WINDOW_NAME = re.compile(r"(\d{4})(\d{2})(\d{2})_(\d{2})\d{4}_1024_0304\.jpg$")
+
+
+def eruption_check_answers(url: str, annotations: list[dict[str, Any]]) -> list[tuple[str, str]]:
+    """(expected, given) for each answered check quarter of one movie; empty for ordinary movies."""
+    match = WINDOW_NAME.search(url)
+    if not match:
+        return []
+    year, month, day, hour = match.groups()
+    expected = ERUPTION_CHECKS.get(f"{year}-{month}-{day}T{int(hour) // 3 * 3:02d}", {})
+    pairs = []
+    for annotation in annotations:
+        review = annotation.get("review")
+        if isinstance(review, dict):
+            answers = [(ring.get("ring") or [None, None])[:2] + [ring.get("label")] for ring in review.get("rings", []) if isinstance(ring, dict)]
+        else:
+            circles = [(CIRCLE_PATTERN.match(str(item.get("region", ""))), item.get("label")) for item in _as_list(annotation.get("locations")) if isinstance(item, dict)]
+            answers = [[float(match[1]), float(match[2]), label] for match, label in circles if match]
+        for x, y, label in answers:
+            if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
+                continue
+            quarter = f"{'top' if y < SIZE / 2 else 'bottom'}_{'left' if x < SIZE / 2 else 'right'}"
+            if quarter in expected:
+                pairs.append((expected[quarter], str(label)))
+    return pairs
+
+
 def build_catalogue(task_type: str, rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     if task_type == "flare_source":
         return build_flare_catalogue(rows)
     channel = CHANNELS[task_type]
     observations, features, units = [], [], []
     excluded = Counter()
+    checks = []
     for row in sorted(rows, key=lambda item: str(item.get("url"))):
         url, moment = str(row.get("url")), observation_time(str(row.get("url")))
         annotations = [item for item in _as_list(row.get("annotations")) if isinstance(item, dict)]
         if not annotations:
             continue
+        if task_type == "aia_304":
+            checks += eruption_check_answers(url, annotations)
         if moment is None:
             excluded["observations_without_timestamp"] += 1
             continue
@@ -396,6 +438,9 @@ def build_catalogue(task_type: str, rows: list[dict[str, Any]]) -> tuple[list[di
         "splits": dict(sorted(Counter(item["split"] for item in features).items())),
         "excluded": dict(sorted(excluded.items())),
     }
+    if task_type == "aia_304":
+        summary["check_movie_answers"] = len(checks)
+        summary["check_movie_accuracy"] = round(sum(expected == given for expected, given in checks) / len(checks), 4) if checks else None
     return observations, features, summary
 
 
@@ -423,6 +468,7 @@ def dataset_card(task_type: str, summary: dict[str, Any], detector: dict[str, An
     configs = "".join(f"  - split: {split}\n    path: features/{split}/**/*.jsonl\n" for split in splits) or "  - split: train\n    path: features/**/*.jsonl\n"
     rate = lambda value: "not enough data" if value is None else f"{value:.3f}"
     classes = "\n".join(f"| `{label}` | {count} |" for label, count in summary["feature_classes"].items()) or "| None yet | 0 |"
+    checks = f"| Accuracy on hidden check movies (busy edges, nothing leaves) | {rate(summary['check_movie_accuracy'])} over {summary['check_movie_answers']} answers |\n" if "check_movie_answers" in summary else ""
     return f"""---
 license: cc-by-4.0
 pretty_name: SolarHub feature catalogue, {name}
@@ -454,7 +500,7 @@ Solar features identified by volunteers in {channel['instrument']} images. Each 
 | Features seen by two or more annotators | {summary['features_with_two_or_more_annotators']} |
 | Krippendorff's alpha, feature class | {rate(summary['krippendorff_alpha_class'])} |
 | Time range (UTC) | {summary['first_observation']} to {summary['last_observation']} |
-
+{checks}
 | Feature class | Count |
 | --- | --- |
 {classes}
